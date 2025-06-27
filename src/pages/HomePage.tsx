@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { LessonPlanForm } from '../components/LessonPlanForm';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
@@ -12,7 +13,7 @@ const HomePage: React.FC = () => {
   const [lessonPlanInput, setLessonPlanInput] = useState<LessonPlanInput | null>(null);
   const [generatedPlan, setGeneratedPlan] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<React.ReactNode | null>(null);
 
   const POINTS_PER_GENERATION = 20;
 
@@ -23,7 +24,15 @@ const HomePage: React.FC = () => {
     }
 
     if (authData.user.points < POINTS_PER_GENERATION) {
-      setError(`Poin Anda tidak cukup. Untuk menambah poin, silakan hubungi admin di 082232835976.`);
+      setError(
+        <>
+          Poin Anda tidak cukup. Silakan{' '}
+          <Link to="/pricing" className="font-bold underline text-sky-400 hover:text-sky-300">
+            isi ulang di sini
+          </Link>
+          .
+        </>
+      );
       return;
     }
 
@@ -146,7 +155,7 @@ const HomePage: React.FC = () => {
           {error && !isLoading && (
             <div className="text-center text-red-700 bg-red-100 p-4 rounded-lg w-full max-w-md border border-red-300">
               <p className="font-semibold text-xl">Error!</p>
-              <p>{error}</p>
+              <div>{error}</div>
             </div>
           )}
           {generatedPlan && !isLoading && !error && lessonPlanInput && (

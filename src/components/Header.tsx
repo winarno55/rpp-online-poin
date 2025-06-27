@@ -31,6 +31,11 @@ export const Header: React.FC = () => {
                   {' | '}
                   <span>Poin: <span className="font-bold text-emerald-400">{authData.user?.points}</span></span>
                 </div>
+                {!isAdmin && (
+                   <Link to="/pricing" className="text-sm font-medium text-yellow-400 hover:text-yellow-300 transition-colors">
+                    Isi Ulang Poin
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out text-sm"

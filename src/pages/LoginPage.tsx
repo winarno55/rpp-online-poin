@@ -68,6 +68,11 @@ const LoginPage: React.FC = () => {
         <p className="text-center text-slate-400 mt-6">
           Belum punya akun? <Link to="/register" className="font-medium text-sky-400 hover:underline">Register di sini</Link>
         </p>
+        <div className="text-center mt-4">
+            <Link to="/forgot-password" className="text-sm text-slate-400 hover:text-sky-400 transition-colors">
+                Lupa Password?
+            </Link>
+        </div>
       </div>
     </div>
   );
