@@ -33,7 +33,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(401).json({ message: 'Invalid credentials' });
             }
             
-            const token = jwt.sign({ id: user._id }, JWT_SECRET, {
+            const token = jwt.sign({ id: user._id.toString() }, JWT_SECRET, {
                 expiresIn: '30d',
             });
 
