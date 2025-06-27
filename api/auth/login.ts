@@ -19,10 +19,30 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(405).json({ message: 'Method Not Allowed' });
         }
 
+        const { email, password } = req.body;
+
+        // Special hardcoded admin login
+        if (email === 'admin' && password === 'besamld55') {
+            const adminUser = {
+                id: 'admin_user_id', // A unique static ID for the admin
+                email: 'admin',
+                points: 99999, // Effectively infinite points
+                role: 'admin' as const,
+            };
+
+            const token = jwt.sign({ id: adminUser.id, role: 'admin' }, JWT_SECRET, {
+                expiresIn: '1d', // Admin session shorter for security
+            });
+
+            return res.status(200).json({
+                token,
+                user: adminUser,
+            });
+        }
+
+        // Regular user login
         try {
             await dbConnect();
-
-            const { email, password } = req.body;
 
             if (!email || !password) {
                 return res.status(400).json({ message: 'Please provide email and password' });

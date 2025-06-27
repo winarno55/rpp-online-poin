@@ -28,7 +28,20 @@ export const protect = async (req: AuthRequest, res: VercelResponse, next: NextF
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+        const decoded = jwt.verify(token, JWT_SECRET) as { id: string; role?: string };
+
+        // Handle the hardcoded admin user
+        if (decoded.id === 'admin_user_id' && decoded.role === 'admin') {
+            // Create a mock user object that satisfies the admin check middleware.
+            // This object is not a full Mongoose document and should only be used for authorization checks.
+            req.user = {
+                _id: 'admin_user_id',
+                email: 'admin',
+                role: 'admin',
+            } as any;
+            return next();
+        }
+        
         const user = await User.findById(decoded.id).exec() as IUser | null;
 
         if (!user) {
@@ -37,18 +50,19 @@ export const protect = async (req: AuthRequest, res: VercelResponse, next: NextF
 
         req.user = user;
         next();
-    } catch (error) {
+    } catch (error: any) {
         let errorMessage = 'Otorisasi gagal, token bermasalah.';
         
-        if (error instanceof jwt.TokenExpiredError) {
+        // Use error.name for robust error checking, avoiding `instanceof` issues in serverless environments.
+        if (error && error.name === 'TokenExpiredError') {
             errorMessage = 'Sesi Anda telah berakhir. Silakan login kembali.';
-        } else if (error instanceof jwt.JsonWebTokenError) {
+        } else if (error && error.name === 'JsonWebTokenError') {
             // This will catch "invalid signature", "jwt malformed", etc.
             errorMessage = 'Token tidak valid atau rusak. Silakan login kembali.';
         }
         
         // Log the actual error for debugging on Vercel
-        if (error instanceof Error) {
+        if (error && error.message) {
             console.error('Token Verification Error:', error.name, ' - ', error.message);
         } else {
             console.error('An unknown token verification error occurred:', error);
