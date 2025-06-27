@@ -38,7 +38,23 @@ export const protect = async (req: AuthRequest, res: VercelResponse, next: NextF
         req.user = user;
         next();
     } catch (error) {
-        return res.status(401).json({ message: 'Not authorized, token failed' });
+        let errorMessage = 'Otorisasi gagal, token bermasalah.';
+        
+        if (error instanceof jwt.TokenExpiredError) {
+            errorMessage = 'Sesi Anda telah berakhir. Silakan login kembali.';
+        } else if (error instanceof jwt.JsonWebTokenError) {
+            // This will catch "invalid signature", "jwt malformed", etc.
+            errorMessage = 'Token tidak valid atau rusak. Silakan login kembali.';
+        }
+        
+        // Log the actual error for debugging on Vercel
+        if (error instanceof Error) {
+            console.error('Token Verification Error:', error.name, ' - ', error.message);
+        } else {
+            console.error('An unknown token verification error occurred:', error);
+        }
+
+        return res.status(401).json({ message: errorMessage });
     }
 };
 
