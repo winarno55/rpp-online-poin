@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { LessonPlanForm } from '../components/LessonPlanForm';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
-import { LessonPlanInput } from '../types';
+import { LessonPlanInput, addRppToHistory, initDB } from '../types';
 import { markdownToPlainText } from '../utils/markdownUtils';
 import { useAuth } from '../hooks/useAuth';
 
@@ -15,6 +15,14 @@ const HomePage: React.FC = () => {
   const [error, setError] = useState<React.ReactNode | null>(null);
 
   const POINTS_PER_GENERATION = 20;
+
+  useEffect(() => {
+    initDB().catch(err => {
+      console.error("Gagal menginisialisasi IndexedDB:", err);
+      // Non-critical error, so we don't show it to the user.
+      // The app will function, just without history.
+    });
+  }, []);
 
   const handleFormSubmit = useCallback(async (data: LessonPlanInput) => {
     if (!authData.token || !authData.user) {
@@ -63,7 +71,15 @@ const HomePage: React.FC = () => {
         setError("Gagal menghasilkan konten RPP. AI mengembalikan respons kosong.");
       } else {
         setGeneratedPlan(lessonPlan);
-        updatePoints(newPoints); // Update points in context
+        updatePoints(newPoints);
+        
+        // Save to history
+        try {
+          await addRppToHistory(data, lessonPlan);
+        } catch (dbError) {
+          console.error("Gagal menyimpan RPP ke riwayat:", dbError);
+          // This is a non-blocking error, so we don't notify the user.
+        }
       }
 
     } catch (e) {

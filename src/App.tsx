@@ -9,6 +9,8 @@ import AdminPage from './pages/AdminPage';
 import PricingPage from './pages/PricingPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import HistoryPage from './pages/HistoryPage';
+import HistoryDetailPage from './pages/HistoryDetailPage';
 
 const App: React.FC = () => {
   return (
@@ -35,6 +37,22 @@ const App: React.FC = () => {
                 <AdminPage />
               </ProtectedRoute>
             } 
+          />
+          <Route 
+            path="/history"
+            element={
+              <ProtectedRoute>
+                <HistoryPage />
+              </ProtectedRoute>
+            }
+          />
+           <Route 
+            path="/history/:id"
+            element={
+              <ProtectedRoute>
+                <HistoryDetailPage />
+              </ProtectedRoute>
+            }
           />
           <Route 
             path="/pricing"

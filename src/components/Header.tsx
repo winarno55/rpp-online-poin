@@ -26,6 +26,9 @@ export const Header: React.FC = () => {
                     Admin Panel
                   </Link>
                 )}
+                <Link to="/history" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+                  Riwayat
+                </Link>
                 <div className="text-sm text-slate-300 hidden sm:block">
                   <span className="font-medium text-sky-400">{authData.user?.email}</span>
                   {' | '}
