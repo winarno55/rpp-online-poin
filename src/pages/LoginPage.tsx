@@ -46,8 +46,16 @@ const LoginPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && <p className="text-red-400 bg-red-900/50 p-3 rounded-lg text-center">{error}</p>}
           <div>
-            <label htmlFor="email" className={labelClass}>Email</label>
-            <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} />
+            <label htmlFor="login-identity" className={labelClass}>Email atau Username Admin</label>
+            <input 
+              type="text" 
+              id="login-identity" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+              className={inputClass}
+              placeholder="Masukkan email Anda atau 'admin'"
+            />
           </div>
           <div>
             <label htmlFor="password" className={labelClass}>Password</label>
