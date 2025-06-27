@@ -1,4 +1,3 @@
-
 import { LessonPlanInput } from '../types';
 
 export const generateLessonPlanPrompt = (input: LessonPlanInput): string => {

@@ -1,4 +1,3 @@
-
 export const FASE_KURIKULUM = ["A", "B", "C", "D", "E", "F"] as const;
 
 export const FASE_DESCRIPTIONS: { [key: string]: string } = {

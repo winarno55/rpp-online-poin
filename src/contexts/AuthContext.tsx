@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useMemo } from 'react';
 import { User, AuthContextType } from '../types';
 
