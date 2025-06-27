@@ -8,8 +8,6 @@ const corsHandler = cors();
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
     corsHandler(req, res, async () => {
-        // Pengecekan JWT_SECRET dipindahkan ke sini untuk memastikan TypeScript
-        // dapat memverifikasi tipenya di dalam scope callback ini.
         const JWT_SECRET = process.env.JWT_SECRET;
         if (!JWT_SECRET) {
             console.error("JWT_SECRET environment variable is not defined.");
@@ -21,22 +19,21 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(405).json({ message: 'Method Not Allowed' });
         }
 
-        await dbConnect();
-
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Please provide email and password' });
-        }
-
         try {
+            await dbConnect();
+
+            const { email, password } = req.body;
+
+            if (!email || !password) {
+                return res.status(400).json({ message: 'Please provide email and password' });
+            }
+
             const user = await User.findOne({ email }).select('+password').exec() as IUser | null;
 
             if (!user || !(await user.comparePassword(password))) {
                 return res.status(401).json({ message: 'Invalid credentials' });
             }
             
-            // Sekarang JWT_SECRET dijamin bertipe string dalam scope ini.
             const token = jwt.sign({ id: user._id.toString() }, JWT_SECRET, {
                 expiresIn: '30d',
             });
@@ -51,7 +48,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
                 },
             });
         } catch (error: any) {
-            res.status(500).json({ message: error.message });
+            console.error("Login Error:", error);
+            res.status(500).json({ message: 'Terjadi kesalahan pada server saat login.', error: error.message });
         }
     });
 }

@@ -2,6 +2,7 @@
   "name": "rpp-generator-saas",
   "version": "2.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "npx esbuild src/index.tsx --bundle --outfile=bundle.js --format=esm --jsx=automatic --loader:.ts=tsx --resolve-extensions=.tsx,.ts,.js,.jsx --external:react --external:react-dom/client --external:react-router-dom --external:jspdf",
     "dev": "vercel dev"

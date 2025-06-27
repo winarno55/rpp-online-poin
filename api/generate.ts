@@ -23,23 +23,23 @@ interface AuthRequest extends VercelRequest {
 }
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
-    await dbConnect();
-
-    if (!req.user) {
-        return res.status(401).json({ message: 'Not authorized' });
-    }
-
-    const user = await User.findById(req.user._id).exec();
-
-    if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-    }
-
-    if (user.points < POINTS_PER_GENERATION) {
-        return res.status(403).json({ message: `Poin Anda tidak cukup. Untuk menambah poin, silakan hubungi admin di 082232835976.` });
-    }
-    
     try {
+        await dbConnect();
+
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
+        const user = await User.findById(req.user._id).exec();
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.points < POINTS_PER_GENERATION) {
+            return res.status(403).json({ message: `Poin Anda tidak cukup. Untuk menambah poin, silakan hubungi admin di 082232835976.` });
+        }
+    
         const lessonPlanData: LessonPlanInput = req.body;
         const prompt = generateLessonPlanPrompt(lessonPlanData);
         
@@ -64,7 +64,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         });
 
     } catch (error: any) {
-        console.error('Gemini API or DB Error:', error);
+        console.error('API Error (DB or Gemini):', error);
         res.status(500).json({ message: 'Terjadi kesalahan pada server saat membuat RPP.', error: error.message });
     }
 }

@@ -12,15 +12,15 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).json({ message: 'Method Not Allowed' });
     }
 
-    await dbConnect();
-
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Please provide email and password' });
-    }
-
     try {
+      await dbConnect();
+
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Please provide email and password' });
+      }
+
       const userExists = await User.findOne({ email }).exec() as IUser | null;
 
       if (userExists) {
@@ -34,7 +34,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 
       res.status(201).json({ success: true, message: 'User created successfully' });
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      console.error("Registration Error:", error);
+      res.status(500).json({ message: 'Terjadi kesalahan pada server saat registrasi.', error: error.message });
     }
   });
 }

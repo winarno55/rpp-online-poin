@@ -11,15 +11,15 @@ interface AuthRequest extends VercelRequest {
 }
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
-  await dbConnect();
-
-  const { email, points } = req.body;
-
-  if (!email || !points || isNaN(Number(points)) || Number(points) <= 0) {
-    return res.status(400).json({ message: 'Please provide a valid email and a positive number of points.' });
-  }
-
   try {
+    await dbConnect();
+
+    const { email, points } = req.body;
+
+    if (!email || !points || isNaN(Number(points)) || Number(points) <= 0) {
+      return res.status(400).json({ message: 'Please provide a valid email and a positive number of points.' });
+    }
+
     const targetUser = await User.findOne({ email }).exec();
 
     if (!targetUser) {
@@ -33,6 +33,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
       message: `Successfully added ${points} points to ${email}. New total: ${targetUser.points}.`
     });
   } catch (error: any) {
+    console.error('Server error while adding points:', error);
     res.status(500).json({ message: 'Server error while adding points.', error: error.message });
   }
 }
