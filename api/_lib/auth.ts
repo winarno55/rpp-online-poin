@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
-import User, { IUser } from './models/User';
+import User, { IUser } from './models/User.js';
 
 interface AuthRequest extends VercelRequest {
   user?: IUser;
