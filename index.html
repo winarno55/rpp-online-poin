@@ -55,20 +55,34 @@
       
       /* Ensure the content area takes full width and is visible */
       main, 
-      .print-content,
-      #lesson-plan-display-container {
+      .print-content {
         display: block !important;
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
-        padding: 20mm 15mm !important; /* Standard A4 margins */
+        padding: 0 !important; /* Remove padding from outer containers */
         box-shadow: none !important;
         border: none !important;
         background-color: #fff !important;
         color: #000 !important;
         min-height: auto !important;
+        overflow: visible !important;
+      }
+      
+      #rpp-paper-preview {
+        margin: 0 !important;
+        padding: 20mm 15mm !important; /* Apply standard A4 margins HERE */
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 100% !important;
+        border-radius: 0 !important;
+        color: #000 !important;
       }
 
+      #rpp-paper-preview, #rpp-paper-preview * {
+         color: #000 !important;
+      }
+      
       /* Styles for content within the print area */
       .print-content h1, .print-content h2, .print-content h3, .print-content h4, .print-content h5, .print-content h6 {
         color: #000 !important;
@@ -132,7 +146,6 @@
     "react": "https://esm.sh/react@^19.1.0",
     "react-dom/client": "https://esm.sh/react-dom@^19.1.0/client",
     "react-router-dom": "https://esm.sh/react-router-dom@^6.20.1",
-    "jspdf": "https://esm.sh/jspdf@^3.0.1",
     "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
     "react/": "https://esm.sh/react@^19.1.0/",
     "mongoose": "https://esm.sh/mongoose@^8.16.1",

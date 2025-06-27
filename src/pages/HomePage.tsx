@@ -4,8 +4,7 @@ import { LessonPlanForm } from '../components/LessonPlanForm';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
 import { LessonPlanInput } from '../types';
-import { jsPDF } from 'jspdf';
-import { markdownToHtml, markdownToPlainText } from '../utils/markdownUtils';
+import { markdownToPlainText } from '../utils/markdownUtils';
 import { useAuth } from '../hooks/useAuth';
 
 const HomePage: React.FC = () => {
@@ -79,36 +78,7 @@ const HomePage: React.FC = () => {
       setIsLoading(false);
     }
   }, [authData, updatePoints]);
-
-  const handleDownloadPdf = useCallback(async () => {
-    if (!generatedPlan || !lessonPlanInput) return;
-    setIsLoading(true);
-    try {
-      const htmlContent = markdownToHtml(generatedPlan);
-      const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const margin = 30;
-      const contentWidth = pdfWidth - (margin * 2);
-      const windowWidthForHtmlRender = 1200;
-      const scale = contentWidth / windowWidthForHtmlRender;
-      const fileName = `RPP_${lessonPlanInput.mataPelajaran.replace(/\s+/g, '_')}.pdf`;
-
-      await pdf.html(htmlContent, {
-        callback: (doc) => doc.save(fileName),
-        margin: [margin, margin, margin, margin],
-        autoPaging: 'text',
-        width: contentWidth,
-        windowWidth: windowWidthForHtmlRender,
-        html2canvas: { scale, useCORS: true }
-      });
-    } catch (e) {
-        console.error("Error PDF", e);
-        setError(e instanceof Error ? `Kesalahan PDF: ${e.message}` : 'Gagal membuat PDF.');
-    } finally {
-        setIsLoading(false);
-    }
-  }, [generatedPlan, lessonPlanInput]);
-
+  
   const handleDownloadTxt = useCallback(async () => {
     if (!generatedPlan || !lessonPlanInput) return;
      try {
@@ -150,35 +120,38 @@ const HomePage: React.FC = () => {
           <LessonPlanForm onSubmit={handleFormSubmit} isLoading={isLoading} points={authData.user?.points ?? 0} cost={POINTS_PER_GENERATION} />
         </div>
 
-        <div id="lesson-plan-display-container" className="bg-white shadow-2xl rounded-xl p-6 sm:p-8 min-h-[400px] flex flex-col items-center justify-start print-content">
-          {isLoading && <div className="text-slate-800"><LoadingSpinner /></div>}
+        <div id="lesson-plan-display-container" className="bg-slate-200 shadow-inner rounded-xl p-2 sm:p-4 min-h-[400px] print-content">
+          {isLoading && <div className="flex items-center justify-center h-full"><div className="text-slate-800"><LoadingSpinner /></div></div>}
           {error && !isLoading && (
-            <div className="text-center text-red-700 bg-red-100 p-4 rounded-lg w-full max-w-md border border-red-300">
-              <p className="font-semibold text-xl">Error!</p>
-              <div>{error}</div>
+             <div className="flex items-center justify-center h-full p-4">
+                <div className="text-center text-red-700 bg-red-100 p-4 rounded-lg w-full max-w-md border border-red-300">
+                  <p className="font-semibold text-xl">Error!</p>
+                  <div>{error}</div>
+                </div>
             </div>
           )}
           {generatedPlan && !isLoading && !error && lessonPlanInput && (
             <div className="w-full">
               <div className="text-center mb-6 no-print">
-                 <h2 className="text-2xl font-semibold text-green-700 mb-2">RPP Berhasil Dibuat!</h2>
+                 <h2 className="text-2xl font-bold text-slate-800">RPP Berhasil Dibuat!</h2>
                  <p className="text-slate-600 mb-1">Anda telah menggunakan {POINTS_PER_GENERATION} poin.</p>
                  <p className="text-slate-700 mb-4 text-md">Sisa poin Anda: <span className="font-bold text-emerald-600">{authData.user?.points}</span></p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <button onClick={handleDownloadPdf} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`} disabled={isLoading}>Unduh PDF</button>
                   <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`} disabled={isLoading}>Unduh TXT</button>
-                  <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-teal-500 hover:bg-teal-600`} disabled={isLoading}>Cetak RPP</button>
+                  <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`} disabled={isLoading}>Cetak / Simpan PDF</button>
                 </div>
               </div>
-              <div className="mt-4 border-t border-slate-300 pt-4 no-print"></div>
-              <LessonPlanDisplay planText={generatedPlan} />
+              
+              <div id="rpp-paper-preview" className="bg-white rounded-md shadow-lg mx-auto p-8 md:p-12" style={{maxWidth: '8.5in'}}>
+                  <LessonPlanDisplay planText={generatedPlan} />
+              </div>
             </div>
           )}
           {!isLoading && !error && !generatedPlan && (
-            <div className="flex-grow flex flex-col items-center justify-center text-slate-500 text-center no-print">
+            <div className="flex-grow flex flex-col items-center justify-center h-full text-slate-500 text-center no-print p-4">
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-24 h-24 mb-4 opacity-50"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>
-              <p className="text-xl">RPP/Modul Ajar akan dihasilkan di sini.</p>
-              <p className="text-sm">Isi formulir di samping dan klik "Buat RPP" untuk memulai.</p>
+              <p className="text-xl text-slate-600">RPP/Modul Ajar akan dihasilkan di sini.</p>
+              <p className="text-sm text-slate-500">Isi formulir di samping dan klik "Buat RPP" untuk memulai.</p>
             </div>
           )}
         </div>
