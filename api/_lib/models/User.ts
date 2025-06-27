@@ -1,15 +1,17 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-// Changed from an interface to a type alias using an intersection.
-// This ensures TypeScript correctly merges the properties from the Mongoose Document class.
-export type IUser = Document & {
+// Revert to an interface and explicitly define the '_id' property.
+// This resolves type inference issues in certain build environments by making
+// the property's existence and type unambiguous for the TypeScript compiler.
+export interface IUser extends Document {
+  _id: mongoose.Types.ObjectId; // Explicitly define _id to help TypeScript
   email: string;
   password?: string;
   points: number;
   role: 'user' | 'admin';
   comparePassword(password: string): Promise<boolean>;
-};
+}
 
 const UserSchema: Schema<IUser> = new Schema({
   email: {

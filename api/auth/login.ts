@@ -40,7 +40,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
             res.status(200).json({
                 token,
                 user: {
-                    id: user._id,
+                    id: user._id.toString(), // Convert ObjectId to string for the frontend
                     email: user.email,
                     points: user.points,
                     role: user.role,
