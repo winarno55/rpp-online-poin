@@ -6,13 +6,16 @@ import cors from 'cors';
 
 const corsHandler = cors();
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-    throw new Error('Please define the JWT_SECRET environment variable');
-}
-
 export default function handler(req: VercelRequest, res: VercelResponse) {
     corsHandler(req, res, async () => {
+        // Pengecekan JWT_SECRET dipindahkan ke sini untuk memastikan TypeScript
+        // dapat memverifikasi tipenya di dalam scope callback ini.
+        const JWT_SECRET = process.env.JWT_SECRET;
+        if (!JWT_SECRET) {
+            console.error("JWT_SECRET environment variable is not defined.");
+            return res.status(500).json({ message: 'Internal server configuration error.' });
+        }
+        
         if (req.method !== 'POST') {
             res.setHeader('Allow', ['POST']);
             return res.status(405).json({ message: 'Method Not Allowed' });
@@ -33,6 +36,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(401).json({ message: 'Invalid credentials' });
             }
             
+            // Sekarang JWT_SECRET dijamin bertipe string dalam scope ini.
             const token = jwt.sign({ id: user._id.toString() }, JWT_SECRET, {
                 expiresIn: '30d',
             });
