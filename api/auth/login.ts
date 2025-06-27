@@ -27,7 +27,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         try {
-            const user = await User.findOne<IUser>({ email }).select('+password').exec();
+            const user = await User.findOne({ email }).select('+password').exec() as IUser | null;
 
             if (!user || !(await user.comparePassword(password))) {
                 return res.status(401).json({ message: 'Invalid credentials' });

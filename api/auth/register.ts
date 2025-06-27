@@ -21,7 +21,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-      const userExists = await User.findOne<IUser>({ email }).exec();
+      const userExists = await User.findOne({ email }).exec() as IUser | null;
 
       if (userExists) {
         return res.status(400).json({ message: 'User already exists' });

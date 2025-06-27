@@ -1,13 +1,15 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-export interface IUser extends Document {
+// Changed from an interface to a type alias using an intersection.
+// This ensures TypeScript correctly merges the properties from the Mongoose Document class.
+export type IUser = Document & {
   email: string;
   password?: string;
   points: number;
   role: 'user' | 'admin';
   comparePassword(password: string): Promise<boolean>;
-}
+};
 
 const UserSchema: Schema<IUser> = new Schema({
   email: {

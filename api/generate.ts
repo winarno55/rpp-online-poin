@@ -29,7 +29,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         return res.status(401).json({ message: 'Not authorized' });
     }
 
-    const user = await User.findById(req.user._id).exec();
+    const user = await User.findById(req.user._id).exec() as IUser | null;
 
     if (!user) {
         return res.status(404).json({ message: 'User not found' });
