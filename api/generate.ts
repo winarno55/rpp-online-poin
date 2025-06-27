@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI } from '@google/genai';
 import { protect } from './_lib/auth.js';
 import dbConnect from './_lib/db.js';
-import { IUser } from './_lib/models/User.js';
+import User, { IUser } from './_lib/models/User.js';
 // We need to manually import this from the `src` directory
 import { generateLessonPlanPrompt } from '../src/services/geminiService.js';
 import { LessonPlanInput } from '../src/types.js';
@@ -24,7 +24,6 @@ interface AuthRequest extends VercelRequest {
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
     try {
-        // dbConnect is now in `protect`, but keeping it here is safe as it's cached.
         await dbConnect();
 
         if (!req.user) {
@@ -35,9 +34,14 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         if (req.user.role === 'admin') {
             return res.status(403).json({ message: 'Admin users cannot generate lesson plans.' });
         }
+        
+        // Re-fetch the user from the database to ensure it's a full Mongoose document.
+        // This is a robust way to avoid issues in serverless environments where object prototypes can get lost.
+        const user = await User.findById(req.user._id);
 
-        // Use the user object directly from the middleware.
-        const user = req.user;
+        if (!user) {
+            return res.status(401).json({ message: 'User not found.' });
+        }
 
         if (user.points < POINTS_PER_GENERATION) {
             return res.status(403).json({ message: `Poin Anda tidak cukup. Untuk menambah poin, silakan hubungi admin di 082232835976.` });
