@@ -8,12 +8,15 @@ interface AuthRequest extends VercelRequest {
 
 type NextFunction = () => void;
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-    throw new Error('Please define the JWT_SECRET environment variable');
-}
+// We will read the JWT_SECRET inside the protect function to avoid issues with Vercel's module caching.
 
 export const protect = async (req: AuthRequest, res: VercelResponse, next: NextFunction) => {
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+        console.error("JWT_SECRET is not defined on the server during an auth check.");
+        return res.status(500).json({ message: 'Internal server configuration error.' });
+    }
+
     let token;
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
