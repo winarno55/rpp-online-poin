@@ -57,8 +57,14 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
             const resetToken = user.getResetPasswordToken();
             await user.save({ validateBeforeSave: false });
 
-            const protocol = process.env.VERCEL_ENV === 'production' ? 'https' : 'http';
-            const host = process.env.VERCEL_URL || req.headers.host;
+            // Use request headers to construct the public URL, avoiding Vercel's internal URLs.
+            // 'x-forwarded-proto' provides the protocol (http/https).
+            // 'host' provides the domain the user is accessing.
+            const protocol = (req.headers['x-forwarded-proto'] as string) || 'http';
+            const host = req.headers.host;
+            if (!host) {
+                 throw new Error("Host header is missing from the request.");
+            }
             const resetUrl = `${protocol}://${host}/reset-password/${resetToken}`;
             
             const message = `
