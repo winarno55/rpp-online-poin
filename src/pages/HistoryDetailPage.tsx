@@ -79,24 +79,26 @@ const HistoryDetailPage: React.FC = () => {
     const downloadButtonBaseClass = "text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out text-base flex items-center justify-center gap-2 w-full sm:w-auto";
 
     return (
-        <div className="w-full">
-            <div className="text-center mb-6 no-print">
-                 <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
-                    Detail Riwayat RPP
-                </h2>
-                 <p className="text-slate-300 mt-1">Dibuat pada {new Date(rpp.createdAt).toLocaleString('id-ID')}</p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
-                  <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`}>Unduh TXT</button>
-                  <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`}>Cetak / Simpan PDF</button>
-                  <Link to="/history" className={`${downloadButtonBaseClass} bg-slate-600 hover:bg-slate-500`}>Kembali ke Riwayat</Link>
+        <div className="grid grid-cols-1 gap-8">
+            <div className="w-full">
+                <div className="text-center mb-6 no-print">
+                    <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
+                        Detail Riwayat RPP
+                    </h2>
+                    <p className="text-slate-300 mt-1">Dibuat pada {new Date(rpp.createdAt).toLocaleString('id-ID')}</p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+                        <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`}>Unduh TXT</button>
+                        <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`}>Cetak / Simpan PDF</button>
+                        <Link to="/history" className={`${downloadButtonBaseClass} bg-slate-600 hover:bg-slate-500`}>Kembali ke Riwayat</Link>
+                    </div>
                 </div>
-              </div>
-              
-              <div className="bg-slate-200 shadow-inner rounded-xl p-2 sm:p-4 print-content">
-                  <div id="rpp-paper-preview" className="bg-white rounded-md shadow-lg mx-auto p-8 md:p-12" style={{maxWidth: '8.5in'}}>
-                      <LessonPlanDisplay planText={rpp.generatedPlan} />
-                  </div>
-              </div>
+                
+                <div className="bg-slate-200 shadow-inner rounded-xl p-2 sm:p-4 print-content">
+                    <div id="rpp-paper-preview" className="bg-white rounded-md shadow-lg mx-auto p-8 md:p-12" style={{maxWidth: '8.5in'}}>
+                        <LessonPlanDisplay planText={rpp.generatedPlan} />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
