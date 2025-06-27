@@ -26,114 +26,67 @@
       background: #555;
     }
 
-    /* Print-specific styles */
+    /* Print-specific styles using a more robust 'hide all, show one' method */
     @media print {
-      body {
-        font-family: Arial, sans-serif; /* Standard font for printing */
-        margin: 0;
-        padding: 0;
-        background-color: #fff; /* White background for print */
-        color: #000; /* Black text for print */
-        font-size: 10pt; /* Adjust base font size for print */
-        line-height: 1.3;
+      /* Hide every element on the page by default */
+      body * {
+        visibility: hidden;
       }
 
-      /* Hide elements not meant for printing */
-      header, 
-      nav, 
-      aside, 
-      footer, 
-      form,
-      .no-print, /* Generic class to hide elements */
-      button[onclick*="window.print"], /* Hide the print button itself */
-      .lg\\:grid-cols-2 > div:first-child, /* Hides the form panel */
-      body > header, /* Hides the main app header */
-      body > main > div.bg-slate-800:first-child, /* Hides the form container */
-      body > footer { /* Hides the main app footer */
-        display: none !important;
+      /* Then, make the RPP preview container and ALL of its children visible again */
+      #rpp-paper-preview, #rpp-paper-preview * {
+        visibility: visible;
       }
       
-      /* Ensure the content area takes full width and is visible */
-      main, 
-      .print-content {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
+      /* Position the RPP preview to take up the whole page */
+      #rpp-paper-preview {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
         margin: 0 !important;
-        padding: 0 !important; /* Remove padding from outer containers */
+        padding: 20mm 15mm !important; /* Standard A4-ish margins */
         box-shadow: none !important;
         border: none !important;
         background-color: #fff !important;
-        color: #000 !important;
-        min-height: auto !important;
-        overflow: visible !important;
-      }
-      
-      #rpp-paper-preview {
-        margin: 0 !important;
-        padding: 20mm 15mm !important; /* Apply standard A4 margins HERE */
-        box-shadow: none !important;
-        border: none !important;
-        max-width: 100% !important;
         border-radius: 0 !important;
-        color: #000 !important;
       }
 
+      /* Ensure standard fonts and colors for all content within the printed area */
       #rpp-paper-preview, #rpp-paper-preview * {
-         color: #000 !important;
-      }
-      
-      /* Styles for content within the print area */
-      .print-content h1, .print-content h2, .print-content h3, .print-content h4, .print-content h5, .print-content h6 {
+        font-family: Arial, sans-serif !important;
         color: #000 !important;
-        margin-top: 0.8em;
-        margin-bottom: 0.4em;
-        page-break-after: avoid;
-      }
-      .print-content h1 { font-size: 16pt; }
-      .print-content h2 { font-size: 14pt; }
-      .print-content h3 { font-size: 12pt; }
-      .print-content p, .print-content li {
+        background-image: none !important; /* Remove any gradient effects */
         font-size: 10pt;
         line-height: 1.3;
-        color: #000 !important;
+      }
+
+      /* Fine-tune typography and layout within the printed content */
+      #rpp-paper-preview h1 { font-size: 16pt; }
+      #rpp-paper-preview h2 { font-size: 14pt; }
+      #rpp-paper-preview h3 { font-size: 12pt; }
+      
+      #rpp-paper-preview p, #rpp-paper-preview li {
         widows: 3; /* Avoid single lines at the start of a page */
         orphans: 3; /* Avoid single lines at the end of a page */
       }
-      .print-content ul, .print-content ol {
-        padding-left: 20px;
-        margin-bottom: 0.5em;
-        page-break-before: auto;
-      }
-      .print-content table {
+      
+      #rpp-paper-preview table {
         width: 100% !important;
         border-collapse: collapse !important;
-        margin-bottom: 1em;
-        font-size: 9pt;
         page-break-inside: avoid; /* Try to keep tables on one page */
-      }
-      .print-content th, .print-content td {
-        border: 1px solid #333 !important; /* Clearer borders for print */
-        padding: 4px !important;
-        text-align: left !important;
-        color: #000 !important;
-      }
-      .print-content th {
-        background-color: #eee !important; /* Light grey for table headers */
-        font-weight: bold;
-      }
-      .print-content strong { font-weight: bold; }
-      .print-content em { font-style: italic; }
-
-      /* Remove gradient text effects */
-      .text-transparent.bg-clip-text {
-        color: #000 !important; /* Fallback to black text */
-        background-image: none !important;
+        font-size: 9pt;
       }
       
-      /* Ensure RPP display container is not limited by flex/grid */
-      .lg\\:grid-cols-2 {
-          display: block !important; /* Override grid for print */
+      #rpp-paper-preview th, #rpp-paper-preview td {
+        border: 1px solid #333 !important;
+        padding: 4px !important;
+        text-align: left !important;
+      }
+      
+      #rpp-paper-preview th {
+        background-color: #eee !important;
+        font-weight: bold;
       }
     }
   </style>
