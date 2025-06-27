@@ -26,7 +26,7 @@ export const protect = async (req: AuthRequest, res: VercelResponse, next: NextF
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
-        const user = await User.findById(decoded.id).exec();
+        const user = await User.findById<IUser>(decoded.id).exec();
 
         if (!user) {
             return res.status(401).json({ message: 'Not authorized, user not found' });

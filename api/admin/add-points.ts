@@ -20,7 +20,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
   }
 
   try {
-    const targetUser = await User.findOne({ email }).exec();
+    const targetUser = await User.findOne<IUser>({ email }).exec();
 
     if (!targetUser) {
       return res.status(404).json({ message: 'User not found.' });

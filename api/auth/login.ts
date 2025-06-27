@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
 import dbConnect from '../_lib/db';
-import User from '../_lib/models/User';
+import User, { IUser } from '../_lib/models/User';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -27,7 +27,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         try {
-            const user = await User.findOne({ email }).select('+password').exec();
+            const user = await User.findOne<IUser>({ email }).select('+password').exec();
 
             if (!user || !(await user.comparePassword(password))) {
                 return res.status(401).json({ message: 'Invalid credentials' });

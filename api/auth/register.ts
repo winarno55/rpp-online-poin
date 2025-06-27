@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import dbConnect from '../_lib/db';
-import User from '../_lib/models/User';
+import User, { IUser } from '../_lib/models/User';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -21,7 +21,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-      const userExists = await User.findOne({ email }).exec();
+      const userExists = await User.findOne<IUser>({ email }).exec();
 
       if (userExists) {
         return res.status(400).json({ message: 'User already exists' });
