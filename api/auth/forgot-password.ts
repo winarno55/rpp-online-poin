@@ -7,8 +7,9 @@ import nodemailer from 'nodemailer';
 const corsHandler = cors();
 
 async function sendEmail(options: { email: string; subject: string; message: string; }) {
-    if (!process.env.SMTP_HOST || !process.env.SMTP_PORT || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-        console.error("SMTP environment variables are not set.");
+    // Updated check to include new, more explicit environment variables
+    if (!process.env.SMTP_HOST || !process.env.SMTP_PORT || !process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.SMTP_FROM_EMAIL || !process.env.SMTP_FROM_NAME) {
+        console.error("One or more SMTP environment variables (HOST, PORT, USER, PASS, FROM_EMAIL, FROM_NAME) are not set.");
         throw new Error("Server is not configured to send emails. Please contact support.");
     }
 
@@ -23,7 +24,8 @@ async function sendEmail(options: { email: string; subject: string; message: str
     });
 
     const mailOptions = {
-        from: `"RPP Cerdas" <${process.env.SMTP_USER}>`,
+        // Use the new explicit variables for the sender's identity
+        from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
         to: options.email,
         subject: options.subject,
         html: options.message,
@@ -46,13 +48,15 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
             const user = await User.findOne({ email });
 
             if (!user) {
-                return res.status(404).json({ message: 'Email tidak terdaftar.' });
+                // To prevent email enumeration attacks, we can send a success response even if the user doesn't exist.
+                // The user won't get an email, but an attacker won't know if the email is registered.
+                console.log(`Password reset requested for non-existent user: ${email}`);
+                return res.status(200).json({ success: true, message: 'Jika email Anda terdaftar, Anda akan menerima tautan reset password.' });
             }
 
             const resetToken = user.getResetPasswordToken();
             await user.save({ validateBeforeSave: false });
 
-            // Create reset URL using Vercel's system environment variables if available
             const protocol = process.env.VERCEL_ENV === 'production' ? 'https' : 'http';
             const host = process.env.VERCEL_URL || req.headers.host;
             const resetUrl = `${protocol}://${host}/reset-password/${resetToken}`;
@@ -82,13 +86,14 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 
         } catch (error: any) {
             console.error("Forgot Password Error:", error);
-            // In case of an error, we don't want to expose if a user exists or not,
-            // but we do need to handle the state. Here we reset the token if it was set.
-            const userToClean = await User.findOne({ email: req.body.email });
-            if (userToClean && userToClean.resetPasswordToken) {
-                 userToClean.resetPasswordToken = undefined;
-                 userToClean.resetPasswordExpire = undefined;
-                 await userToClean.save({ validateBeforeSave: false });
+            // In case of a server-side sending error, we reset the token to allow the user to try again later.
+            if (req.body.email) {
+                const userToClean = await User.findOne({ email: req.body.email });
+                if (userToClean && userToClean.resetPasswordToken) {
+                     userToClean.resetPasswordToken = undefined;
+                     userToClean.resetPasswordExpire = undefined;
+                     await userToClean.save({ validateBeforeSave: false });
+                }
             }
             res.status(500).json({ message: 'Gagal mengirim email. Hubungi admin.', error: error.message });
         }

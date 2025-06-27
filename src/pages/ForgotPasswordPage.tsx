@@ -20,7 +20,8 @@ const ForgotPasswordPage: React.FC = () => {
             if (!response.ok) {
                 throw new Error(data.message || 'Gagal mengirim email reset.');
             }
-            setMessage({ type: 'success', text: data.message });
+            // Use a more generic success message for security (prevents email enumeration)
+            setMessage({ type: 'success', text: "Jika email Anda terdaftar, Anda akan menerima tautan untuk mereset password. Silakan cek inbox (dan folder spam) Anda." });
         } catch (err) {
             setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Terjadi kesalahan' });
         } finally {
