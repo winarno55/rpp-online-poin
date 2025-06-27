@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI } from '@google/genai';
 import { protect } from './_lib/auth.js';
 import dbConnect from './_lib/db.js';
-import User, { IUser } from './_lib/models/User.js';
+import { IUser } from './_lib/models/User.js';
 // We need to manually import this from the `src` directory
 import { generateLessonPlanPrompt } from '../src/services/geminiService.js';
 import { LessonPlanInput } from '../src/types.js';
@@ -24,17 +24,20 @@ interface AuthRequest extends VercelRequest {
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
     try {
+        // dbConnect is now in `protect`, but keeping it here is safe as it's cached.
         await dbConnect();
 
         if (!req.user) {
             return res.status(401).json({ message: 'Not authorized' });
         }
 
-        const user = await User.findById(req.user._id).exec();
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        // Admins should not use this endpoint to generate RPPs.
+        if (req.user.role === 'admin') {
+            return res.status(403).json({ message: 'Admin users cannot generate lesson plans.' });
         }
+
+        // Use the user object directly from the middleware.
+        const user = req.user;
 
         if (user.points < POINTS_PER_GENERATION) {
             return res.status(403).json({ message: `Poin Anda tidak cukup. Untuk menambah poin, silakan hubungi admin di 082232835976.` });
@@ -54,7 +57,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             return res.status(500).json({ message: 'Gagal menghasilkan RPP dari AI.' });
         }
 
-        // Deduct points and save
+        // Deduct points and save the user document
         user.points -= POINTS_PER_GENERATION;
         await user.save();
 

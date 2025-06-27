@@ -107,6 +107,9 @@ E. LAMPIRAN
    3. Materi Ajar
       [Sediakan ringkasan singkat materi atau poin-poin kunci dari ${materi} yang akan diajarkan. Ini bukan materi lengkap, tetapi highlight yang bisa membantu guru mengingat inti materi. Bisa juga berupa saran sumber belajar tambahan (misal: tautan video pembelajaran, artikel, atau buku teks yang relevan dengan ${materi} dan Kelas (${kelas})).]
 
+   4. Evaluasi Mandiri
+      [Buat bagian evaluasi mandiri yang terdiri dari 3 sampai 5 soal isian singkat (esai singkat). Soal-soal ini harus secara langsung mengukur pemahaman siswa terhadap Tujuan Pembelajaran (Bagian B) dan sesuai dengan tingkat kesulitan untuk Kelas (${kelas}). Yang terpenting, SERTAKAN KUNCI JAWABAN yang jelas dan ringkas untuk setiap soal untuk memudahkan guru melakukan koreksi.]
+
 Pastikan bahasa yang digunakan jelas, lugas, profesional, dan mudah dipahami oleh guru. Seluruh output harus dalam Bahasa Indonesia. Format akhir harus konsisten dan terstruktur dengan baik.
 `;
 };
