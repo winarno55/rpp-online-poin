@@ -33,6 +33,7 @@ const AdminPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [messages, setMessages] = useState<{ [key: string]: { type: 'success' | 'error', text: string } }>({});
+    const [searchTerm, setSearchTerm] = useState('');
 
     // State untuk pricing config
     const [pricingConfig, setPricingConfig] = useState<PricingConfig>({ pointPackages: [], paymentMethods: [] });
@@ -164,6 +165,10 @@ const AdminPage: React.FC = () => {
     const inputClass = "p-2 bg-slate-700 border border-slate-600 rounded-md focus:ring-2 focus:ring-sky-500 transition-colors placeholder-slate-400 text-slate-100";
     const buttonClass = "bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm transition-all text-sm disabled:opacity-50";
 
+    const filteredUsers = users.filter(user =>
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div className="space-y-12">
             {/* User Management Section */}
@@ -174,6 +179,19 @@ const AdminPage: React.FC = () => {
                         Refresh Data
                     </button>
                 </div>
+
+                <div className="mb-6">
+                    <label htmlFor="search-user" className="block text-sm font-medium text-sky-300 mb-2">Cari Pengguna</label>
+                    <input
+                        type="text"
+                        id="search-user"
+                        placeholder="Cari berdasarkan email..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 transition-colors placeholder-slate-400 text-slate-100"
+                    />
+                </div>
+
                 <div className="overflow-x-auto">
                      <table className="w-full text-left text-slate-300">
                         <thead className="bg-slate-900/50 text-xs text-sky-300 uppercase">
@@ -185,7 +203,7 @@ const AdminPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {users.length > 0 ? users.map(user => (
+                            {filteredUsers.length > 0 ? filteredUsers.map(user => (
                                 <tr key={user._id} className="border-b border-slate-700 hover:bg-slate-700/50">
                                     <td className="p-3 font-medium text-white">{user.email}</td>
                                     <td className="p-3 text-center font-bold text-emerald-400 text-lg">{user.points}</td>
@@ -199,7 +217,11 @@ const AdminPage: React.FC = () => {
                                     </td>
                                 </tr>
                             )) : (
-                                <tr><td colSpan={4} className="text-center p-6 text-slate-400">Tidak ada pengguna.</td></tr>
+                                <tr>
+                                    <td colSpan={4} className="text-center p-6 text-slate-400">
+                                        {searchTerm ? 'Tidak ada pengguna yang cocok dengan pencarian.' : 'Tidak ada pengguna.'}
+                                    </td>
+                                </tr>
                             )}
                         </tbody>
                     </table>
