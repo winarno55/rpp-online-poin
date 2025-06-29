@@ -15,15 +15,22 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     try {
       await dbConnect();
       
-      // We assume there is only one pricing configuration document
-      const config = await PricingConfig.findOne().exec();
+      let config = await PricingConfig.findOne().exec();
       
       if (!config) {
-        // Return a default empty state if no config has been set by the admin yet
-        return res.status(200).json({ 
+        // Provide a default empty state for packages and methods, 
+        // and a logical default for session costs to prevent the app from breaking.
+        config = { 
             pointPackages: [],
-            paymentMethods: []
-        });
+            paymentMethods: [],
+            sessionCosts: [
+                { sessions: 1, cost: 20 },
+                { sessions: 2, cost: 40 },
+                { sessions: 3, cost: 60 },
+                { sessions: 4, cost: 80 },
+                { sessions: 5, cost: 100 },
+            ]
+        } as any;
       }
 
       res.status(200).json(config);

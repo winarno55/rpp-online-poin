@@ -14,9 +14,9 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
   try {
     await dbConnect();
 
-    const { pointPackages, paymentMethods } = req.body;
+    const { pointPackages, paymentMethods, sessionCosts } = req.body;
 
-    if (!Array.isArray(pointPackages) || !Array.isArray(paymentMethods)) {
+    if (!Array.isArray(pointPackages) || !Array.isArray(paymentMethods) || !Array.isArray(sessionCosts)) {
         return res.status(400).json({ message: 'Invalid data format.' });
     }
 
@@ -27,7 +27,8 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         { 
             $set: {
                 pointPackages: pointPackages.map(({_id, ...pkg}) => pkg), // remove any frontend _id
-                paymentMethods: paymentMethods.map(({_id, ...pm}) => pm) // remove any frontend _id
+                paymentMethods: paymentMethods.map(({_id, ...pm}) => pm), // remove any frontend _id
+                sessionCosts: sessionCosts // save the session costs
             }
         },
         { 

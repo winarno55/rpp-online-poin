@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LessonPlanInput } from '../types';
 import { FASE_KURIKULUM, FASE_DESCRIPTIONS, SEMESTER_OPTIONS, JUMLAH_PERTEMUAN_OPTIONS } from '../constants';
 
+interface SessionCost {
+  sessions: number;
+  cost: number;
+}
 interface LessonPlanFormProps {
   onSubmit: (data: LessonPlanInput) => void;
   isLoading: boolean;
   points: number;
-  baseCost: number;
+  sessionCosts: SessionCost[];
 }
 
-export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, baseCost }) => {
+export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, sessionCosts }) => {
   const [formData, setFormData] = useState<LessonPlanInput>({
     mataPelajaran: '',
     fase: FASE_KURIKULUM[0],
@@ -20,9 +24,16 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     alokasiWaktu: '',
     tujuanPembelajaran: '',
   });
+  
+  const [dynamicCost, setDynamicCost] = useState(0);
 
-  const numSessions = parseInt(formData.jumlahPertemuan) || 1;
-  const dynamicCost = numSessions * baseCost;
+  useEffect(() => {
+    const numSessions = parseInt(formData.jumlahPertemuan) || 1;
+    const costConfig = sessionCosts.find(sc => sc.sessions === numSessions);
+    const calculatedCost = costConfig ? costConfig.cost : 0;
+    setDynamicCost(calculatedCost);
+  }, [formData.jumlahPertemuan, sessionCosts]);
+
   const hasEnoughPoints = points >= dynamicCost;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -72,7 +83,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
         <div>
            <label htmlFor="jumlahPertemuan" className={labelClass}>Jumlah Sesi Pembelajaran</label>
           <select name="jumlahPertemuan" id="jumlahPertemuan" value={formData.jumlahPertemuan} onChange={handleChange} className={inputClass} required>
-            {JUMLAH_PERTEMUAN_OPTIONS.map(s => (
+            {JUMLAH_PERTEMUAN_OPTIONS.map((s, index) => (
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
@@ -96,7 +107,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
 
       <button 
         type="submit" 
-        disabled={isLoading || !hasEnoughPoints} 
+        disabled={isLoading || !hasEnoughPoints || dynamicCost === 0} 
         className="w-full flex items-center justify-center bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed text-lg"
       >
         {isLoading ? (
@@ -108,11 +119,11 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
             Memproses...
           </>
         ) : (
-          `Buat Modul Ajar (Biaya: ${dynamicCost} Poin)`
+          `Buat Modul Ajar (Biaya: ${dynamicCost > 0 ? dynamicCost : '...'} Poin)`
         )}
       </button>
-      {!hasEnoughPoints && !isLoading && (
-        <p className="text-center text-red-400 mt-2">Poin tidak cukup untuk membuat {numSessions} sesi (butuh {dynamicCost} poin).</p>
+      {!hasEnoughPoints && !isLoading && dynamicCost > 0 && (
+        <p className="text-center text-red-400 mt-2">Poin tidak cukup (butuh {dynamicCost} poin).</p>
       )}
     </form>
   );

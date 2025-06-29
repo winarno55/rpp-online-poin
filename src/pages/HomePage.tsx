@@ -6,7 +6,14 @@ import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
 import { LessonPlanInput, addRppToHistory, initDB } from '../types';
 import { markdownToPlainText } from '../utils/markdownUtils';
 import { useAuth } from '../hooks/useAuth';
-import { BASE_POINTS_PER_SESSION } from '../constants';
+
+interface SessionCost {
+  sessions: number;
+  cost: number;
+}
+interface PricingConfig {
+  sessionCosts: SessionCost[];
+}
 
 const HomePage: React.FC = () => {
   const { authData, updatePoints } = useAuth();
@@ -15,13 +22,26 @@ const HomePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<React.ReactNode | null>(null);
   const [dynamicCost, setDynamicCost] = useState(0);
+  const [pricingConfig, setPricingConfig] = useState<PricingConfig | null>(null);
 
   useEffect(() => {
     initDB().catch(err => {
       console.error("Gagal menginisialisasi IndexedDB:", err);
-      // Non-critical error, so we don't show it to the user.
-      // The app will function, just without history.
     });
+
+    const fetchPricingConfig = async () => {
+        try {
+            const response = await fetch('/api/pricing/config');
+            const data = await response.json();
+            if (!response.ok) throw new Error('Gagal memuat konfigurasi biaya.');
+            setPricingConfig(data);
+        } catch (error) {
+            console.error("Error fetching pricing config:", error);
+            setError("Gagal memuat konfigurasi biaya dari server.");
+        }
+    };
+    fetchPricingConfig();
+
   }, []);
 
   const handleFormSubmit = useCallback(async (data: LessonPlanInput) => {
@@ -31,7 +51,13 @@ const HomePage: React.FC = () => {
     }
     
     const numSessions = parseInt(data.jumlahPertemuan) || 1;
-    const calculatedCost = numSessions * BASE_POINTS_PER_SESSION;
+    const costConfig = pricingConfig?.sessionCosts.find(sc => sc.sessions === numSessions);
+    const calculatedCost = costConfig ? costConfig.cost : 0; // Default to 0 if not found, but should be there
+    
+    if (calculatedCost === 0) {
+        setError("Konfigurasi biaya untuk jumlah sesi yang dipilih tidak ditemukan.");
+        return;
+    }
     setDynamicCost(calculatedCost);
 
     if (authData.user.points < calculatedCost) {
@@ -77,12 +103,10 @@ const HomePage: React.FC = () => {
         setGeneratedPlan(lessonPlan);
         updatePoints(newPoints);
         
-        // Save to history
         try {
           await addRppToHistory(data, lessonPlan);
         } catch (dbError) {
           console.error("Gagal menyimpan Modul Ajar ke riwayat:", dbError);
-          // This is a non-blocking error, so we don't notify the user.
         }
       }
 
@@ -97,7 +121,7 @@ const HomePage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [authData, updatePoints]);
+  }, [authData, updatePoints, pricingConfig]);
   
   const handleDownloadTxt = useCallback(async () => {
     if (!generatedPlan || !lessonPlanInput) return;
@@ -137,7 +161,12 @@ const HomePage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-slate-800 shadow-2xl rounded-xl p-6 sm:p-8 no-print">
-          <LessonPlanForm onSubmit={handleFormSubmit} isLoading={isLoading} points={authData.user?.points ?? 0} baseCost={BASE_POINTS_PER_SESSION} />
+          <LessonPlanForm 
+            onSubmit={handleFormSubmit} 
+            isLoading={isLoading || !pricingConfig} 
+            points={authData.user?.points ?? 0}
+            sessionCosts={pricingConfig?.sessionCosts || []}
+          />
         </div>
 
         <div id="lesson-plan-display-container" className="bg-slate-200 shadow-inner rounded-xl p-2 sm:p-4 min-h-[400px] print-content">

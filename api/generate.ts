@@ -3,10 +3,10 @@ import { GoogleGenAI } from '@google/genai';
 import { protect } from './_lib/auth.js';
 import dbConnect from './_lib/db.js';
 import User, { IUser } from './_lib/models/User.js';
+import PricingConfig from './_lib/models/PricingConfig.js';
 // We need to manually import this from the `src` directory
 import { generateLessonPlanPrompt } from '../src/services/geminiService.js';
 import { LessonPlanInput } from '../src/types.js';
-import { BASE_POINTS_PER_SESSION } from '../src/constants.js';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -31,13 +31,10 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             return res.status(401).json({ message: 'Not authorized' });
         }
 
-        // Admins should not use this endpoint to generate RPPs.
         if (req.user.role === 'admin') {
             return res.status(403).json({ message: 'Admin users cannot generate lesson plans.' });
         }
         
-        // Re-fetch the user from the database to ensure it's a full Mongoose document.
-        // This is a robust way to avoid issues in serverless environments where object prototypes can get lost.
         const user = await User.findById(req.user._id);
 
         if (!user) {
@@ -46,7 +43,18 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         
         const lessonPlanData: LessonPlanInput = req.body;
         const numSessions = parseInt(lessonPlanData.jumlahPertemuan) || 1;
-        const dynamicCost = numSessions * BASE_POINTS_PER_SESSION;
+        
+        // Fetch pricing config from DB to get the cost
+        const pricingConfig = await PricingConfig.findOne().exec();
+        if (!pricingConfig || !pricingConfig.sessionCosts || pricingConfig.sessionCosts.length === 0) {
+            return res.status(500).json({ message: 'Konfigurasi biaya belum diatur oleh admin.' });
+        }
+        
+        const costConfig = pricingConfig.sessionCosts.find(sc => sc.sessions === numSessions);
+        if (!costConfig) {
+            return res.status(400).json({ message: `Tidak ada konfigurasi biaya untuk ${numSessions} sesi.` });
+        }
+        const dynamicCost = costConfig.cost;
 
         if (user.points < dynamicCost) {
             return res.status(403).json({ message: `Poin Anda tidak cukup untuk membuat modul ajar ${numSessions} sesi (butuh ${dynamicCost} poin).` });

@@ -21,9 +21,15 @@ interface PaymentMethod {
     method: string;
     details: string;
 }
+interface SessionCost {
+    _id?: string;
+    sessions: number;
+    cost: number;
+}
 interface PricingConfig {
     pointPackages: PointPackage[];
     paymentMethods: PaymentMethod[];
+    sessionCosts: SessionCost[];
 }
 
 const AdminPage: React.FC = () => {
@@ -36,9 +42,10 @@ const AdminPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     // State untuk pricing config
-    const [pricingConfig, setPricingConfig] = useState<PricingConfig>({ pointPackages: [], paymentMethods: [] });
+    const [pricingConfig, setPricingConfig] = useState<PricingConfig>({ pointPackages: [], paymentMethods: [], sessionCosts: [] });
     const [isSavingConfig, setIsSavingConfig] = useState(false);
     const [configMessage, setConfigMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const maxSessions = 5;
 
     const fetchAllData = useCallback(async () => {
         if (!authData.token) return;
@@ -55,11 +62,21 @@ const AdminPage: React.FC = () => {
 
             // Fetch pricing config
             const configResponse = await fetch('/api/pricing/config'); // This is a public endpoint
-            const configData = await configResponse.json();
-            if (!configResponse.ok) throw new Error(configData.message || 'Gagal memuat konfigurasi harga.');
-            if (configData) {
-               setPricingConfig(configData);
+            const configData: PricingConfig = await configResponse.json();
+            if (!configResponse.ok) throw new Error((configData as any).message || 'Gagal memuat konfigurasi harga.');
+            
+            // Ensure sessionCosts has entries for 1 to maxSessions
+            const sessionCostsMap = new Map(configData.sessionCosts.map(sc => [sc.sessions, sc]));
+            const fullSessionCosts: SessionCost[] = [];
+            for (let i = 1; i <= maxSessions; i++) {
+                if (sessionCostsMap.has(i)) {
+                    fullSessionCosts.push(sessionCostsMap.get(i)!);
+                } else {
+                    fullSessionCosts.push({ sessions: i, cost: i * 20 }); // Default cost
+                }
             }
+            configData.sessionCosts = fullSessionCosts;
+            setPricingConfig(configData);
 
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Terjadi kesalahan tidak diketahui.');
@@ -111,7 +128,7 @@ const AdminPage: React.FC = () => {
     };
 
     // Handler untuk pricing config
-    const handleConfigChange = (type: 'pointPackages' | 'paymentMethods', index: number, field: string, value: string | number) => {
+    const handleConfigChange = (type: 'pointPackages' | 'paymentMethods' | 'sessionCosts', index: number, field: string, value: string | number) => {
         const newConfig = { ...pricingConfig };
         (newConfig[type][index] as any)[field] = value;
         setPricingConfig(newConfig);
@@ -232,9 +249,28 @@ const AdminPage: React.FC = () => {
             <div className="bg-slate-800 shadow-2xl rounded-xl p-6 sm:p-8 w-full max-w-4xl mx-auto">
                  <h2 className="text-3xl font-bold text-white mb-6">Pengaturan Harga & Pembayaran</h2>
                  <div className="space-y-8">
+                    {/* Session Costs */}
+                    <div>
+                         <h3 className="text-xl font-semibold text-sky-300 mb-4">Biaya Pembuatan Modul Ajar (Poin)</h3>
+                        <div className="space-y-3">
+                             {pricingConfig.sessionCosts.map((sc, index) => (
+                                <div key={sc.sessions} className="flex items-center gap-4 p-3 bg-slate-700/50 rounded-lg">
+                                    <span className="font-medium text-slate-300 w-40">{sc.sessions} Sesi Pembelajaran</span>
+                                    <input 
+                                        type="number" 
+                                        value={sc.cost} 
+                                        onChange={(e) => handleConfigChange('sessionCosts', index, 'cost', Number(e.target.value))} 
+                                        className={`${inputClass} w-40 text-center`} 
+                                    />
+                                    <span className="text-slate-400">Poin</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    
                     {/* Payment Methods */}
                     <div>
-                        <h3 className="text-xl font-semibold text-sky-300 mb-4">Metode Pembayaran</h3>
+                        <h3 className="text-xl font-semibold text-sky-300 mb-4">Metode Pembayaran (Isi Ulang)</h3>
                         <div className="space-y-3">
                             {pricingConfig.paymentMethods.map((pm, index) => (
                                 <div key={index} className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg">
@@ -248,7 +284,7 @@ const AdminPage: React.FC = () => {
                     </div>
                      {/* Point Packages */}
                     <div>
-                        <h3 className="text-xl font-semibold text-sky-300 mb-4">Paket Poin</h3>
+                        <h3 className="text-xl font-semibold text-sky-300 mb-4">Paket Poin (Isi Ulang)</h3>
                         <div className="space-y-3">
                              {pricingConfig.pointPackages.map((pp, index) => (
                                 <div key={index} className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg">
