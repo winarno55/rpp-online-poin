@@ -16,9 +16,9 @@ if (!GEMINI_API_KEY) {
 }
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-interface AuthRequest extends VercelRequest {
+type AuthRequest = VercelRequest & {
   user?: IUser;
-}
+};
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
     // This outer try-catch will handle DB connection errors, user fetching errors, etc.

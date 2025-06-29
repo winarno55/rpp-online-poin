@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken';
 import User, { IUser } from './models/User.js';
 import dbConnect from './db.js';
 
-interface AuthRequest extends VercelRequest {
+type AuthRequest = VercelRequest & {
   user?: IUser;
-}
+};
 
 type NextFunction = () => void;
 

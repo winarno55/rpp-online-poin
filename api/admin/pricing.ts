@@ -6,9 +6,9 @@ import cors from 'cors';
 
 const corsHandler = cors();
 
-interface AuthRequest extends VercelRequest {
+type AuthRequest = VercelRequest & {
   user?: any;
-}
+};
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
   try {

@@ -11,10 +11,10 @@ if (!MONGO_URI) {
  * in development. This prevents connections from growing exponentially
  * during API Route usage.
  */
-let cached = (global as any).mongoose;
+let cached = (globalThis as any).mongoose;
 
 if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+  cached = (globalThis as any).mongoose = { conn: null, promise: null };
 }
 
 async function dbConnect() {
