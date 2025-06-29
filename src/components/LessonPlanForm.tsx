@@ -6,10 +6,10 @@ interface LessonPlanFormProps {
   onSubmit: (data: LessonPlanInput) => void;
   isLoading: boolean;
   points: number;
-  cost: number;
+  baseCost: number;
 }
 
-export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, cost }) => {
+export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, baseCost }) => {
   const [formData, setFormData] = useState<LessonPlanInput>({
     mataPelajaran: '',
     fase: FASE_KURIKULUM[0],
@@ -21,7 +21,9 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     tujuanPembelajaran: '',
   });
 
-  const hasEnoughPoints = points >= cost;
+  const numSessions = parseInt(formData.jumlahPertemuan) || 1;
+  const dynamicCost = numSessions * baseCost;
+  const hasEnoughPoints = points >= dynamicCost;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -106,11 +108,11 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
             Memproses...
           </>
         ) : (
-          `Buat Modul Ajar (Biaya: ${cost} Poin)`
+          `Buat Modul Ajar (Biaya: ${dynamicCost} Poin)`
         )}
       </button>
       {!hasEnoughPoints && !isLoading && (
-        <p className="text-center text-red-400 mt-2">Poin tidak cukup. Hubungi admin di 082232835976 untuk isi ulang.</p>
+        <p className="text-center text-red-400 mt-2">Poin tidak cukup untuk membuat {numSessions} sesi (butuh {dynamicCost} poin).</p>
       )}
     </form>
   );

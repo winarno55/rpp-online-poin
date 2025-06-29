@@ -6,6 +6,7 @@ import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
 import { LessonPlanInput, addRppToHistory, initDB } from '../types';
 import { markdownToPlainText } from '../utils/markdownUtils';
 import { useAuth } from '../hooks/useAuth';
+import { BASE_POINTS_PER_SESSION } from '../constants';
 
 const HomePage: React.FC = () => {
   const { authData, updatePoints } = useAuth();
@@ -13,8 +14,7 @@ const HomePage: React.FC = () => {
   const [generatedPlan, setGeneratedPlan] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<React.ReactNode | null>(null);
-
-  const POINTS_PER_GENERATION = 20;
+  const [dynamicCost, setDynamicCost] = useState(0);
 
   useEffect(() => {
     initDB().catch(err => {
@@ -29,11 +29,15 @@ const HomePage: React.FC = () => {
       setError("Anda harus login untuk membuat Modul Ajar.");
       return;
     }
+    
+    const numSessions = parseInt(data.jumlahPertemuan) || 1;
+    const calculatedCost = numSessions * BASE_POINTS_PER_SESSION;
+    setDynamicCost(calculatedCost);
 
-    if (authData.user.points < POINTS_PER_GENERATION) {
+    if (authData.user.points < calculatedCost) {
       setError(
         <>
-          Poin Anda tidak cukup. Silakan{' '}
+          Poin Anda tidak cukup (butuh {calculatedCost} poin). Silakan{' '}
           <Link to="/pricing" className="font-bold underline text-sky-400 hover:text-sky-300">
             isi ulang di sini
           </Link>
@@ -133,7 +137,7 @@ const HomePage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-slate-800 shadow-2xl rounded-xl p-6 sm:p-8 no-print">
-          <LessonPlanForm onSubmit={handleFormSubmit} isLoading={isLoading} points={authData.user?.points ?? 0} cost={POINTS_PER_GENERATION} />
+          <LessonPlanForm onSubmit={handleFormSubmit} isLoading={isLoading} points={authData.user?.points ?? 0} baseCost={BASE_POINTS_PER_SESSION} />
         </div>
 
         <div id="lesson-plan-display-container" className="bg-slate-200 shadow-inner rounded-xl p-2 sm:p-4 min-h-[400px] print-content">
@@ -150,7 +154,7 @@ const HomePage: React.FC = () => {
             <div className="w-full">
               <div className="text-center mb-6 no-print">
                  <h2 className="text-2xl font-bold text-slate-800">Modul Ajar Berhasil Dibuat!</h2>
-                 <p className="text-slate-600 mb-1">Anda telah menggunakan {POINTS_PER_GENERATION} poin.</p>
+                 <p className="text-slate-600 mb-1">Anda telah menggunakan {dynamicCost} poin.</p>
                  <p className="text-slate-700 mb-4 text-md">Sisa poin Anda: <span className="font-bold text-emerald-600">{authData.user?.points}</span></p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`} disabled={isLoading}>Unduh TXT</button>

@@ -6,6 +6,7 @@ import User, { IUser } from './_lib/models/User.js';
 // We need to manually import this from the `src` directory
 import { generateLessonPlanPrompt } from '../src/services/geminiService.js';
 import { LessonPlanInput } from '../src/types.js';
+import { BASE_POINTS_PER_SESSION } from '../src/constants.js';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -16,7 +17,7 @@ if (!GEMINI_API_KEY) {
 }
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-const POINTS_PER_GENERATION = 20;
+
 
 interface AuthRequest extends VercelRequest {
   user?: IUser;
@@ -42,12 +43,15 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         if (!user) {
             return res.status(401).json({ message: 'User not found.' });
         }
+        
+        const lessonPlanData: LessonPlanInput = req.body;
+        const numSessions = parseInt(lessonPlanData.jumlahPertemuan) || 1;
+        const dynamicCost = numSessions * BASE_POINTS_PER_SESSION;
 
-        if (user.points < POINTS_PER_GENERATION) {
-            return res.status(403).json({ message: `Poin Anda tidak cukup. Untuk menambah poin, silakan hubungi admin di 082232835976.` });
+        if (user.points < dynamicCost) {
+            return res.status(403).json({ message: `Poin Anda tidak cukup untuk membuat modul ajar ${numSessions} sesi (butuh ${dynamicCost} poin).` });
         }
     
-        const lessonPlanData: LessonPlanInput = req.body;
         const prompt = generateLessonPlanPrompt(lessonPlanData);
         
         const response = await ai.models.generateContent({
@@ -58,11 +62,11 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         const lessonPlan = response.text;
         
         if (!lessonPlan) {
-            return res.status(500).json({ message: 'Gagal menghasilkan RPP dari AI.' });
+            return res.status(500).json({ message: 'Gagal menghasilkan Modul Ajar dari AI.' });
         }
 
         // Deduct points and save the user document
-        user.points -= POINTS_PER_GENERATION;
+        user.points -= dynamicCost;
         await user.save();
 
         res.status(200).json({

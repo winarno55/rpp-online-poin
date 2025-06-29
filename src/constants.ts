@@ -18,3 +18,5 @@ export const JUMLAH_PERTEMUAN_OPTIONS = [
     "4 Kali Pertemuan",
     "5 Kali Pertemuan"
 ] as const;
+
+export const BASE_POINTS_PER_SESSION = 20;
