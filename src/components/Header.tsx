@@ -36,6 +36,9 @@ export const Header: React.FC = () => {
             {isAuthenticated ? (
               // Tampilan Header untuk Pengguna yang Sudah Login
               <>
+                <Link to="/app" className={`text-sm font-medium ${navLinkClass} transition-colors`}>
+                  Home
+                </Link>
                 {isAdmin && (
                   <Link to="/app/admin" className="text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors">
                     Admin Panel
