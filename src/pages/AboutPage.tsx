@@ -6,7 +6,7 @@ const AboutPage: React.FC = () => {
         <div className="w-full max-w-4xl mx-auto py-10 space-y-8">
             <div className="text-center">
                 <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-emerald-600">
-                    Tentang Modul Ajar Cerdas
+                    Tentang Modul Ajar AI Cerdas
                 </h1>
                 <p className="text-slate-600 mt-2 text-lg">
                     Memberdayakan Guru, Menginspirasi Siswa.
@@ -15,7 +15,7 @@ const AboutPage: React.FC = () => {
 
             <div className="prose prose-lg max-w-none text-slate-700">
                 <p>
-                    <strong>Modul Ajar Cerdas</strong> lahir dari sebuah pemahaman mendalam akan tantangan yang dihadapi para guru di Indonesia setiap harinya. Kami menyadari bahwa tugas seorang guru tidak hanya sebatas mengajar di depan kelas, tetapi juga mencakup beban administrasi yang signifikan, terutama dalam penyusunan Rencana Pelaksanaan Pembelajaran (RPP) atau Modul Ajar yang sesuai dengan tuntutan kurikulum modern seperti Kurikulum Merdeka.
+                    <strong>Modul Ajar AI Cerdas</strong> lahir dari sebuah pemahaman mendalam akan tantangan yang dihadapi para guru di Indonesia setiap harinya. Kami menciptakan platform <strong>Modul Ajar berbasis AI</strong> ini karena kami menyadari bahwa tugas seorang guru tidak hanya sebatas mengajar di depan kelas, tetapi juga mencakup beban administrasi yang signifikan, terutama dalam penyusunan Rencana Pelaksanaan Pembelajaran (RPP) yang sesuai dengan tuntutan kurikulum modern seperti Kurikulum Merdeka.
                 </p>
                 <p>
                     Waktu dan energi yang seharusnya bisa lebih banyak dicurahkan untuk berinovasi di dalam kelas, berinteraksi dengan siswa, dan mengembangkan metode pengajaran yang kreatif, seringkali terkuras untuk memenuhi tuntutan administrasi tersebut.

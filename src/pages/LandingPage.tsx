@@ -23,7 +23,7 @@ const LandingPage: React.FC = () => {
             {/* Hero Section */}
             <section className="text-center">
                 <h1 className="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-emerald-600 leading-tight">
-                    Buat Modul Ajar Berkualitas dalam Hitungan Menit
+                    Modul Ajar AI: Buat RPP & Modul Ajar Berkualitas dalam Menit
                 </h1>
                 <p className="mt-4 text-lg md:text-xl text-slate-600 max-w-3xl mx-auto">
                     Platform cerdas berbasis AI untuk membantu para guru di Indonesia membuat Modul Ajar (RPP) Kurikulum Merdeka yang inovatif, efektif, dan menyenangkan.
