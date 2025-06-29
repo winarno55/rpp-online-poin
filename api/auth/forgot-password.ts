@@ -69,7 +69,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
             
             const message = `
                 <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-                    <h2 style="color: #0ea5e9;">Reset Password RPP Cerdas</h2>
+                    <h2 style="color: #0ea5e9;">Reset Password Modul Ajar Cerdas</h2>
                     <p>Anda menerima email ini karena Anda (atau orang lain) telah meminta untuk mereset password akun Anda.</p>
                     <p>Silakan klik tautan di bawah ini untuk mereset password Anda:</p>
                     <p style="margin: 20px 0;">
@@ -78,13 +78,13 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
                     <p>Tautan ini akan kedaluwarsa dalam 15 menit.</p>
                     <p>Jika Anda tidak meminta ini, abaikan saja email ini dan password Anda tidak akan berubah.</p>
                     <hr style="border: none; border-top: 1px solid #eee;" />
-                    <p style="font-size: 0.9em; color: #777;">Terima kasih,<br/>Tim RPP Cerdas</p>
+                    <p style="font-size: 0.9em; color: #777;">Terima kasih,<br/>Tim Modul Ajar Cerdas</p>
                 </div>
             `;
 
             await sendEmail({
                 email: user.email,
-                subject: 'Link Reset Password RPP Cerdas',
+                subject: 'Link Reset Password Modul Ajar Cerdas',
                 message,
             });
 

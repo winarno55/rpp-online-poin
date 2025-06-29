@@ -26,7 +26,7 @@ const HistoryPage: React.FC = () => {
     }, [loadHistory]);
 
     const handleDelete = async (id: number) => {
-        if (window.confirm('Apakah Anda yakin ingin menghapus riwayat RPP ini? Tindakan ini tidak dapat dibatalkan.')) {
+        if (window.confirm('Apakah Anda yakin ingin menghapus riwayat Modul Ajar ini? Tindakan ini tidak dapat dibatalkan.')) {
             try {
                 await deleteRppById(id);
                 setHistory(prev => prev.filter(item => item.id !== id));
@@ -48,10 +48,10 @@ const HistoryPage: React.FC = () => {
         <div className="w-full max-w-4xl mx-auto">
             <div className="text-center mb-8">
                 <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
-                    Riwayat RPP
+                    Riwayat Modul Ajar
                 </h1>
                 <p className="text-slate-300 mt-2 text-lg">
-                    Lihat kembali RPP yang pernah Anda buat. Data disimpan di perangkat Anda.
+                    Lihat kembali Modul Ajar yang pernah Anda buat. Data disimpan di perangkat Anda.
                 </p>
             </div>
             
@@ -59,7 +59,7 @@ const HistoryPage: React.FC = () => {
                 {history.length === 0 ? (
                     <div className="text-center text-slate-400 py-10">
                         <p className="text-xl">Riwayat Anda masih kosong.</p>
-                        <p>Setiap RPP yang Anda buat akan muncul di sini.</p>
+                        <p>Setiap Modul Ajar yang Anda buat akan muncul di sini.</p>
                     </div>
                 ) : (
                     history.map(item => (

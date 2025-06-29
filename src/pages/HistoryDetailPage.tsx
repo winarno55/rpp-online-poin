@@ -14,7 +14,7 @@ const HistoryDetailPage: React.FC = () => {
     useEffect(() => {
         const loadRpp = async () => {
             if (!id) {
-                setError("ID RPP tidak ditemukan.");
+                setError("ID Modul Ajar tidak ditemukan.");
                 setLoading(false);
                 return;
             }
@@ -25,10 +25,10 @@ const HistoryDetailPage: React.FC = () => {
                 if (item) {
                     setRpp(item);
                 } else {
-                    setError("RPP dengan ID ini tidak ditemukan di riwayat Anda.");
+                    setError("Modul Ajar dengan ID ini tidak ditemukan di riwayat Anda.");
                 }
             } catch (err) {
-                setError(err instanceof Error ? err.message : "Gagal memuat RPP dari riwayat.");
+                setError(err instanceof Error ? err.message : "Gagal memuat Modul Ajar dari riwayat.");
             } finally {
                 setLoading(false);
             }
@@ -40,7 +40,7 @@ const HistoryDetailPage: React.FC = () => {
         if (!rpp) return;
         try {
             const plainTextContent = markdownToPlainText(rpp.generatedPlan);
-            const fileName = `RPP_${rpp.mataPelajaran.replace(/\s+/g, '_')}.txt`;
+            const fileName = `ModulAjar_${rpp.mataPelajaran.replace(/\s+/g, '_')}.txt`;
             const blob = new Blob([plainTextContent], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -73,7 +73,7 @@ const HistoryDetailPage: React.FC = () => {
     }
     
     if (!rpp) {
-        return <div className="text-center text-slate-400">RPP tidak ditemukan.</div>;
+        return <div className="text-center text-slate-400">Modul Ajar tidak ditemukan.</div>;
     }
     
     const downloadButtonBaseClass = "text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out text-base flex items-center justify-center gap-2 w-full sm:w-auto";
@@ -83,7 +83,7 @@ const HistoryDetailPage: React.FC = () => {
             <div className="w-full">
                 <div className="text-center mb-6 no-print">
                     <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
-                        Detail Riwayat RPP
+                        Detail Riwayat Modul Ajar
                     </h2>
                     <p className="text-slate-300 mt-1">Dibuat pada {new Date(rpp.createdAt).toLocaleString('id-ID')}</p>
                     <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">

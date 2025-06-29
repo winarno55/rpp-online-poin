@@ -26,7 +26,7 @@ const HomePage: React.FC = () => {
 
   const handleFormSubmit = useCallback(async (data: LessonPlanInput) => {
     if (!authData.token || !authData.user) {
-      setError("Anda harus login untuk membuat RPP.");
+      setError("Anda harus login untuk membuat Modul Ajar.");
       return;
     }
 
@@ -68,7 +68,7 @@ const HomePage: React.FC = () => {
       
       if (!lessonPlan || lessonPlan.trim() === "") {
         setGeneratedPlan(null);
-        setError("Gagal menghasilkan konten RPP. AI mengembalikan respons kosong.");
+        setError("Gagal menghasilkan konten Modul Ajar. AI mengembalikan respons kosong.");
       } else {
         setGeneratedPlan(lessonPlan);
         updatePoints(newPoints);
@@ -77,7 +77,7 @@ const HomePage: React.FC = () => {
         try {
           await addRppToHistory(data, lessonPlan);
         } catch (dbError) {
-          console.error("Gagal menyimpan RPP ke riwayat:", dbError);
+          console.error("Gagal menyimpan Modul Ajar ke riwayat:", dbError);
           // This is a non-blocking error, so we don't notify the user.
         }
       }
@@ -99,7 +99,7 @@ const HomePage: React.FC = () => {
     if (!generatedPlan || !lessonPlanInput) return;
      try {
         const plainTextContent = markdownToPlainText(generatedPlan);
-        const fileName = `RPP_${lessonPlanInput.mataPelajaran.replace(/\s+/g, '_')}.txt`;
+        const fileName = `ModulAjar_${lessonPlanInput.mataPelajaran.replace(/\s+/g, '_')}.txt`;
         const blob = new Blob([plainTextContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -124,10 +124,10 @@ const HomePage: React.FC = () => {
     <>
       <div className="text-center mb-8 no-print">
         <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
-          Generator RPP/Modul Ajar Cerdas
+          Modul Ajar Cerdas
         </h1>
         <p className="text-slate-300 mt-2 text-lg">
-          Buat RPP Inovatif dengan Prinsip Mindful, Meaningful, & Joyful Learning
+          Buat Modul Ajar Inovatif dengan Prinsip Mindful, Meaningful, & Joyful Learning
         </p>
       </div>
 
@@ -149,7 +149,7 @@ const HomePage: React.FC = () => {
           {generatedPlan && !isLoading && !error && lessonPlanInput && (
             <div className="w-full">
               <div className="text-center mb-6 no-print">
-                 <h2 className="text-2xl font-bold text-slate-800">RPP Berhasil Dibuat!</h2>
+                 <h2 className="text-2xl font-bold text-slate-800">Modul Ajar Berhasil Dibuat!</h2>
                  <p className="text-slate-600 mb-1">Anda telah menggunakan {POINTS_PER_GENERATION} poin.</p>
                  <p className="text-slate-700 mb-4 text-md">Sisa poin Anda: <span className="font-bold text-emerald-600">{authData.user?.points}</span></p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -166,8 +166,8 @@ const HomePage: React.FC = () => {
           {!isLoading && !error && !generatedPlan && (
             <div className="flex-grow flex flex-col items-center justify-center h-full text-slate-500 text-center no-print p-4">
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-24 h-24 mb-4 opacity-50"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>
-              <p className="text-xl text-slate-600">RPP/Modul Ajar akan dihasilkan di sini.</p>
-              <p className="text-sm text-slate-500">Isi formulir di samping dan klik "Buat RPP" untuk memulai.</p>
+              <p className="text-xl text-slate-600">Modul Ajar akan dihasilkan di sini.</p>
+              <p className="text-sm text-slate-500">Isi formulir di samping dan klik "Buat Modul Ajar" untuk memulai.</p>
             </div>
           )}
         </div>

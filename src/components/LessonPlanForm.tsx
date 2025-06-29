@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LessonPlanInput } from '../types';
-import { FASE_KURIKULUM, FASE_DESCRIPTIONS, SEMESTER_OPTIONS } from '../constants';
+import { FASE_KURIKULUM, FASE_DESCRIPTIONS, SEMESTER_OPTIONS, JUMLAH_PERTEMUAN_OPTIONS } from '../constants';
 
 interface LessonPlanFormProps {
   onSubmit: (data: LessonPlanInput) => void;
@@ -15,6 +15,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     fase: FASE_KURIKULUM[0],
     kelas: '',
     semester: SEMESTER_OPTIONS[0],
+    jumlahPertemuan: JUMLAH_PERTEMUAN_OPTIONS[0],
     materi: '',
     alokasiWaktu: '',
     tujuanPembelajaran: '',
@@ -42,27 +43,38 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
         <input type="text" name="mataPelajaran" id="mataPelajaran" value={formData.mataPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: Bahasa Indonesia, Matematika" required />
       </div>
 
-      <div>
-        <label htmlFor="fase" className={labelClass}>Fase Kurikulum</label>
-        <select name="fase" id="fase" value={formData.fase} onChange={handleChange} className={inputClass} required>
-          {FASE_KURIKULUM.map(f => (
-            <option key={f} value={f}>{FASE_DESCRIPTIONS[f]}</option>
-          ))}
-        </select>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="fase" className={labelClass}>Fase Kurikulum</label>
+          <select name="fase" id="fase" value={formData.fase} onChange={handleChange} className={inputClass} required>
+            {FASE_KURIKULUM.map(f => (
+              <option key={f} value={f}>{FASE_DESCRIPTIONS[f]}</option>
+            ))}
+          </select>
+        </div>
+         <div>
+          <label htmlFor="kelas" className={labelClass}>Kelas</label>
+          <input type="text" name="kelas" id="kelas" value={formData.kelas} onChange={handleChange} className={inputClass} placeholder="cth: 1, 7, X, XI" required />
+        </div>
       </div>
-
-      <div>
-        <label htmlFor="kelas" className={labelClass}>Kelas</label>
-        <input type="text" name="kelas" id="kelas" value={formData.kelas} onChange={handleChange} className={inputClass} placeholder="cth: 1, 7, X, XI" required />
-      </div>
-
-      <div>
-        <label htmlFor="semester" className={labelClass}>Semester</label>
-        <select name="semester" id="semester" value={formData.semester} onChange={handleChange} className={inputClass} required>
-          {SEMESTER_OPTIONS.map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+      
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="semester" className={labelClass}>Semester</label>
+          <select name="semester" id="semester" value={formData.semester} onChange={handleChange} className={inputClass} required>
+            {SEMESTER_OPTIONS.map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+           <label htmlFor="jumlahPertemuan" className={labelClass}>Jumlah Sesi Pembelajaran</label>
+          <select name="jumlahPertemuan" id="jumlahPertemuan" value={formData.jumlahPertemuan} onChange={handleChange} className={inputClass} required>
+            {JUMLAH_PERTEMUAN_OPTIONS.map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div>
@@ -71,7 +83,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
       </div>
 
       <div>
-        <label htmlFor="alokasiWaktu" className={labelClass}>Alokasi Waktu</label>
+        <label htmlFor="alokasiWaktu" className={labelClass}>Alokasi Waktu per Sesi</label>
         <input type="text" name="alokasiWaktu" id="alokasiWaktu" value={formData.alokasiWaktu} onChange={handleChange} className={inputClass} placeholder="cth: 2 x 45 menit, 3 JP" required />
       </div>
 
@@ -94,7 +106,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
             Memproses...
           </>
         ) : (
-          `Buat RPP (Biaya: ${cost} Poin)`
+          `Buat Modul Ajar (Biaya: ${cost} Poin)`
         )}
       </button>
       {!hasEnoughPoints && !isLoading && (

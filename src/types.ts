@@ -1,13 +1,15 @@
-import { FASE_KURIKULUM, SEMESTER_OPTIONS } from './constants';
+import { FASE_KURIKULUM, SEMESTER_OPTIONS, JUMLAH_PERTEMUAN_OPTIONS } from './constants';
 
 export type Fase = typeof FASE_KURIKULUM[number];
 export type Semester = typeof SEMESTER_OPTIONS[number];
+export type JumlahPertemuan = typeof JUMLAH_PERTEMUAN_OPTIONS[number];
 
 export interface LessonPlanInput {
   mataPelajaran: string;
   fase: Fase;
   kelas: string;
   semester: Semester;
+  jumlahPertemuan: JumlahPertemuan;
   materi: string;
   alokasiWaktu: string;
   tujuanPembelajaran: string;

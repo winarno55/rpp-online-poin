@@ -16,7 +16,7 @@ export const Header: React.FC = () => {
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
-            RPP Cerdas
+            Modul Ajar Cerdas
           </Link>
           <nav className="flex items-center gap-4">
             {isAuthenticated ? (

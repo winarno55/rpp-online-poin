@@ -10,3 +10,11 @@ export const FASE_DESCRIPTIONS: { [key: string]: string } = {
 };
 
 export const SEMESTER_OPTIONS = ["Ganjil", "Genap"] as const;
+
+export const JUMLAH_PERTEMUAN_OPTIONS = [
+    "1 Kali Pertemuan",
+    "2 Kali Pertemuan",
+    "3 Kali Pertemuan",
+    "4 Kali Pertemuan",
+    "5 Kali Pertemuan"
+] as const;
