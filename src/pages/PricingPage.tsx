@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { useAuth } from '../hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 interface PointPackage {
     points: number;
@@ -15,6 +17,7 @@ interface PricingConfig {
 }
 
 const PricingPage: React.FC = () => {
+    const { isAuthenticated } = useAuth();
     const [config, setConfig] = useState<PricingConfig | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -50,11 +53,11 @@ const PricingPage: React.FC = () => {
     }
     
     if (error) {
-        return <div className="text-center text-red-400 bg-red-900/50 p-4 rounded-lg">{error}</div>;
+        return <div className="text-center text-red-600 bg-red-100 p-4 rounded-lg border border-red-200">{error}</div>;
     }
 
     if (!config || (config.pointPackages.length === 0 && config.paymentMethods.length === 0)) {
-        return <div className="text-center text-slate-400 p-4 rounded-lg">Admin belum mengatur informasi harga dan pembayaran. Silakan hubungi admin secara langsung.</div>;
+        return <div className="text-center text-slate-500 p-4 rounded-lg bg-slate-100">Admin belum mengatur informasi harga dan pembayaran. Silakan hubungi admin secara langsung.</div>;
     }
     
     // Format number to IDR currency
@@ -67,41 +70,41 @@ const PricingPage: React.FC = () => {
     };
 
     return (
-        <div className="w-full max-w-4xl mx-auto space-y-12">
+        <div className="w-full max-w-4xl mx-auto space-y-16 py-10">
             <div className="text-center">
-                <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
-                    Isi Ulang Poin
+                <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-emerald-600">
+                    Harga Poin
                 </h1>
-                <p className="text-slate-300 mt-2 text-lg">
-                    Pilih paket yang sesuai dengan kebutuhan Anda dan lanjutkan aktivitas.
+                <p className="text-slate-600 mt-2 text-lg max-w-2xl mx-auto">
+                    Pilih paket yang sesuai dengan kebutuhan Anda untuk terus membuat Modul Ajar berkualitas.
                 </p>
             </div>
 
             {/* Point Packages */}
-            <div className="bg-slate-800 shadow-2xl rounded-xl p-8">
-                <h2 className="text-3xl font-bold text-white text-center mb-8">Pilih Paket Poin</h2>
+            <div className="bg-white shadow-xl rounded-xl p-8 border border-slate-200">
+                <h2 className="text-3xl font-bold text-slate-800 text-center mb-8">Pilih Paket</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {config.pointPackages.map((pkg, index) => (
-                        <div key={index} className="bg-slate-700/50 rounded-lg p-6 text-center flex flex-col items-center shadow-lg transform hover:scale-105 transition-transform duration-300">
-                            <p className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500">{pkg.points}</p>
-                            <p className="text-lg text-sky-300 mb-4">Poin</p>
-                            <p className="text-2xl font-semibold text-white">{formatCurrency(pkg.price)}</p>
+                    {(config.pointPackages || []).map((pkg, index) => (
+                        <div key={index} className="border border-slate-200 rounded-lg p-6 text-center flex flex-col items-center shadow-lg transform hover:scale-105 transition-transform duration-300 bg-slate-50">
+                            <p className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-amber-500">{pkg.points}</p>
+                            <p className="text-xl text-sky-700 mb-4 font-semibold">Poin</p>
+                            <p className="text-2xl font-bold text-slate-800">{formatCurrency(pkg.price)}</p>
                         </div>
                     ))}
                 </div>
             </div>
 
             {/* Payment Methods */}
-             <div className="bg-slate-800 shadow-2xl rounded-xl p-8">
-                <h2 className="text-3xl font-bold text-white text-center mb-8">Metode Pembayaran</h2>
+             <div className="bg-white shadow-xl rounded-xl p-8 border border-slate-200">
+                <h2 className="text-3xl font-bold text-slate-800 text-center mb-8">Cara Pembayaran</h2>
                 <div className="space-y-4 max-w-lg mx-auto">
-                    {config.paymentMethods.map((pm, index) => (
-                        <div key={index} className="bg-slate-700/50 rounded-lg p-4 flex items-center justify-between shadow-md">
+                    {(config.paymentMethods || []).map((pm, index) => (
+                        <div key={index} className="bg-slate-100 rounded-lg p-4 flex items-center justify-between shadow-sm border border-slate-200">
                            <div>
-                             <p className="font-semibold text-sky-300 text-lg">{pm.method}</p>
-                             <p className="text-white text-xl font-mono">{pm.details}</p>
+                             <p className="font-semibold text-sky-700 text-lg">{pm.method}</p>
+                             <p className="text-slate-800 text-xl font-mono">{pm.details}</p>
                            </div>
-                           <button onClick={() => handleCopy(pm.details)} className="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-2 px-3 rounded-md text-sm transition-colors">
+                           <button onClick={() => handleCopy(pm.details)} className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-3 rounded-md text-sm transition-colors border border-slate-300">
                             {copied === pm.details ? 'Tersalin!' : 'Salin'}
                            </button>
                         </div>
@@ -110,19 +113,27 @@ const PricingPage: React.FC = () => {
             </div>
 
              {/* Call to Action */}
-             <div className="bg-slate-800 shadow-2xl rounded-xl p-8 text-center">
-                <h2 className="text-3xl font-bold text-white mb-4">Langkah Terakhir</h2>
-                <p className="text-slate-300 text-lg mb-6 max-w-2xl mx-auto">
-                    Setelah melakukan pembayaran ke salah satu metode di atas, silakan kirim bukti transfer Anda untuk konfirmasi. Poin akan segera ditambahkan ke akun Anda.
+             <div className="bg-gradient-to-r from-sky-500 to-emerald-500 shadow-2xl rounded-xl p-8 text-center text-white">
+                <h2 className="text-3xl font-bold mb-4">Langkah Terakhir</h2>
+                <p className="text-lg mb-6 max-w-2xl mx-auto">
+                    Setelah melakukan pembayaran, kirim bukti transfer Anda untuk konfirmasi. Poin akan ditambahkan ke akun Anda oleh admin.
                 </p>
                 <a 
-                    href="https://wa.me/6282232835976?text=Halo%20Admin%20RPP%20Cerdas,%20saya%20sudah%20melakukan%20pembayaran%20untuk%20isi%20ulang%20poin."
+                    href="https://wa.me/6282232835976?text=Halo%20Admin%20Modul%20Ajar%20Cerdas,%20saya%20sudah%20melakukan%20pembayaran%20untuk%20isi%20ulang%20poin."
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition-all text-xl transform hover:scale-105"
+                    className="inline-block bg-white text-emerald-600 font-bold py-4 px-8 rounded-lg shadow-lg transition-all text-xl transform hover:scale-105"
                 >
                     Konfirmasi via WhatsApp
                 </a>
+                 {!isAuthenticated && (
+                    <p className="mt-8">
+                        Belum punya akun?{' '}
+                        <Link to="/register" className="font-bold underline hover:text-yellow-300">
+                            Daftar gratis di sini untuk memulai!
+                        </Link>
+                    </p>
+                )}
             </div>
         </div>
     );

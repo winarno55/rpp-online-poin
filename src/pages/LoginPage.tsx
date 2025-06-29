@@ -11,7 +11,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || '/app';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,15 +36,15 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const inputClass = "w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-slate-100";
-  const labelClass = "block mb-2 text-sm font-medium text-sky-300";
+  const inputClass = "w-full p-3 bg-slate-100 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-slate-800";
+  const labelClass = "block mb-2 text-sm font-medium text-slate-600";
 
   return (
-    <div className="flex justify-center items-center">
-      <div className="w-full max-w-md bg-slate-800 shadow-2xl rounded-xl p-8">
-        <h2 className="text-3xl font-bold text-center text-white mb-6">Login</h2>
+    <div className="flex justify-center items-center py-12">
+      <div className="w-full max-w-md bg-white shadow-2xl rounded-xl p-8 border border-slate-200">
+        <h2 className="text-3xl font-bold text-center text-slate-800 mb-6">Login</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {error && <p className="text-red-400 bg-red-900/50 p-3 rounded-lg text-center">{error}</p>}
+          {error && <p className="text-red-600 bg-red-100 p-3 rounded-lg text-center border border-red-200">{error}</p>}
           <div>
             <label htmlFor="login-identity" className={labelClass}>Email atau Username Admin</label>
             <input 
@@ -65,11 +65,11 @@ const LoginPage: React.FC = () => {
             {isLoading ? 'Loading...' : 'Login'}
           </button>
         </form>
-        <p className="text-center text-slate-400 mt-6">
-          Belum punya akun? <Link to="/register" className="font-medium text-sky-400 hover:underline">Register di sini</Link>
+        <p className="text-center text-slate-500 mt-6">
+          Belum punya akun? <Link to="/register" className="font-medium text-sky-600 hover:underline">Register di sini</Link>
         </p>
         <div className="text-center mt-4">
-            <Link to="/forgot-password" className="text-sm text-slate-400 hover:text-sky-400 transition-colors">
+            <Link to="/forgot-password" className="text-sm text-slate-500 hover:text-sky-600 transition-colors">
                 Lupa Password?
             </Link>
         </div>

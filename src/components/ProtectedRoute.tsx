@@ -26,8 +26,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminO
   }
 
   if (adminOnly && !isAdmin) {
-    // Redirect non-admins trying to access admin routes
-    return <Navigate to="/" replace />;
+    // Redirect non-admins trying to access admin routes to the main app page
+    return <Navigate to="/app" replace />;
   }
 
   return children;
