@@ -13,5 +13,5 @@ Disallow: /register
 Disallow: /forgot-password
 Disallow: /reset-password
 
-# Ganti 'https://modulajarcerdas.example.com' dengan domain asli Anda
-Sitemap: https://modulajarcerdas.example.com/sitemap.xml
+# Ganti 'https://modulajarcerdas.my.id' dengan domain asli Anda
+Sitemap: https://modulajarcerdas.my.id/sitemap.xml
