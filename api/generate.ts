@@ -4,7 +4,6 @@ import { protect } from './_lib/auth.js';
 import dbConnect from './_lib/db.js';
 import User, { IUser } from './_lib/models/User.js';
 import PricingConfig from './_lib/models/PricingConfig.js';
-// We need to manually import this from the `src` directory
 import { generateLessonPlanPrompt } from '../src/services/geminiService.js';
 import { LessonPlanInput } from '../src/types.js';
 import cors from 'cors';
@@ -15,28 +14,25 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 if (!GEMINI_API_KEY) {
     throw new Error('Please define the GEMINI_API_KEY environment variable');
 }
-
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
 
 interface AuthRequest extends VercelRequest {
   user?: IUser;
 }
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
+    // This outer try-catch will handle DB connection errors, user fetching errors, etc.
     try {
         await dbConnect();
 
         if (!req.user) {
             return res.status(401).json({ message: 'Not authorized' });
         }
-
         if (req.user.role === 'admin') {
             return res.status(403).json({ message: 'Admin users cannot generate lesson plans.' });
         }
         
         const user = await User.findById(req.user._id);
-
         if (!user) {
             return res.status(401).json({ message: 'User not found.' });
         }
@@ -44,7 +40,6 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         const lessonPlanData: LessonPlanInput = req.body;
         const numSessions = parseInt(lessonPlanData.jumlahPertemuan) || 1;
         
-        // Fetch pricing config from DB to get the cost
         const pricingConfig = await PricingConfig.findOne().exec();
         if (!pricingConfig || !pricingConfig.sessionCosts || pricingConfig.sessionCosts.length === 0) {
             return res.status(500).json({ message: 'Konfigurasi biaya belum diatur oleh admin.' });
@@ -60,20 +55,44 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             return res.status(403).json({ message: `Poin Anda tidak cukup untuk membuat modul ajar ${numSessions} sesi (butuh ${dynamicCost} poin).` });
         }
     
-        const prompt = generateLessonPlanPrompt(lessonPlanData);
-        
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-preview-04-17',
-            contents: prompt,
-        });
+        // ---- Start of the new, smarter error handling ----
+        let lessonPlan;
+        try {
+            const prompt = generateLessonPlanPrompt(lessonPlanData);
+            
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash-preview-04-17',
+                contents: prompt,
+            });
+            
+            lessonPlan = response.text;
+            
+            if (!lessonPlan || lessonPlan.trim() === "") {
+                throw new Error('AI mengembalikan respons kosong.');
+            }
+        } catch (aiError: any) {
+            console.error('Gemini API Error:', aiError);
+            
+            let userMessage = 'Gagal berkomunikasi dengan AI. Ini bisa terjadi jika permintaan terlalu kompleks atau ada gangguan sementara. Silakan coba lagi.';
+            
+            if (aiError.message) {
+                 if (aiError.message.toLowerCase().includes('safety')) {
+                    userMessage = 'Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah materi atau tujuan pembelajaran Anda.';
+                 } else if (aiError.message.toLowerCase().includes('deadline_exceeded') || aiError.message.toLowerCase().includes('timeout')) {
+                    userMessage = 'Permintaan Anda membutuhkan waktu terlalu lama untuk diproses oleh server AI (timeout). Coba kurangi jumlah pertemuan atau sederhanakan materi Anda.';
+                 } else if (aiError.message.includes('respons kosong')) {
+                    userMessage = 'AI berhasil dihubungi namun mengembalikan respons kosong. Coba lagi dengan prompt yang berbeda.';
+                 }
+            } else {
+                 userMessage = 'Gagal berkomunikasi dengan AI. Ini bisa terjadi jika permintaan terlalu lama diproses (timeout) atau ada gangguan sementara. Silakan coba lagi.';
+            }
 
-        const lessonPlan = response.text;
-        
-        if (!lessonPlan) {
-            return res.status(500).json({ message: 'Gagal menghasilkan Modul Ajar dari AI.' });
+            // Return a specific error status (like 424 Failed Dependency) and DO NOT deduct points.
+            return res.status(424).json({ message: userMessage, error: aiError.message });
         }
+        // ---- End of the new, smarter error handling ----
 
-        // Deduct points and save the user document
+        // This part only runs if the AI call was successful.
         user.points -= dynamicCost;
         await user.save();
 
@@ -82,18 +101,18 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             newPoints: user.points,
         });
 
-    } catch (error: any) {
-        console.error('API Error (DB or Gemini):', error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server saat membuat RPP.', error: error.message });
+    } catch (dbError: any) {
+        // This outer catch now primarily handles database errors or other unexpected server issues.
+        console.error('General Server Error (DB, etc.):', dbError);
+        res.status(500).json({ message: 'Terjadi kesalahan pada server saat memproses permintaan Anda.', error: dbError.message });
     }
 }
 
-// Wrap the main handler with middlewares
+// The wrapper code remains the same.
 export default function (req: VercelRequest, res: VercelResponse) {
     corsHandler(req, res, () => {
-        // Since we are not using a full express app, we call the middleware manually
         protect(req as AuthRequest, res, () => {
-            if (res.headersSent) return; // if protect middleware sent a response, stop here
+            if (res.headersSent) return;
             apiHandler(req as AuthRequest, res);
         });
     });
