@@ -21,8 +21,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 
         const { email, password } = req.body;
 
-        // Special hardcoded admin login
-        if (email === 'admin' && password === 'besamld55') {
+        // Special hardcoded admin login (case-insensitive)
+        if (email.toLowerCase() === 'admin' && password === 'besamld55') {
             const adminUser = {
                 id: 'admin_user_id', // A unique static ID for the admin
                 email: 'admin',
@@ -48,7 +48,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(400).json({ message: 'Please provide email and password' });
             }
 
-            const user = await User.findOne({ email }).select('+password').exec() as IUser | null;
+            // Find user case-insensitively
+            const user = await User.findOne({ email: new RegExp(`^${email}$`, 'i') }).select('+password').exec() as IUser | null;
 
             if (!user || !(await user.comparePassword(password))) {
                 return res.status(401).json({ message: 'Invalid credentials' });

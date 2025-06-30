@@ -45,7 +45,17 @@ const ForgotPasswordPage: React.FC = () => {
                     )}
                     <div>
                         <label htmlFor="email" className={labelClass}>Email</label>
-                        <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} placeholder="email.terdaftar@contoh.com" />
+                        <input 
+                            type="email" 
+                            id="email" 
+                            value={email} 
+                            onChange={(e) => setEmail(e.target.value.toLowerCase())} 
+                            required 
+                            className={inputClass} 
+                            placeholder="email.terdaftar@contoh.com"
+                            autoCapitalize="none"
+                            autoCorrect="off" 
+                        />
                     </div>
                     <button type="submit" disabled={isLoading || message?.type === 'success'} className="w-full flex items-center justify-center bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed text-lg">
                         {isLoading ? 'Mengirim...' : 'Kirim Tautan Reset'}

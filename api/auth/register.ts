@@ -21,14 +21,18 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ message: 'Please provide email and password' });
       }
 
-      const userExists = await User.findOne({ email }).exec() as IUser | null;
+      const lowercasedEmail = email.toLowerCase();
+
+      // Case-insensitive check for existing user
+      const userExists = await User.findOne({ email: new RegExp(`^${lowercasedEmail}$`, 'i') }).exec();
 
       if (userExists) {
-        return res.status(400).json({ message: 'User already exists' });
+        return res.status(400).json({ message: 'User with this email already exists' });
       }
 
+      // Store new user with lowercased email
       await User.create({
-        email,
+        email: lowercasedEmail,
         password,
       });
 

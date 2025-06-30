@@ -45,7 +45,16 @@ const RegisterPage: React.FC = () => {
           {success && <p className="text-green-600 bg-green-100 p-3 rounded-lg text-center border border-green-200">{success}</p>}
           <div>
             <label htmlFor="email" className={labelClass}>Email</label>
-            <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} />
+            <input 
+              type="email" 
+              id="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value.toLowerCase())} 
+              required 
+              className={inputClass} 
+              autoCapitalize="none"
+              autoCorrect="off"
+            />
           </div>
           <div>
             <label htmlFor="password" className={labelClass}>Password</label>

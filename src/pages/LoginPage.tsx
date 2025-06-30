@@ -51,10 +51,12 @@ const LoginPage: React.FC = () => {
               type="text" 
               id="login-identity" 
               value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
+              onChange={(e) => setEmail(e.target.value.toLowerCase())} 
               required 
               className={inputClass}
               placeholder="Masukkan email Anda atau 'admin'"
+              autoCapitalize="none"
+              autoCorrect="off"
             />
           </div>
           <div>

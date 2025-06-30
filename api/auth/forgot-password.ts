@@ -45,7 +45,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         try {
             await dbConnect();
             const { email } = req.body;
-            const user = await User.findOne({ email });
+            // Find user case-insensitively
+            const user = await User.findOne({ email: new RegExp(`^${email}$`, 'i') });
 
             if (!user) {
                 // To prevent email enumeration attacks, we can send a success response even if the user doesn't exist.
