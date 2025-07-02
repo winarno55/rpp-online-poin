@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LessonPlanInput } from '../types';
-import { FASE_KURIKULUM, FASE_DESCRIPTIONS, SEMESTER_OPTIONS, JUMLAH_PERTEMUAN_OPTIONS } from '../constants';
+import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS } from '../constants';
 
 interface SessionCost {
   sessions: number;
@@ -16,13 +16,18 @@ interface LessonPlanFormProps {
 export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, sessionCosts }) => {
   const [formData, setFormData] = useState<LessonPlanInput>({
     mataPelajaran: '',
-    fase: FASE_KURIKULUM[0],
-    kelas: '',
-    semester: SEMESTER_OPTIONS[0],
-    jumlahPertemuan: JUMLAH_PERTEMUAN_OPTIONS[0],
+    kelasFase: '',
     materi: '',
-    alokasiWaktu: '',
+    jumlahPertemuan: JUMLAH_PERTEMUAN_OPTIONS[0],
+    pesertaDidik: '',
+    dimensiProfilLulusan: [],
+    capaianPembelajaran: '',
+    lintasDisiplinIlmu: '',
     tujuanPembelajaran: '',
+    praktikPedagogis: PRAKTIK_PEDAGOGIS_OPTIONS[0],
+    lingkunganPembelajaran: '',
+    pemanfaatanDigital: '',
+    kemitraanPembelajaran: '',
   });
   
   const [dynamicCost, setDynamicCost] = useState(0);
@@ -39,6 +44,16 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  
+  const handleDimensionChange = (dimension: string) => {
+    setFormData(prev => {
+        const newDimensions = prev.dimensiProfilLulusan.includes(dimension)
+            ? prev.dimensiProfilLulusan.filter(d => d !== dimension)
+            : [...prev.dimensiProfilLulusan, dimension];
+        return { ...prev, dimensiProfilLulusan: newDimensions };
+    });
+  };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,64 +61,94 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     onSubmit(formData);
   };
 
-  const inputClass = "w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-slate-100";
+  const inputClass = "w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-slate-100 disabled:opacity-50";
   const labelClass = "block mb-2 text-sm font-medium text-sky-300";
+  const fieldSetClass = "space-y-4 border-b border-slate-700 pb-6 mb-6";
+  const headingClass = "text-xl font-semibold text-white mb-4";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label htmlFor="mataPelajaran" className={labelClass}>Mata Pelajaran</label>
-        <input type="text" name="mataPelajaran" id="mataPelajaran" value={formData.mataPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: Bahasa Indonesia, Matematika" required />
+      
+      <div className={fieldSetClass}>
+        <h3 className={headingClass}>Identitas</h3>
+        <div>
+          <label htmlFor="mataPelajaran" className={labelClass}>Mata Pelajaran</label>
+          <input type="text" name="mataPelajaran" id="mataPelajaran" value={formData.mataPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: Bahasa Indonesia, Matematika" required />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label htmlFor="kelasFase" className={labelClass}>Kelas/Fase</label>
+                <input type="text" name="kelasFase" id="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass} placeholder="cth: X / Fase E" required />
+            </div>
+            <div>
+                <label htmlFor="jumlahPertemuan" className={labelClass}>Jumlah Pertemuan</label>
+                <select name="jumlahPertemuan" id="jumlahPertemuan" value={formData.jumlahPertemuan} onChange={handleChange} className={inputClass} required>
+                    {JUMLAH_PERTEMUAN_OPTIONS.map(s => (<option key={s} value={s}>{s}</option>))}
+                </select>
+            </div>
+        </div>
+        <div>
+          <label htmlFor="materi" className={labelClass}>Materi</label>
+          <input type="text" name="materi" id="materi" value={formData.materi} onChange={handleChange} className={inputClass} placeholder="Tuliskan topik pembelajaran" required />
+        </div>
+        <div>
+          <label htmlFor="pesertaDidik" className={labelClass}>Peserta Didik <span className="text-slate-400 font-light">(Opsional)</span></label>
+          <textarea name="pesertaDidik" id="pesertaDidik" value={formData.pesertaDidik} onChange={handleChange} rows={3} className={inputClass} placeholder="Identifikasi kesiapan, minat, atau kebutuhan belajar peserta didik..." />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={fieldSetClass}>
+        <h3 className={headingClass}>Identifikasi Desain Pembelajaran</h3>
         <div>
-          <label htmlFor="fase" className={labelClass}>Fase Kurikulum</label>
-          <select name="fase" id="fase" value={formData.fase} onChange={handleChange} className={inputClass} required>
-            {FASE_KURIKULUM.map(f => (
-              <option key={f} value={f}>{FASE_DESCRIPTIONS[f]}</option>
-            ))}
-          </select>
+            <label className={labelClass}>Dimensi Profil Lulusan</label>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                {DIMENSI_PROFIL_LULUSAN.map(dim => (
+                    <label key={dim} className="flex items-center space-x-2 text-slate-200 cursor-pointer">
+                        <input type="checkbox"
+                            className="h-4 w-4 rounded bg-slate-600 border-slate-500 text-sky-500 focus:ring-sky-600"
+                            value={dim}
+                            checked={formData.dimensiProfilLulusan.includes(dim)}
+                            onChange={() => handleDimensionChange(dim)}
+                        />
+                        <span>{dim}</span>
+                    </label>
+                ))}
+            </div>
+        </div>
+        <div>
+          <label htmlFor="capaianPembelajaran" className={labelClass}>Capaian Pembelajaran <span className="text-slate-400 font-light">(Opsional)</span></label>
+          <textarea name="capaianPembelajaran" id="capaianPembelajaran" value={formData.capaianPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="Tuliskan capaian pembelajaran sesuai fase..." />
+        </div>
+        <div>
+          <label htmlFor="tujuanPembelajaran" className={labelClass}>Tujuan Pembelajaran</label>
+          <textarea name="tujuanPembelajaran" id="tujuanPembelajaran" value={formData.tujuanPembelajaran} onChange={handleChange} rows={4} className={inputClass} placeholder="Tuliskan tujuan pembelajaran yang mencakup kompetensi dan konten..." required />
         </div>
          <div>
-          <label htmlFor="kelas" className={labelClass}>Kelas</label>
-          <input type="text" name="kelas" id="kelas" value={formData.kelas} onChange={handleChange} className={inputClass} placeholder="cth: 1, 7, X, XI" required />
-        </div>
-      </div>
-      
-       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="semester" className={labelClass}>Semester</label>
-          <select name="semester" id="semester" value={formData.semester} onChange={handleChange} className={inputClass} required>
-            {SEMESTER_OPTIONS.map(s => (
-              <option key={s} value={s}>{s}</option>
+          <label htmlFor="praktikPedagogis" className={labelClass}>Praktik Pedagogis</label>
+          <select name="praktikPedagogis" id="praktikPedagogis" value={formData.praktikPedagogis} onChange={handleChange} className={inputClass} required>
+            {PRAKTIK_PEDAGOGIS_OPTIONS.map(p => (
+              <option key={p} value={p}>{p}</option>
             ))}
           </select>
         </div>
         <div>
-           <label htmlFor="jumlahPertemuan" className={labelClass}>Jumlah Sesi Pembelajaran</label>
-          <select name="jumlahPertemuan" id="jumlahPertemuan" value={formData.jumlahPertemuan} onChange={handleChange} className={inputClass} required>
-            {JUMLAH_PERTEMUAN_OPTIONS.map((s, index) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
+          <label htmlFor="lintasDisiplinIlmu" className={labelClass}>Lintas Disiplin Ilmu <span className="text-slate-400 font-light">(Opsional)</span></label>
+          <input type="text" name="lintasDisiplinIlmu" id="lintasDisiplinIlmu" value={formData.lintasDisiplinIlmu} onChange={handleChange} className={inputClass} placeholder="cth: Sosiologi, Ekonomi" />
+        </div>
+         <div>
+          <label htmlFor="lingkunganPembelajaran" className={labelClass}>Lingkungan Pembelajaran <span className="text-slate-400 font-light">(Opsional)</span></label>
+          <textarea name="lingkunganPembelajaran" id="lingkunganPembelajaran" value={formData.lingkunganPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="Jelaskan budaya belajar atau ruang fisik/virtual yang diinginkan..." />
+        </div>
+         <div>
+          <label htmlFor="pemanfaatanDigital" className={labelClass}>Pemanfaatan Digital <span className="text-slate-400 font-light">(Opsional)</span></label>
+          <textarea name="pemanfaatanDigital" id="pemanfaatanDigital" value={formData.pemanfaatanDigital} onChange={handleChange} rows={3} className={inputClass} placeholder="cth: Video pembelajaran, platform, perpustakaan digital..." />
+        </div>
+        <div>
+          <label htmlFor="kemitraanPembelajaran" className={labelClass}>Kemitraan Pembelajaran <span className="text-slate-400 font-light">(Opsional)</span></label>
+          <textarea name="kemitraanPembelajaran" id="kemitraanPembelajaran" value={formData.kemitraanPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="cth: Kolaborasi dengan guru mapel lain, orang tua, komunitas..." />
         </div>
       </div>
 
-      <div>
-        <label htmlFor="materi" className={labelClass}>Materi / Topik Pembelajaran</label>
-        <input type="text" name="materi" id="materi" value={formData.materi} onChange={handleChange} className={inputClass} placeholder="cth: Proklamasi Kemerdekaan, Sistem Pencernaan" required />
-      </div>
-
-      <div>
-        <label htmlFor="alokasiWaktu" className={labelClass}>Alokasi Waktu per Sesi</label>
-        <input type="text" name="alokasiWaktu" id="alokasiWaktu" value={formData.alokasiWaktu} onChange={handleChange} className={inputClass} placeholder="cth: 2 x 45 menit, 3 JP" required />
-      </div>
-
-      <div>
-        <label htmlFor="tujuanPembelajaran" className={labelClass}>Tujuan Pembelajaran (Awal)</label>
-        <textarea name="tujuanPembelajaran" id="tujuanPembelajaran" value={formData.tujuanPembelajaran} onChange={handleChange} rows={4} className={inputClass} placeholder="Masukkan tujuan pembelajaran spesifik yang ingin dicapai siswa..." required />
-      </div>
 
       <button 
         type="submit" 

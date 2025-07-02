@@ -1,91 +1,136 @@
 import { LessonPlanInput } from '../types';
 
+// Helper function to create a section for the prompt only if the data exists.
+// It also provides a clear "not filled" message for the AI to interpret.
+const createOptionalSection = (label: string, data: string | undefined | null | string[]) => {
+  if (Array.isArray(data) && data.length > 0) {
+    return `${label}: ${data.join(', ')}`;
+  }
+  if (typeof data === 'string' && data.trim()) {
+    return `${label}: ${data.trim()}`;
+  }
+  return `${label}: [Tidak diisi oleh pengguna]`;
+};
+
 export const generateLessonPlanPrompt = (input: LessonPlanInput): string => {
-  const { mataPelajaran, fase, kelas, semester, jumlahPertemuan, materi, alokasiWaktu, tujuanPembelajaran } = input;
+  const { 
+    mataPelajaran, kelasFase, materi, jumlahPertemuan, tujuanPembelajaran, praktikPedagogis,
+    pesertaDidik, dimensiProfilLulusan, capaianPembelajaran, lintasDisiplinIlmu,
+    lingkunganPembelajaran, pemanfaatanDigital, kemitraanPembelajaran
+  } = input;
 
-  return `Anda adalah seorang ahli pengembangan kurikulum dan desainer instruksional yang sangat berpengalaman, memiliki pemahaman mendalam tentang pembelajaran modern dan Kurikulum Merdeka. Tugas Anda adalah membantu guru membuat Rencana Pelaksanaan Pembelajaran (RPP) atau Modul Ajar yang komprehensif, efektif, dan sesuai dengan prinsip Mindful Learning, Meaningful Learning, dan Joyful Learning.
+  return `
+Anda adalah seorang ahli pengembangan kurikulum dan desainer instruksional yang sangat berpengalaman, memiliki pemahaman mendalam tentang pembelajaran modern dan Kurikulum Merdeka. Tugas Anda adalah membantu guru membuat Rencana Pelaksanaan Pembelajaran (RPP) atau Modul Ajar yang komprehensif, efektif, dan sesuai dengan prinsip Mindful Learning, Meaningful Learning, dan Joyful Learning.
 
-Berdasarkan input berikut:
+Berdasarkan input yang diberikan, buatlah Modul Ajar yang lengkap.
+
+PENTING: Jika sebuah bidang bertanda "[Tidak diisi oleh pengguna]", JANGAN sertakan judul atau konten bidang tersebut dalam output akhir Anda. Hilangkan seluruh bagian itu dari hasil generate.
+
+--- INPUT DARI PENGGUNA ---
+
+### Identitas
 Mata Pelajaran: ${mataPelajaran}
-Fase: ${fase}
-Kelas: ${kelas}
-Semester: ${semester}
-Jumlah Sesi Pembelajaran: ${jumlahPertemuan}
+Kelas/Fase: ${kelasFase}
 Materi: ${materi}
-Alokasi Waktu per Sesi: ${alokasiWaktu}
-Tujuan Pembelajaran Awal: ${tujuanPembelajaran}
+Jumlah Pertemuan: ${jumlahPertemuan}
+${createOptionalSection('Peserta Didik', pesertaDidik)}
 
-CATATAN PENTING UNTUK INTERPRETASI ALOKASI WAKTU:
-Anda HARUS secara cerdas menginterpretasikan input "Alokasi Waktu per Sesi" (${alokasiWaktu}) berdasarkan Fase yang dipilih. Durasi standar 1 Jam Pelajaran (JP) adalah sebagai berikut:
-- Fase A, B, C (Umumnya SD/MI): 1 JP = 35 menit.
-- Fase D (Umumnya SMP/MTs): 1 JP = 40 menit.
-- Fase E, F (Umumnya SMA/SMK/MA): 1 JP = 45 menit.
-Contoh: Jika input "Alokasi Waktu per Sesi" adalah "2 JP" dan Fase adalah "A", maka total durasi per sesi adalah 70 menit. Jika Fase adalah "D" untuk "2 JP", maka total durasi per sesi adalah 80 menit.
-Pastikan total durasi rincian kegiatan dalam "Langkah-Langkah Kegiatan Pembelajaran" (Pendahuluan, Inti, Penutup) di setiap pertemuan secara akurat mencerminkan total alokasi waktu yang telah diinterpretasikan dengan benar ini.
+### IDENTIFIKASI
+${createOptionalSection('Dimensi Profil Lulusan', dimensiProfilLulusan)}
+${createOptionalSection('Capaian Pembelajaran', capaianPembelajaran)}
+${createOptionalSection('Lintas Disiplin Ilmu', lintasDisiplinIlmu)}
+Tujuan Pembelajaran: ${tujuanPembelajaran}
+Praktik Pedagogis: ${praktikPedagogis}
+${createOptionalSection('Lingkungan Pembelajaran', lingkunganPembelajaran)}
+${createOptionalSection('Pemanfaatan Digital', pemanfaatanDigital)}
+${createOptionalSection('Kemitraan Pembelajaran', kemitraanPembelajaran)}
 
-CATATAN PENTING UNTUK STRUKTUR MULTI-SESI:
-Anda HARUS menyusun seluruh Modul Ajar ini untuk durasi total sejumlah **${jumlahPertemuan}**. Rincikan dengan jelas kegiatan untuk 'Pertemuan 1', 'Pertemuan 2', dan seterusnya. Bagilah 'Langkah-Langkah Kegiatan Pembelajaran' dan 'Asesmen' secara logis ke dalam setiap pertemuan tersebut. Setiap pertemuan harus memiliki struktur Pendahuluan, Inti, dan Penutup yang jelas.
+--- STRUKTUR OUTPUT MODUL AJAR YANG DIINGINKAN ---
 
-Hasilkan Modul Ajar dengan struktur dan konten berikut. Pastikan output rapi dan terorganisir, siap untuk disalin ke dokumen (misalnya DOCX/PDF). Gunakan Bahasa Indonesia yang baik dan benar.
+Hasilkan Modul Ajar dalam format Markdown yang rapi, terstruktur, dan siap pakai. Ikuti struktur di bawah ini dengan SEKSAMA.
 
-[JUDUL MODUL AJAR: Buat judul yang menarik dan sesuai dengan Materi (${materi}), Kelas (${kelas}), dan Semester (${semester})]
+# MODUL AJAR: [Buat judul yang menarik dan relevan berdasarkan Materi: ${materi}]
 
-A. INFORMASI UMUM
-   Mata Pelajaran         : ${mataPelajaran}
-   Fase                   : ${fase}
-   Kelas                  : ${kelas}
-   Semester               : ${semester}
-   Materi                 : ${materi}
-   Jumlah Pertemuan       : ${jumlahPertemuan}
-   Alokasi Waktu per Sesi : ${alokasiWaktu} [AI: Tampilkan juga hasil interpretasi total menit berdasarkan Fase di sini. Contoh: "2 JP (Total 70 menit/sesi untuk Fase A)" atau "120 menit/sesi (Total 120 menit)"]
+## Identitas
+- **Mata Pelajaran:** ${mataPelajaran}
+- **Kelas/Fase:** ${kelasFase}
+- **Materi:** ${materi}
+- **Jumlah Pertemuan:** ${jumlahPertemuan}
+- **Peserta Didik:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${pesertaDidik}"]
 
-B. TUJUAN PEMBELAJARAN
-   [Kembangkan tujuan pembelajaran awal (${tujuanPembelajaran}) menjadi lebih rinci dan operasional. Pastikan tujuan tersebut SMART (Specific, Measurable, Achievable, Relevant, Time-bound). Jika input tujuan awal sudah spesifik, kembangkan sedikit dengan menambahkan aspek implementasi atau kedalaman pemahaman.]
+## IDENTIFIKASI
 
-C. ASESMEN PEMBELAJARAN
-   [Rancang rencana asesmen yang relevan dan proporsional untuk secara langsung mengukur pencapaian Tujuan Pembelajaran yang telah dirumuskan di Bagian B. Sebutkan asesmen apa saja yang akan dilakukan dan pada pertemuan ke berapa.
-    - Sebutkan jenis asesmen (diagnostik, formatif, sumatif).
-    - Berikan contoh konkret bentuk asesmen (misal: observasi partisipasi, tes tulis pilihan ganda/esai singkat, presentasi hasil diskusi kelompok, penugasan proyek sederhana, unjuk kerja).
-    - Jelaskan secara singkat instrumen yang bisa digunakan untuk masing-masing bentuk asesmen (misal: lembar observasi, soal tes, rubrik presentasi, rubrik proyek).]
+### Desain Pembelajaran
+- **Capaian Pembelajaran:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${capaianPembelajaran}"]
+- **Dimensi Profil Lulusan:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${dimensiProfilLulusan.join(', ')}"]
+- **Lintas Disiplin Ilmu:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${lintasDisiplinIlmu}"]
+- **Tujuan Pembelajaran:** [Kembangkan tujuan pembelajaran awal ("${tujuanPembelajaran}") menjadi lebih rinci, operasional, dan SMART (Specific, Measurable, Achievable, Relevant, Time-bound) sesuai dengan kelas/fase dan materi.]
+- **Praktik Pedagogis:** ${praktikPedagogis}
+- **Lingkungan Pembelajaran:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${lingkunganPembelajaran}"]
+- **Pemanfaatan Digital:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${pemanfaatanDigital}"]
+- **Kemitraan Pembelajaran:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${kemitraanPembelajaran}"]
 
-D. LANGKAH-LANGKAH KEGIATAN PEMBELAJARAN
-   [PENTING: Rincikan langkah-langkah pembelajaran untuk setiap pertemuan secara terpisah. Setiap pertemuan harus memiliki struktur Pendahuluan, Inti, dan Penutup. DURASI SETIAP BAGIAN DI SETIAP PERTEMUAN HARUS KONSISTEN DENGAN INTERPRETASI CERDAS ALOKASI WAKTU TOTAL YANG TELAH DIJELASKAN DI CATATAN PENTING SEBELUMNYA.]
+## Pengalaman Belajar
 
-   --- PERTEMUAN 1 ---
-   1. Pendahuluan (Durasi: sekitar 10-15% dari total menit per sesi)
-      [Rincikan langkah-langkah pendahuluan: Pembukaan, Apersepsi, Motivasi, Penyampaian Tujuan Pembelajaran, Asesmen Diagnostik Singkat.]
+### Langkah-Langkah Pembelajaran
+[PENTING: Rincikan langkah-langkah untuk setiap pertemuan, dari Pertemuan 1 hingga ${jumlahPertemuan}. Setiap pertemuan harus memiliki struktur AWAL, INTI, dan PENUTUP. Rancang aktivitas pada bagian INTI agar selaras dengan Dimensi Profil Lulusan yang dipilih.]
 
-   2. Inti (Durasi: sekitar 70-80% dari total menit per sesi)
-      [Kembangkan langkah-langkah kegiatan inti yang detail, interaktif, dan berpusat pada siswa, secara eksplisit mengintegrasikan Mindful, Meaningful, dan Joyful Learning. Rincikan aktivitas siswa dan guru terkait ${materi} untuk pertemuan ini.]
-      [Sertakan juga opsi untuk PEMBELAJARAN BERDIFERENSIASI dalam kegiatan inti.]
+---
+#### **PERTEMUAN 1**
+---
+**AWAL (Prinsip: Mindful, Joyful, Meaningful)**
+[Rincikan kegiatan pembuka untuk mempersiapkan siswa: orientasi bermakna, apersepsi kontekstual, dan motivasi yang menggembirakan.]
 
-   3. Penutup (Durasi: sekitar 10-15% dari total menit per sesi)
-      [Rincikan langkah-langkah penutup: Kesimpulan Bersama, Refleksi, Umpan Balik, Penguatan Materi, Info Pertemuan Berikutnya, Salam penutup.]
+**INTI (Prinsip: Mindful, Joyful, Meaningful)**
+[Pada tahap ini, siswa aktif terlibat dalam pengalaman belajar. Rancang aktivitas agar murid juga dapat meningkatkan kompetensi globalnya sesuai Dimensi Profil Lulusan yang dipilih. Bagi menjadi tiga sub-tahap berikut:]
+1.  **Memahami:** [Rincikan kegiatan yang memfasilitasi siswa untuk aktif membangun pengetahuan dari berbagai sumber dan konteks terkait materi.]
+2.  **Mengaplikasi:** [Rincikan kegiatan di mana siswa mengaplikasikan pemahaman mereka dalam konteks dunia nyata untuk mengembangkan kompetensi.]
+3.  **Merefleksi:** [Rincikan kegiatan yang memfasilitasi siswa untuk mengevaluasi proses dan hasil belajar, memaknai pengalaman, dan merencanakan tindak lanjut.]
 
-   --- PERTEMUAN 2 --- (dan seterusnya, sesuai dengan ${jumlahPertemuan})
-   [Ulangi struktur yang sama untuk pertemuan-pertemuan berikutnya. Pastikan ada alur yang logis dan kesinambungan antar pertemuan. Kegiatan di pertemuan selanjutnya harus membangun pemahaman dari pertemuan sebelumnya.]
+**PENUTUP (Prinsip: Mindful, Joyful, Meaningful)**
+[Rincikan kegiatan penutup: umpan balik konstruktif, kesimpulan bersama, dan pelibatan siswa dalam perencanaan pembelajaran selanjutnya.]
 
-E. LAMPIRAN
+---
+#### **PERTEMUAN 2** (dan seterusnya, ulangi struktur yang sama hingga pertemuan terakhir)
+---
+[Ulangi struktur AWAL, INTI (Memahami, Mengaplikasi, Merefleksi), dan PENUTUP untuk setiap pertemuan berikutnya, pastikan ada kesinambungan logis antar pertemuan.]
 
-   1. Rubrik Penilaian
-      [Sediakan contoh rubrik penilaian yang relevan untuk salah satu asesmen formatif atau sumatif yang disebutkan di bagian C. Misalnya, rubrik untuk presentasi kelompok atau penilaian esai terkait ${materi}. Rubrik harus mencakup kriteria penilaian, deskriptor untuk setiap level capaian (misal: Sangat Baik, Baik, Cukup, Perlu Bimbingan), dan skor/bobot jika ada.]
 
-   2. LKPD (Lembar Kerja Peserta Didik)
-      [Sajikan LKPD yang sesuai dengan kegiatan inti pembelajaran ${materi} dan mendukung pencapaian Tujuan Pembelajaran. Mulai LKPD dengan format berikut:
-       Nama          : .............................................
-       Kelas         : .............................................
-       Nomor Absen   : .............................................
+### Asesmen Pembelajaran
+[Rancang rencana asesmen yang relevan untuk mengukur Tujuan Pembelajaran. Jelaskan teknik dan instrumen yang digunakan pada **awal, proses, dan akhir** pembelajaran. Tekankan pada *assessment as learning* (penilaian diri/sejawat), *assessment for learning* (umpan balik), dan *assessment of learning* (pencapaian). Berikan contoh konkret seperti: Penilaian Sejawat, Penilaian Diri, Observasi, Proyek, Produk, Kinerja, Tes Tulis, dll. Kaitkan asesmen dengan pertemuan yang sesuai.]
 
-       Petunjuk Pengerjaan:
-       [Tuliskan di sini petunjuk umum pengerjaan LKPD, misalnya: "Bacalah setiap soal dengan teliti.", "Kerjakan soal secara mandiri/kelompok.", "Tuliskan jawabanmu pada tempat yang disediakan."]
-       Jika modul ini untuk beberapa pertemuan, Anda bisa membuat beberapa LKPD atau satu LKPD yang dibagi per pertemuan.]
+## LAMPIRAN
 
-   3. Materi Ajar
-      [Sediakan ringkasan singkat materi atau poin-poin kunci dari ${materi} yang akan diajarkan. Ini bukan materi lengkap, tetapi highlight yang bisa membantu guru mengingat inti materi. Bisa juga berupa saran sumber belajar tambahan (misal: tautan video pembelajaran, artikel, atau buku teks yang relevan dengan ${materi} dan Kelas (${kelas})).]
+### 1. Rubrik Penilaian
+[Sediakan contoh rubrik penilaian yang relevan untuk SALAH SATU asesmen yang dijelaskan di atas (misal: rubrik proyek atau presentasi). Rubrik harus mencakup kriteria, deskriptor untuk setiap level capaian (Sangat Baik, Baik, Cukup, Perlu Bimbingan), dan skor/bobot.]
 
-   4. Evaluasi Mandiri
-      [Buat bagian evaluasi mandiri yang terdiri dari 3 sampai 5 soal isian singkat (esai singkat). Soal-soal ini harus secara langsung mengukur pemahaman siswa terhadap Tujuan Pembelajaran (Bagian B) dan sesuai dengan tingkat kesulitan untuk Kelas (${kelas}). Yang terpenting, SERTAKAN KUNCI JAWABAN yang jelas dan ringkas untuk setiap soal untuk memudahkan guru melakukan koreksi.]
+### 2. LKPD (Lembar Kerja Peserta Didik)
+[Buat LKPD yang praktis dan sesuai dengan kegiatan inti pembelajaran. Jika ada beberapa pertemuan, Anda bisa membuat satu LKPD yang dibagi per bagian atau beberapa LKPD terpisah. Gunakan format berikut:]
+**Nama:** .............................................
+**Kelas:** .............................................
+**Nomor Absen:** .............................................
 
-Pastikan bahasa yang digunakan jelas, lugas, profesional, dan mudah dipahami oleh guru. Seluruh output harus dalam Bahasa Indonesia. Format akhir harus konsisten dan terstruktur dengan baik.
+**Petunjuk Pengerjaan:**
+[Tulis petunjuk yang jelas.]
+
+[Sajikan beberapa soal atau aktivitas yang mendukung pencapaian Tujuan Pembelajaran.]
+
+### 3. Evaluasi Mandiri
+[Buat bagian evaluasi mandiri dengan format berikut. Isi dengan 3-5 soal isian singkat (esai singkat) yang secara langsung mengukur pemahaman siswa terhadap Tujuan Pembelajaran. Yang terpenting, SERTAKAN KUNCI JAWABAN yang jelas dan ringkas untuk setiap soal untuk memudahkan guru melakukan koreksi.]
+
+**Nama:** .............................................
+**Kelas:** .............................................
+**Nomor Absen:** .............................................
+
+**Soal Evaluasi:**
+[Sajikan 3-5 soal esai singkat di sini.]
+
+**Kunci Jawaban:**
+[Sajikan kunci jawaban untuk setiap soal di sini.]
+
+### 4. Materi Ajar
+[Sediakan ringkasan singkat materi atau poin-poin kunci. Ini bukan materi lengkap, tetapi highlight untuk guru. Bisa juga berupa saran sumber belajar tambahan (misalnya, tautan video, artikel, atau buku teks).]
+
+Pastikan seluruh output dalam Bahasa Indonesia yang profesional dan mudah dipahami.
 `;
 };

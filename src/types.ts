@@ -1,18 +1,22 @@
-import { FASE_KURIKULUM, SEMESTER_OPTIONS, JUMLAH_PERTEMUAN_OPTIONS } from './constants';
+import { JUMLAH_PERTEMUAN_OPTIONS } from './constants';
 
-export type Fase = typeof FASE_KURIKULUM[number];
-export type Semester = typeof SEMESTER_OPTIONS[number];
+// Note: Fase and Semester types are no longer needed with the new form structure.
 export type JumlahPertemuan = typeof JUMLAH_PERTEMUAN_OPTIONS[number];
 
 export interface LessonPlanInput {
   mataPelajaran: string;
-  fase: Fase;
-  kelas: string;
-  semester: Semester;
-  jumlahPertemuan: JumlahPertemuan;
+  kelasFase: string;
   materi: string;
-  alokasiWaktu: string;
+  jumlahPertemuan: JumlahPertemuan;
+  pesertaDidik: string; // opsional
+  dimensiProfilLulusan: string[];
+  capaianPembelajaran: string; // opsional
+  lintasDisiplinIlmu: string; // opsional
   tujuanPembelajaran: string;
+  praktikPedagogis: string;
+  lingkunganPembelajaran: string; // opsional
+  pemanfaatanDigital: string; // opsional
+  kemitraanPembelajaran: string; // opsional
 }
 
 export interface User {

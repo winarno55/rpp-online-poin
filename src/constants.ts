@@ -1,15 +1,3 @@
-export const FASE_KURIKULUM = ["A", "B", "C", "D", "E", "F"] as const;
-
-export const FASE_DESCRIPTIONS: { [key: string]: string } = {
-  A: "Fase A (Umumnya Kelas 1-2 SD)",
-  B: "Fase B (Umumnya Kelas 3-4 SD)",
-  C: "Fase C (Umumnya Kelas 5-6 SD)",
-  D: "Fase D (Umumnya Kelas 7-9 SMP)",
-  E: "Fase E (Umumnya Kelas 10 SMA/SMK)",
-  F: "Fase F (Umumnya Kelas 11-12 SMA/SMK)",
-};
-
-export const SEMESTER_OPTIONS = ["Ganjil", "Genap"] as const;
 
 export const JUMLAH_PERTEMUAN_OPTIONS = [
     "1 Kali Pertemuan",
@@ -18,5 +6,27 @@ export const JUMLAH_PERTEMUAN_OPTIONS = [
     "4 Kali Pertemuan",
     "5 Kali Pertemuan"
 ] as const;
+
+export const DIMENSI_PROFIL_LULUSAN = [
+    "Keimanan dan Ketakwaan terhadap Tuhan YME",
+    "Kewargaan",
+    "Kreativitas",
+    "Penalaran Kritis",
+    "Kemandirian",
+    "Kolaborasi",
+    "Komunikasi",
+    "Kesehatan"
+] as const;
+
+export const PRAKTIK_PEDAGOGIS_OPTIONS = [
+    "Pembelajaran Berbasis Masalah (Problem-Based Learning)",
+    "Pembelajaran Berbasis Proyek (Project-Based Learning)",
+    "Pembelajaran Inkuiri (Inquiry-Based Learning)",
+    "Pembelajaran Kontekstual (Contextual Teaching and Learning)",
+    "Pembelajaran Kooperatif (Cooperative Learning)",
+    "Pembelajaran Berdiferensiasi (Differentiated Learning)",
+    "Lainnya (Akan dijelaskan dalam Langkah Pembelajaran)"
+] as const;
+
 
 export const BASE_POINTS_PER_SESSION = 20;
