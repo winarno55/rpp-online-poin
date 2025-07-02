@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import dbConnect from '../_lib/db.js';
-import PricingConfig from '../_lib/models/PricingConfig.js';
+import dbConnect from '../_lib/db';
+import PricingConfig from '../_lib/models/PricingConfig';
 import cors from 'cors';
 
 const corsHandler = cors();

@@ -1,31 +1,34 @@
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI } from '@google/genai';
-import { protect } from './_lib/auth.js';
-import dbConnect from './_lib/db.js';
-import User, { IUser } from './_lib/models/User.js';
-import PricingConfig from './_lib/models/PricingConfig.js';
-import { generateLessonPlanPrompt } from '../src/services/geminiService.js';
-import { LessonPlanInput } from '../src/types.js';
+import { protect } from './_lib/auth';
+import dbConnect from './_lib/db';
+import User, { IUser } from './_lib/models/User';
+import PricingConfig from './_lib/models/PricingConfig';
+import { generateLessonPlanPrompt } from '../src/services/geminiService';
+import { LessonPlanInput } from '../src/types';
 import cors from 'cors';
 
 const corsHandler = cors();
-
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-if (!GEMINI_API_KEY) {
-    throw new Error('Please define the GEMINI_API_KEY environment variable');
-}
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 type AuthRequest = VercelRequest & {
   user?: IUser;
 };
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
+    // Moved GEMINI_API_KEY check and initialization inside the handler
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
+        return res.status(500).json({ message: 'Server configuration error: Missing Gemini API Key.' });
+    }
+    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
     // This outer try-catch will handle DB connection errors, user fetching errors, etc.
     try {
         await dbConnect();
 
         if (!req.user) {
+            // This case should be handled by protect middleware, but as a safeguard:
             return res.status(401).json({ message: 'Not authorized' });
         }
         if (req.user.role === 'admin') {
@@ -55,7 +58,6 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             return res.status(403).json({ message: `Poin Anda tidak cukup untuk membuat modul ajar ${numSessions} sesi (butuh ${dynamicCost} poin).` });
         }
     
-        // ---- Start of the new, smarter error handling ----
         let lessonPlan;
         try {
             const prompt = generateLessonPlanPrompt(lessonPlanData);
@@ -86,13 +88,9 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             } else {
                  userMessage = 'Gagal berkomunikasi dengan AI. Ini bisa terjadi jika permintaan terlalu lama diproses (timeout) atau ada gangguan sementara. Silakan coba lagi.';
             }
-
-            // Return a specific error status (like 424 Failed Dependency) and DO NOT deduct points.
             return res.status(424).json({ message: userMessage, error: aiError.message });
         }
-        // ---- End of the new, smarter error handling ----
 
-        // This part only runs if the AI call was successful.
         user.points -= dynamicCost;
         await user.save();
 
@@ -101,19 +99,31 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             newPoints: user.points,
         });
 
-    } catch (dbError: any) {
-        // This outer catch now primarily handles database errors or other unexpected server issues.
-        console.error('General Server Error (DB, etc.):', dbError);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server saat memproses permintaan Anda.', error: dbError.message });
+    } catch (serverError: any) {
+        console.error('General Server Error (DB, etc.):', serverError);
+        res.status(500).json({ message: 'Terjadi kesalahan pada server saat memproses permintaan Anda.', error: serverError.message });
     }
 }
 
-// The wrapper code remains the same.
+// Updated robust wrapper for the API endpoint
 export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, () => {
-        protect(req as AuthRequest, res, () => {
+    corsHandler(req, res, async () => {
+        try {
+            await new Promise<void>((resolve, reject) => {
+                // Pass a callback to `protect` that resolves the promise.
+                // Catch any promise rejections from `protect` itself.
+                protect(req as AuthRequest, res, () => resolve()).catch(reject);
+            });
+            
+            // If protect() sent a response, headers will be sent, so we should stop.
             if (res.headersSent) return;
-            apiHandler(req as AuthRequest, res);
-        });
+
+            await apiHandler(req as AuthRequest, res);
+        } catch (error: any) {
+            console.error(`API Error in /api/generate:`, error);
+            if (!res.headersSent) {
+                res.status(500).json({ message: "A server error occurred.", error: error.message });
+            }
+        }
     });
 };

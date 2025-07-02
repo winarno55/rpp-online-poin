@@ -8,6 +8,7 @@ export interface ISessionCost extends Document {
 
 // Interface untuk sub-dokumen Paket Poin
 export interface IPointPackage extends Document {
+  _id: mongoose.Types.ObjectId; // Ditambahkan untuk identifikasi unik
   points: number;
   price: number;
 }
