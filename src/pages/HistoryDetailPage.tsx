@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { initDB, getRppById, RppHistoryItem } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
-import { markdownToPlainText } from '../utils/markdownUtils';
+import { markdownToPlainText, markdownToHtml } from '../utils/markdownUtils';
+import { exportToDocx } from '../utils/docxUtils';
 
 const HistoryDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -54,6 +55,18 @@ const HistoryDetailPage: React.FC = () => {
         }
     }, [rpp]);
 
+    const handleDownloadDocx = useCallback(() => {
+        if (!rpp) return;
+        try {
+            const htmlContent = markdownToHtml(rpp.generatedPlan);
+            const fileName = `ModulAjar_${rpp.mataPelajaran.replace(/\s+/g, '_')}`;
+            exportToDocx(htmlContent, fileName);
+        } catch (e) {
+            console.error("Error creating DOCX", e);
+            setError(e instanceof Error ? `Kesalahan DOCX: ${e.message}` : 'Gagal membuat DOCX.');
+        }
+    }, [rpp]);
+
     const handlePrint = useCallback(() => {
         if (!rpp) return;
         window.print();
@@ -87,6 +100,7 @@ const HistoryDetailPage: React.FC = () => {
                     </h2>
                     <p className="text-slate-300 mt-1">Dibuat pada {new Date(rpp.createdAt).toLocaleString('id-ID')}</p>
                     <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+                        <button onClick={handleDownloadDocx} className={`${downloadButtonBaseClass} bg-blue-600 hover:bg-blue-700`}>Unduh DOCX</button>
                         <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`}>Unduh TXT</button>
                         <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`}>Cetak / Simpan PDF</button>
                         <Link to="/history" className={`${downloadButtonBaseClass} bg-slate-600 hover:bg-slate-500`}>Kembali ke Riwayat</Link>

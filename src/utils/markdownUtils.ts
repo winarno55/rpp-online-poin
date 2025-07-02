@@ -107,7 +107,15 @@ function parseSingleMarkdownTableToHtml(tableMarkdown: string): string {
 }
 
 export function cleanMarkdownContent(markdown: string): string {
-    let lines = markdown.split('\n');
+    // First, let's strip any markdown code fences surrounding the whole content.
+    let content = markdown.trim();
+    const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
+    const match = content.match(fenceRegex);
+    if (match && match[2]) {
+      content = match[2].trim();
+    }
+    
+    let lines = content.split('\n');
     let startIndex = 0;
 
     const judulMarker = "[JUDUL RPP/MODUL AJAR:";

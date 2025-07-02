@@ -49,7 +49,7 @@ ${createOptionalSection('Kemitraan Pembelajaran', kemitraanPembelajaran)}
 
 Hasilkan Modul Ajar dalam format Markdown yang rapi, terstruktur, dan siap pakai. Ikuti struktur di bawah ini dengan SEKSAMA.
 
-# MODUL AJAR: [Buat judul yang menarik dan relevan berdasarkan Materi: ${materi}]
+# **MODUL AJAR: [Buat judul yang menarik dan relevan berdasarkan Materi: ${materi}]**
 
 ## Identitas
 - **Mata Pelajaran:** ${mataPelajaran}

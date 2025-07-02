@@ -4,7 +4,8 @@ import { LessonPlanForm } from '../components/LessonPlanForm';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
 import { LessonPlanInput, addRppToHistory, initDB } from '../types';
-import { markdownToPlainText } from '../utils/markdownUtils';
+import { markdownToPlainText, markdownToHtml } from '../utils/markdownUtils';
+import { exportToDocx } from '../utils/docxUtils';
 import { useAuth } from '../hooks/useAuth';
 
 interface SessionCost {
@@ -140,6 +141,18 @@ const HomePage: React.FC = () => {
         setError(e instanceof Error ? `Kesalahan TXT: ${e.message}` : 'Gagal membuat TXT.');
     }
   }, [generatedPlan, lessonPlanInput]);
+
+  const handleDownloadDocx = useCallback(() => {
+    if (!generatedPlan || !lessonPlanInput) return;
+    try {
+        const htmlContent = markdownToHtml(generatedPlan);
+        const fileName = `ModulAjar_${lessonPlanInput.mataPelajaran.replace(/\s+/g, '_')}`;
+        exportToDocx(htmlContent, fileName);
+    } catch (e) {
+        console.error("Error creating DOCX", e);
+        setError(e instanceof Error ? `Kesalahan DOCX: ${e.message}` : 'Gagal membuat DOCX.');
+    }
+  }, [generatedPlan, lessonPlanInput]);
   
   const handlePrint = useCallback(() => {
     if (!generatedPlan) return;
@@ -186,6 +199,7 @@ const HomePage: React.FC = () => {
                  <p className="text-slate-600 mb-1">Anda telah menggunakan {dynamicCost} poin.</p>
                  <p className="text-slate-700 mb-4 text-md">Sisa poin Anda: <span className="font-bold text-emerald-600">{authData.user?.points}</span></p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button onClick={handleDownloadDocx} className={`${downloadButtonBaseClass} bg-blue-600 hover:bg-blue-700`} disabled={isLoading}>Unduh DOCX</button>
                   <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`} disabled={isLoading}>Unduh TXT</button>
                   <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`} disabled={isLoading}>Cetak / Simpan PDF</button>
                 </div>
