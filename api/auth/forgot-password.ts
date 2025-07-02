@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import dbConnect from '../_lib/db';
-import User from '../_lib/models/User';
+import dbConnect from '../_lib/db.js';
+import User from '../_lib/models/User.js';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
 

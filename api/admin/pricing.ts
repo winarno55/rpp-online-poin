@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { protect, admin } from '../_lib/auth';
-import dbConnect from '../_lib/db';
-import PricingConfig from '../_lib/models/PricingConfig';
+import { protect, admin } from '../_lib/auth.js';
+import dbConnect from '../_lib/db.js';
+import PricingConfig from '../_lib/models/PricingConfig.js';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -47,24 +47,13 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 }
 
 export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, async () => {
-        try {
-            await new Promise<void>((resolve) => {
-                protect(req as AuthRequest, res, () => resolve());
-            });
+    corsHandler(req, res, () => {
+        protect(req as AuthRequest, res, () => {
             if (res.headersSent) return;
-            
-            await new Promise<void>((resolve) => {
-                admin(req as AuthRequest, res, () => resolve());
+            admin(req as AuthRequest, res, () => {
+                if (res.headersSent) return;
+                apiHandler(req as AuthRequest, res);
             });
-            if (res.headersSent) return;
-
-            await apiHandler(req as AuthRequest, res);
-        } catch (error: any) {
-            console.error(`API Error in ${req.url}:`, error);
-            if (!res.headersSent) {
-                res.status(500).json({ message: "A server error occurred.", error: error.message });
-            }
-        }
+        });
     });
 }

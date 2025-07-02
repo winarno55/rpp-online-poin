@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
-import User, { IUser } from './models/User';
-import dbConnect from './db';
+import User, { IUser } from './models/User.js';
+import dbConnect from './db.js';
 
 type AuthRequest = VercelRequest & {
   user?: IUser;

@@ -64,7 +64,7 @@ const App: React.FC = () => {
               </ProtectedRoute>
             } 
           />
-           <Route 
+          <Route 
             path="/app/history"
             element={
               <ProtectedRoute>
@@ -80,8 +80,12 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
-          {/* Redirect any other sub-routes of /app back to /app */}
-          <Route path="/app/*" element={<Navigate to="/app" replace />} />
+
+          {/* Pengalihan untuk bookmark lama */}
+           <Route path="/admin" element={<Navigate to="/app/admin" replace />} />
+           <Route path="/history" element={<Navigate to="/app/history" replace />} />
+           <Route path="/history/:id" element={<Navigate to="/app/history/:id" replace />} />
+
         </Routes>
       </main>
       {!isAppRoute && <Footer />}
