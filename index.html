@@ -91,23 +91,34 @@
         orphans: 3; /* Avoid single lines at the end of a page */
       }
       
+      /* --- Improved Table Styles for Printing --- */
       #rpp-paper-preview table {
         width: 100% !important;
         border-collapse: collapse !important;
-        page-break-inside: avoid; /* Try to keep tables on one page */
+        table-layout: fixed; /* Prevents table from becoming wider than its container due to long content. */
         font-size: 9pt;
+      }
+      
+      #rpp-paper-preview thead {
+        display: table-header-group !important; /* Crucial for repeating table headers on each printed page. */
+      }
+
+      #rpp-paper-preview tr {
+        page-break-inside: avoid !important; /* Prevents a single row from splitting across pages. */
       }
       
       #rpp-paper-preview th, #rpp-paper-preview td {
         border: 1px solid #333 !important;
-        padding: 4px !important;
+        padding: 5px !important;
         text-align: left !important;
+        word-wrap: break-word !important; /* Forces long text (like URLs) to wrap within the cell. */
       }
       
       #rpp-paper-preview th {
         background-color: #eee !important;
         font-weight: bold;
       }
+      /* --- End of Improved Table Styles --- */
     }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
