@@ -13,10 +13,6 @@ type AuthRequest = VercelRequest & {
   user?: IUser;
 };
 
-// IMPORTANT: This file contains a hypothetical implementation for creating a payment
-// link with a payment gateway like Lynk.id. The actual API endpoints, request body,
-// and response structure must be verified and adjusted against the official Lynk.id API documentation.
-
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
     const LYNK_MERCHANT_KEY = process.env.LYNK_MERCHANT_KEY;
     if (!LYNK_MERCHANT_KEY) {
@@ -26,10 +22,6 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     
     try {
         await dbConnect();
-
-        if (!req.user) {
-            return res.status(401).json({ message: 'Not authorized' });
-        }
 
         const { packageId } = req.body;
         if (!packageId) {
@@ -51,7 +43,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         }
 
         const transaction: ITransaction = await Transaction.create({
-            userId: req.user._id,
+            userId: req.user!._id,
             packageId: selectedPackage._id,
             points: selectedPackage.points,
             price: selectedPackage.price,
@@ -67,11 +59,9 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             amount: selectedPackage.price,
             description: `Top-up: ${selectedPackage.points} Poin untuk ModulAjarCerdas`,
             reference_id: transaction._id.toString(),
-            customer_name: req.user.email,
-            customer_email: req.user.email,
+            customer_name: req.user!.email,
+            customer_email: req.user!.email,
             redirect_url: redirectUrl,
-            // Hypothetical webhook URL - should be configured in Lynk.id dashboard
-            // webhook_url: `${protocol}://${host}/api/payment/webhook/lynk`,
         };
         
         const lynkResponse = await fetch('https://api.lynk.id/v1/payments', { 
@@ -103,17 +93,26 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     }
 }
 
-// Correctly handles middleware with callbacks.
-export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, () => {
-        // Use `protect` middleware, passing the main handler as the 'next' function.
-        protect(req as AuthRequest, res, () => {
-            // If `protect` already sent a response (e.g., 401 Unauthorized), we must not continue.
-            if (res.headersSent) {
-                return;
+async function protectedApiRoute(req: AuthRequest, res: VercelResponse) {
+    let nextCalled = false;
+    const next = () => { nextCalled = true; };
+
+    await protect(req, res, next);
+    if (res.headersSent) return;
+    if (!nextCalled) throw new Error("Middleware 'protect' failed to call next or send response.");
+
+    await apiHandler(req, res);
+}
+
+export default function(req: VercelRequest, res: VercelResponse) {
+    corsHandler(req, res, async () => {
+        try {
+            await protectedApiRoute(req as AuthRequest, res);
+        } catch (e: any) {
+            console.error("API Route Unhandled Exception:", e.message);
+            if (!res.headersSent) {
+                res.status(500).json({ message: "An unexpected error occurred in the handler wrapper." });
             }
-            // `protect` was successful, call the main API logic.
-            apiHandler(req as AuthRequest, res);
-        });
+        }
     });
-};
+}

@@ -16,26 +16,20 @@ type AuthRequest = VercelRequest & {
 };
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
-    // Moved GEMINI_API_KEY check and initialization inside the handler
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) {
         return res.status(500).json({ message: 'Server configuration error: Missing Gemini API Key.' });
     }
     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-    // This outer try-catch will handle DB connection errors, user fetching errors, etc.
     try {
         await dbConnect();
 
-        if (!req.user) {
-            // This case should be handled by protect middleware, but as a safeguard:
-            return res.status(401).json({ message: 'Not authorized' });
-        }
-        if (req.user.role === 'admin') {
+        if (req.user!.role === 'admin') {
             return res.status(403).json({ message: 'Admin users cannot generate lesson plans.' });
         }
         
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user!._id);
         if (!user) {
             return res.status(401).json({ message: 'User not found.' });
         }
@@ -105,19 +99,26 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     }
 }
 
+async function protectedApiRoute(req: AuthRequest, res: VercelResponse) {
+    let nextCalled = false;
+    const next = () => { nextCalled = true; };
 
-// Correctly handles middleware with callbacks.
-export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, () => {
-        // Use `protect` middleware, passing the main handler as the 'next' function.
-        protect(req as AuthRequest, res, () => {
-            // If `protect` already sent a response (e.g., 401 Unauthorized), we must not continue.
-            if (res.headersSent) {
-                return;
+    await protect(req, res, next);
+    if (res.headersSent) return;
+    if (!nextCalled) throw new Error("Middleware 'protect' failed to call next or send response.");
+
+    await apiHandler(req, res);
+}
+
+export default function(req: VercelRequest, res: VercelResponse) {
+    corsHandler(req, res, async () => {
+        try {
+            await protectedApiRoute(req as AuthRequest, res);
+        } catch (e: any) {
+            console.error("API Route Unhandled Exception:", e.message);
+            if (!res.headersSent) {
+                res.status(500).json({ message: "An unexpected error occurred in the handler wrapper." });
             }
-            // `protect` was successful, call the main API logic.
-            // Since apiHandler is async and has its own try/catch, we can call it directly.
-            apiHandler(req as AuthRequest, res);
-        });
+        }
     });
-};
+}

@@ -13,16 +13,9 @@ type AuthRequest = VercelRequest & {
   user?: IUser;
 };
 
-// This endpoint is now repurposed for client-side, post-payment confirmation.
-// It is NOT a real webhook handler anymore and is protected by authentication.
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
     await dbConnect();
 
-    if (!req.user) {
-        return res.status(401).json({ message: 'Not authorized' });
-    }
-
-    // The client sends transactionId, which corresponds to the transaction's _id
     const { transactionId } = req.body;
     if (!transactionId || !mongoose.Types.ObjectId.isValid(transactionId)) {
         return res.status(400).json({ message: 'Valid Transaction ID is required.' });
@@ -30,7 +23,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 
     const session = await mongoose.startSession();
     try {
-        let newPoints = req.user.points || 0;
+        let newPoints = req.user!.points || 0;
         let finalMessage = 'Payment was already confirmed.';
 
         await session.withTransaction(async () => {
@@ -40,15 +33,13 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                 throw new Error('Transaction could not be verified.');
             }
 
-            // Security check: ensure the transaction belongs to the logged-in user
-            if (transaction.userId.toString() !== req.user?._id.toString()) {
-                console.warn(`Security alert: User ${req.user.email} tried to confirm transaction ${transactionId} belonging to user ${transaction.userId}.`);
+            if (transaction.userId.toString() !== req.user!._id.toString()) {
+                console.warn(`Security alert: User ${req.user!.email} tried to confirm transaction ${transactionId} belonging to user ${transaction.userId}.`);
                 throw new Error('You are not authorized to confirm this transaction.');
             }
             
-            // Idempotency check: only process pending transactions
             if (transaction.status === 'PENDING') {
-                const user = await User.findById(req.user?._id).session(session);
+                const user = await User.findById(req.user!._id).session(session);
                 if (!user) {
                     throw new Error('Associated user account not found.');
                 }
@@ -77,17 +68,26 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     }
 }
 
-// Correctly handles middleware with callbacks.
-export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, () => {
-        // Use `protect` middleware, passing the main handler as the 'next' function.
-        protect(req as AuthRequest, res, () => {
-            // If `protect` already sent a response (e.g., 401 Unauthorized), we must not continue.
-            if (res.headersSent) {
-                return;
+async function protectedApiRoute(req: AuthRequest, res: VercelResponse) {
+    let nextCalled = false;
+    const next = () => { nextCalled = true; };
+
+    await protect(req, res, next);
+    if (res.headersSent) return;
+    if (!nextCalled) throw new Error("Middleware 'protect' failed to call next or send response.");
+
+    await apiHandler(req, res);
+}
+
+export default function(req: VercelRequest, res: VercelResponse) {
+    corsHandler(req, res, async () => {
+        try {
+            await protectedApiRoute(req as AuthRequest, res);
+        } catch (e: any) {
+            console.error("API Route Unhandled Exception:", e.message);
+            if (!res.headersSent) {
+                res.status(500).json({ message: "An unexpected error occurred in the handler wrapper." });
             }
-            // `protect` was successful, call the main API logic.
-            apiHandler(req as AuthRequest, res);
-        });
+        }
     });
 }
