@@ -77,22 +77,17 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     }
 }
 
-// Wrap with CORS and the 'protect' middleware. This is no longer a public endpoint.
+// Correctly handles middleware with callbacks.
 export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, async () => {
-        try {
-            await new Promise<void>((resolve, reject) => {
-                protect(req as AuthRequest, res, () => resolve()).catch(reject);
-            });
-            // If protect() sent a response, headers will be sent, so we should stop.
-            if (res.headersSent) return;
-
-            await apiHandler(req as AuthRequest, res);
-        } catch (error: any) {
-            console.error(`API Error in ${req.url}:`, error);
-            if (!res.headersSent) {
-                res.status(500).json({ message: "A server error occurred.", error: error.message });
+    corsHandler(req, res, () => {
+        // Use `protect` middleware, passing the main handler as the 'next' function.
+        protect(req as AuthRequest, res, () => {
+            // If `protect` already sent a response (e.g., 401 Unauthorized), we must not continue.
+            if (res.headersSent) {
+                return;
             }
-        }
+            // `protect` was successful, call the main API logic.
+            apiHandler(req as AuthRequest, res);
+        });
     });
 }

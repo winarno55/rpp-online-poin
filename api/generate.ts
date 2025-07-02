@@ -105,25 +105,19 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     }
 }
 
-// Updated robust wrapper for the API endpoint
-export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, async () => {
-        try {
-            await new Promise<void>((resolve, reject) => {
-                // Pass a callback to `protect` that resolves the promise.
-                // Catch any promise rejections from `protect` itself.
-                protect(req as AuthRequest, res, () => resolve()).catch(reject);
-            });
-            
-            // If protect() sent a response, headers will be sent, so we should stop.
-            if (res.headersSent) return;
 
-            await apiHandler(req as AuthRequest, res);
-        } catch (error: any) {
-            console.error(`API Error in /api/generate:`, error);
-            if (!res.headersSent) {
-                res.status(500).json({ message: "A server error occurred.", error: error.message });
+// Correctly handles middleware with callbacks.
+export default function (req: VercelRequest, res: VercelResponse) {
+    corsHandler(req, res, () => {
+        // Use `protect` middleware, passing the main handler as the 'next' function.
+        protect(req as AuthRequest, res, () => {
+            // If `protect` already sent a response (e.g., 401 Unauthorized), we must not continue.
+            if (res.headersSent) {
+                return;
             }
-        }
+            // `protect` was successful, call the main API logic.
+            // Since apiHandler is async and has its own try/catch, we can call it directly.
+            apiHandler(req as AuthRequest, res);
+        });
     });
 };
