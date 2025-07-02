@@ -21,6 +21,7 @@ import HomePage from './pages/HomePage';
 import AdminPage from './pages/AdminPage';
 import HistoryPage from './pages/HistoryPage';
 import HistoryDetailPage from './pages/HistoryDetailPage';
+import PaymentStatusPage from './pages/PaymentStatusPage'; // Import halaman baru
 
 const App: React.FC = () => {
   const location = useLocation();
@@ -77,6 +78,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <HistoryDetailPage />
+              </ProtectedRoute>
+            }
+          />
+           <Route 
+            path="/app/payment/status" // Rute baru untuk status pembayaran
+            element={
+              <ProtectedRoute>
+                <PaymentStatusPage />
               </ProtectedRoute>
             }
           />
