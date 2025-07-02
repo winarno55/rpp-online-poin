@@ -1,4 +1,5 @@
 
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { protect } from '../_lib/auth';
 import dbConnect from '../_lib/db';
@@ -110,10 +111,19 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 }
 
 export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, () => {
-        protect(req as AuthRequest, res, () => {
+    corsHandler(req, res, async () => {
+        try {
+            await new Promise<void>((resolve) => {
+                protect(req as AuthRequest, res, () => resolve());
+            });
             if (res.headersSent) return;
-            apiHandler(req as AuthRequest, res);
-        });
+
+            await apiHandler(req as AuthRequest, res);
+        } catch (error: any) {
+            console.error(`API Error in ${req.url}:`, error);
+            if (!res.headersSent) {
+                res.status(500).json({ message: "A server error occurred.", error: error.message });
+            }
+        }
     });
 };

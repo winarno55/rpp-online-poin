@@ -10,17 +10,17 @@ import cors from 'cors';
 
 const corsHandler = cors();
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-if (!GEMINI_API_KEY) {
-    throw new Error('Please define the GEMINI_API_KEY environment variable');
-}
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
 type AuthRequest = VercelRequest & {
   user?: IUser;
 };
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
+        throw new Error('Please define the GEMINI_API_KEY environment variable');
+    }
+    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
     // This outer try-catch will handle DB connection errors, user fetching errors, etc.
     try {
         await dbConnect();
@@ -110,10 +110,19 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 
 // The wrapper code remains the same.
 export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, () => {
-        protect(req as AuthRequest, res, () => {
+    corsHandler(req, res, async () => {
+        try {
+            await new Promise<void>((resolve) => {
+                protect(req as AuthRequest, res, () => resolve());
+            });
             if (res.headersSent) return;
-            apiHandler(req as AuthRequest, res);
-        });
+
+            await apiHandler(req as AuthRequest, res);
+        } catch (error: any) {
+            console.error(`API Error in /api/generate:`, error);
+            if (!res.headersSent) {
+                res.status(500).json({ message: "A server error occurred.", error: error.message });
+            }
+        }
     });
 };
