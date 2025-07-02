@@ -1,17 +1,21 @@
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { protect } from '../_lib/auth.js';
 import dbConnect from '../_lib/db.js';
-import User, { IUser } from '../_lib/models/User.js';
+import { IUser } from '../_lib/models/User.js';
 import PricingConfig from '../_lib/models/PricingConfig.js';
 import Transaction from '../_lib/models/Transaction.js';
 import cors from 'cors';
-import crypto from 'crypto';
 
 const corsHandler = cors();
 
 type AuthRequest = VercelRequest & {
   user?: IUser;
 };
+
+// IMPORTANT: This file contains a hypothetical implementation for creating a payment
+// link with a payment gateway like Lynk.id. The actual API endpoints, request body,
+// and response structure must be verified and adjusted against the official Lynk.id API documentation.
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
     await dbConnect();
@@ -24,19 +28,26 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     if (!packageId) {
         return res.status(400).json({ message: 'Package ID is required.' });
     }
+    
+    const LYNK_MERCHANT_KEY = process.env.LYNK_MERCHANT_KEY;
+    if (!LYNK_MERCHANT_KEY) {
+        console.error("LYNK_MERCHANT_KEY environment variable is not set.");
+        return res.status(500).json({ message: 'Konfigurasi pembayaran di sisi server belum lengkap.' });
+    }
 
     try {
         const pricingConfig = await PricingConfig.findOne().exec();
         if (!pricingConfig) {
-            return res.status(500).json({ message: 'Pricing configuration not found.' });
+            return res.status(500).json({ message: 'Konfigurasi harga tidak ditemukan.' });
         }
 
         const selectedPackage = pricingConfig.pointPackages.find(p => p._id.toString() === packageId);
         if (!selectedPackage) {
-            return res.status(404).json({ message: 'Selected package not found.' });
+            return res.status(404).json({ message: 'Paket yang dipilih tidak ditemukan.' });
         }
 
-        // Buat transaksi di database kita
+        // 1. Create a local transaction record with 'PENDING' status.
+        // This record will be updated by the webhook later.
         const transaction = await Transaction.create({
             userId: req.user._id,
             packageId: selectedPackage._id,
@@ -44,23 +55,70 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             price: selectedPackage.price,
             status: 'PENDING',
             provider: 'lynk',
-            providerTransactionId: `sim_lynk_${crypto.randomBytes(12).toString('hex')}`
         });
 
-        // Dalam aplikasi nyata, Anda akan memanggil API Lynk di sini untuk membuat tautan pembayaran.
-        // Untuk simulasi, kita buat URL yang mengarah ke halaman status pembayaran kita.
+        // 2. Prepare the payload for the Lynk.id API.
+        // NOTE: The payload structure is hypothetical.
         const protocol = (req.headers['x-forwarded-proto'] as string) || 'http';
         const host = req.headers.host;
-        const paymentUrl = `${protocol}://${host}/app/payment/status?transaction_id=${transaction._id.toString()}`;
+        const redirectUrl = `${protocol}://${host}/app`; // User is sent here after completing/cancelling payment.
 
+        const lynkPayload = {
+            amount: selectedPackage.price,
+            description: `Top-up: ${selectedPackage.points} Poin untuk ModulAjarCerdas`,
+            reference_id: transaction._id.toString(), // Use our internal ID for reconciliation.
+            customer_name: req.user.email,
+            customer_email: req.user.email,
+            redirect_url: redirectUrl,
+            // The webhook URL should be configured in the Lynk.id dashboard, not sent per transaction.
+        };
+        
+        // 3. Call the Lynk.id API to get a payment URL.
+        // NOTE: The URL 'https://api.lynk.id/v1/payments' is hypothetical and needs to be changed to the real one.
+        const lynkResponse = await fetch('https://api.lynk.id/v1/payments', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${LYNK_MERCHANT_KEY}`, // 'Bearer' is a common scheme, might be different.
+            },
+            body: JSON.stringify(lynkPayload),
+        });
+
+        const lynkData = await lynkResponse.json();
+
+        if (!lynkResponse.ok) {
+            // If the call to Lynk.id fails, mark our transaction as FAILED to avoid pending records.
+            transaction.status = 'FAILED';
+            await transaction.save();
+            console.error("Lynk.id API Error:", lynkData);
+            throw new Error(lynkData.message || 'Gagal membuat link pembayaran dengan Lynk.id.');
+        }
+
+        // 4. Extract payment URL and provider's transaction ID from the response.
+        // NOTE: Keys 'payment_url' and 'transaction_id' are hypothetical.
+        const paymentUrl = lynkData.payment_url;
+        const providerTransactionId = lynkData.transaction_id;
+
+        if (!paymentUrl || !providerTransactionId) {
+             transaction.status = 'FAILED';
+             await transaction.save();
+             throw new Error('Respons dari Lynk.id tidak berisi informasi pembayaran yang diperlukan.');
+        }
+        
+        // Update our transaction with the ID from Lynk for better tracking.
+        transaction.providerTransactionId = providerTransactionId;
+        await transaction.save();
+
+        // 5. Send the payment URL back to the frontend for redirection.
         res.status(200).json({ paymentUrl });
 
     } catch (error: any) {
         console.error('Error creating transaction:', error);
-        res.status(500).json({ message: 'Server error while creating transaction.', error: error.message });
+        res.status(500).json({ message: 'Terjadi kesalahan di server saat memulai transaksi.', error: error.message });
     }
 }
 
+// Wrap with CORS and authentication middleware.
 export default function (req: VercelRequest, res: VercelResponse) {
     corsHandler(req, res, () => {
         protect(req as AuthRequest, res, () => {

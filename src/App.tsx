@@ -21,7 +21,6 @@ import HomePage from './pages/HomePage';
 import AdminPage from './pages/AdminPage';
 import HistoryPage from './pages/HistoryPage';
 import HistoryDetailPage from './pages/HistoryDetailPage';
-import PaymentStatusPage from './pages/PaymentStatusPage'; // Import halaman baru
 
 const App: React.FC = () => {
   const location = useLocation();
@@ -65,7 +64,7 @@ const App: React.FC = () => {
               </ProtectedRoute>
             } 
           />
-          <Route 
+           <Route 
             path="/app/history"
             element={
               <ProtectedRoute>
@@ -81,20 +80,8 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
-           <Route 
-            path="/app/payment/status" // Rute baru untuk status pembayaran
-            element={
-              <ProtectedRoute>
-                <PaymentStatusPage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Pengalihan untuk bookmark lama */}
-           <Route path="/admin" element={<Navigate to="/app/admin" replace />} />
-           <Route path="/history" element={<Navigate to="/app/history" replace />} />
-           <Route path="/history/:id" element={<Navigate to="/app/history/:id" replace />} />
-
+          {/* Redirect any other sub-routes of /app back to /app */}
+          <Route path="/app/*" element={<Navigate to="/app" replace />} />
         </Routes>
       </main>
       {!isAppRoute && <Footer />}

@@ -1,103 +1,137 @@
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import dbConnect from '../_lib/db.js';
 import User from '../_lib/models/User.js';
 import Transaction from '../_lib/models/Transaction.js';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import crypto from 'crypto';
 
 const corsHandler = cors();
 
-// Di produksi, endpoint ini tidak akan dilindungi oleh auth pengguna,
-// tetapi oleh verifikasi signature dari penyedia pembayaran.
-// Untuk simulasi ini, kita akan menggunakan token JWT pengguna untuk keamanan.
-import { protect } from '../_lib/auth.js'; 
+// IMPORTANT: This webhook handler is a hypothetical implementation.
+// The security verification (signature checking) and payload structure must be
+// adapted to match the official Lynk.id webhook documentation.
 
-type AuthRequest = VercelRequest & {
-  user?: any;
-};
-
-async function apiHandler(req: AuthRequest, res: VercelResponse) {
-    // Dalam produksi, Anda akan memverifikasi signature webhook di sini
-    // const signature = req.headers['lynk-signature'];
-    // if (!verifySignature(req.body, signature)) {
-    //     return res.status(400).send('Invalid signature');
-    // }
-    
-    const { transactionId } = req.body;
-    if (!transactionId || !mongoose.Types.ObjectId.isValid(transactionId)) {
-        return res.status(400).json({ message: 'Invalid Transaction ID' });
+/**
+ * Verifies the incoming webhook signature.
+ * This is a critical security measure to ensure the request is from Lynk.id.
+ * @param {string | undefined} signature - The signature from a header like 'x-lynk-signature'.
+ * @param {VercelRequest['body']} body - The raw request body.
+ * @param {string} secret - The Webhook Secret from your environment variables.
+ * @returns {boolean} - True if the signature is valid, false otherwise.
+ */
+function verifySignature(signature: string | undefined, body: VercelRequest['body'], secret: string): boolean {
+    if (!signature) {
+        return false;
     }
+    // Lynk.id might use a different hashing algorithm or signature format.
+    // This HMAC SHA256 example is a common pattern. Adjust as per documentation.
+    const hmac = crypto.createHmac('sha256', secret);
+    // IMPORTANT: Webhook signing often uses the raw string body, not the parsed JSON.
+    // Assuming JSON.stringify is sufficient for now, but a more robust solution might
+    // need to disable Vercel's body parser for this route and read the raw stream.
+    hmac.update(JSON.stringify(body)); 
+    const expectedSignature = hmac.digest('hex');
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
+    // Use timingSafeEqual to prevent timing attacks
     try {
-        const transaction = await Transaction.findById(transactionId).session(session);
-
-        if (!transaction) {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(404).json({ message: 'Transaction not found.' });
+        // Ensure buffers have the same length to prevent timingSafeEqual from throwing
+        const sigBuffer = Buffer.from(signature);
+        const expectedSigBuffer = Buffer.from(expectedSignature);
+        if (sigBuffer.length !== expectedSigBuffer.length) {
+            return false;
         }
-        
-        // Pastikan webhook ini dipanggil oleh pengguna yang benar (hanya untuk simulasi)
-        if (transaction.userId.toString() !== req.user?._id.toString()) {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(403).json({ message: 'Forbidden: You cannot confirm this transaction.'});
-        }
-
-        // Idempotency check: jika transaksi sudah selesai, jangan proses lagi.
-        if (transaction.status === 'COMPLETED') {
-            await session.commitTransaction();
-            session.endSession();
-            const finalUser = await User.findById(transaction.userId);
-            return res.status(200).json({ message: 'Poin sudah ditambahkan sebelumnya.', newPoints: finalUser?.points });
-        }
-        
-        if (transaction.status !== 'PENDING') {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(409).json({ message: `Transaction is not pending, but in ${transaction.status} state.` });
-        }
-
-
-        const user = await User.findById(transaction.userId).session(session);
-        if (!user) {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(404).json({ message: 'User not found.' });
-        }
-
-        // Update status transaksi dan tambahkan poin ke pengguna
-        user.points += transaction.points;
-        transaction.status = 'COMPLETED';
-
-        await user.save({ session });
-        await transaction.save({ session });
-        
-        await session.commitTransaction();
-        session.endSession();
-
-        res.status(200).json({
-            message: `${transaction.points} poin telah berhasil ditambahkan ke akun Anda.`,
-            newPoints: user.points
-        });
-
-    } catch (error: any) {
-        await session.abortTransaction();
-        session.endSession();
-        console.error('Webhook processing error:', error);
-        res.status(500).json({ message: 'Server error during webhook processing.', error: error.message });
+        return crypto.timingSafeEqual(sigBuffer, expectedSigBuffer);
+    } catch {
+        return false;
     }
 }
 
-export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, () => {
-        // Melindungi endpoint webhook ini dengan otentikasi pengguna untuk tujuan simulasi
-        protect(req as AuthRequest, res, () => {
-            if (res.headersSent) return;
-            apiHandler(req as AuthRequest, res);
+
+async function apiHandler(req: VercelRequest, res: VercelResponse) {
+    await dbConnect();
+    
+    // 1. Security Verification
+    const LYNK_WEBHOOK_SECRET = process.env.LYNK_WEBHOOK_SECRET;
+    // NOTE: The header name 'x-lynk-signature' is hypothetical and must be confirmed with Lynk.id docs.
+    const signature = req.headers['x-lynk-signature'] as string | undefined;
+    
+    if (LYNK_WEBHOOK_SECRET) {
+        if (!verifySignature(signature, req.body, LYNK_WEBHOOK_SECRET)) {
+            console.warn("Invalid webhook signature received.");
+            return res.status(401).send('Invalid signature. Webhook request rejected.');
+        }
+    } else {
+        // This is a major security risk in production.
+        console.error("CRITICAL: LYNK_WEBHOOK_SECRET is not set. Skipping webhook signature verification. THIS IS NOT SAFE FOR PRODUCTION.");
+    }
+    
+    // 2. Parse the webhook payload
+    // NOTE: Payload structure is hypothetical. Adjust keys ('reference_id', 'status') based on Lynk.id docs.
+    const { reference_id, status, provider_transaction_id } = req.body;
+
+    if (!reference_id || !mongoose.Types.ObjectId.isValid(reference_id)) {
+        return res.status(400).json({ message: 'Invalid or missing reference_id (Transaction ID)' });
+    }
+
+    // Only process successful payments. Acknowledge other statuses to prevent re-sends.
+    // NOTE: The status value 'COMPLETED' or 'PAID' is hypothetical.
+    if (status !== 'COMPLETED' && status !== 'PAID') { 
+        console.log(`Webhook for transaction ${reference_id} received with non-completed status: '${status}'. No action taken.`);
+        return res.status(200).json({ message: `Webhook received for status: ${status}.` });
+    }
+    
+    const session = await mongoose.startSession();
+    
+    try {
+        // 3. Start Atomic Transaction
+        await session.withTransaction(async () => {
+            const transaction = await Transaction.findById(reference_id).session(session);
+
+            if (!transaction) {
+                // If transaction not found, throw error to abort.
+                throw new Error('Transaction not found.');
+            }
+            
+            // 4. Idempotency Check: If already completed, do nothing further.
+            if (transaction.status === 'COMPLETED') {
+                console.log(`Transaction ${reference_id} is already completed. Idempotency check passed.`);
+                return; // Exit the transaction block successfully.
+            }
+
+            const user = await User.findById(transaction.userId).session(session);
+            if (!user) {
+                throw new Error('User associated with the transaction not found.');
+            }
+
+            // 5. Update Records
+            user.points += transaction.points;
+            transaction.status = 'COMPLETED';
+            if (provider_transaction_id) {
+                transaction.providerTransactionId = provider_transaction_id;
+            }
+
+            await user.save({ session });
+            await transaction.save({ session });
+            
+            console.log(`Successfully completed transaction ${reference_id}. Added ${transaction.points} points to user ${user.email}.`);
         });
+
+        res.status(200).json({ success: true, message: 'Webhook processed successfully.' });
+
+    } catch (error: any) {
+        console.error('Webhook processing error:', error);
+        res.status(500).json({ message: 'Error processing webhook.', error: error.message });
+    } finally {
+        session.endSession();
+    }
+}
+
+// Wrap with CORS. This endpoint is public but protected by signature.
+export default function (req: VercelRequest, res: VercelResponse) {
+    corsHandler(req, res, async () => {
+        // No protect/admin middleware here.
+        await apiHandler(req, res);
     });
-};
+}
