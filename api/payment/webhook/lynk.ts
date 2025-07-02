@@ -1,8 +1,8 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import dbConnect from '../_lib/db';
-import User from '../_lib/models/User';
-import Transaction from '../_lib/models/Transaction';
+import dbConnect from '../../_lib/db';
+import User from '../../_lib/models/User';
+import Transaction from '../../_lib/models/Transaction';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import crypto from 'crypto';
