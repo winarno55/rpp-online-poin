@@ -4,7 +4,7 @@ import { protect } from '../_lib/auth';
 import dbConnect from '../_lib/db';
 import { IUser } from '../_lib/models/User';
 import PricingConfig from '../_lib/models/PricingConfig';
-import Transaction from '../_lib/models/Transaction';
+import Transaction, { ITransaction } from '../_lib/models/Transaction';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -45,9 +45,15 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         if (!selectedPackage) {
             return res.status(404).json({ message: 'Paket yang dipilih tidak ditemukan.' });
         }
+        
+        // Add server-side validation for minimum price
+        if (selectedPackage.price < 10000) {
+            return res.status(400).json({ message: 'Transaksi otomatis tidak dapat diproses untuk nominal di bawah Rp 10.000.' });
+        }
 
         // 1. Create a local transaction record with 'PENDING' status.
-        const transaction = await Transaction.create({
+        // Add explicit type ITransaction to fix potential type errors
+        const transaction: ITransaction = await Transaction.create({
             userId: req.user._id,
             packageId: selectedPackage._id,
             points: selectedPackage.points,

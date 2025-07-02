@@ -122,11 +122,16 @@ const PricingPage: React.FC = () => {
                             <p className="text-2xl font-bold text-slate-800 mb-6">{formatCurrency(pkg.price)}</p>
                             <button 
                                 onClick={() => handleCreateTransaction(pkg._id)}
-                                disabled={isProcessing === pkg._id}
-                                className="w-full mt-auto bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-wait"
+                                disabled={isProcessing === pkg._id || pkg.price < 10000}
+                                className="w-full mt-auto bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isProcessing === pkg._id ? 'Memproses...' : 'Top Up Poin'}
                             </button>
+                            {pkg.price < 10000 && (
+                                <p className="text-xs text-slate-500 mt-2">
+                                    Pembayaran otomatis min. Rp 10.000.
+                                </p>
+                            )}
                         </div>
                     ))}
                 </div>
