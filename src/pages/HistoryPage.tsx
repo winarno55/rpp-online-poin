@@ -72,7 +72,7 @@ const HistoryPage: React.FC = () => {
                                 </p>
                             </div>
                             <div className="flex items-center gap-3">
-                                <Link to={`/history/${item.id}`} className="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded-md text-sm transition-colors">
+                                <Link to={`/app/history/${item.id}`} className="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded-md text-sm transition-colors">
                                     Lihat
                                 </Link>
                                 <button onClick={() => handleDelete(item.id)} className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-3 rounded-md text-sm transition-colors">

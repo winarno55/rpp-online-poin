@@ -104,14 +104,30 @@ export const getAllRpps = (): Promise<RppHistoryItem[]> => {
         const transaction = db.transaction(['rpp_history'], 'readonly');
         const store = transaction.objectStore('rpp_history');
         const index = store.index('createdAt');
-        const request = index.getAll();
+        // Use a cursor in descending order to get newest items first directly
+        const request = index.openCursor(null, 'prev');
+        
+        const items: RppHistoryItem[] = [];
 
-        request.onsuccess = () => {
-            resolve(request.result.reverse()); // Newest first
+        request.onsuccess = (event) => {
+            const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
+            if (cursor) {
+                // The value is the stored object.
+                const item = cursor.value;
+                // The primary key ('id') is available on the cursor.
+                // We assign it to the object to ensure it's always present,
+                // fixing issues where it might be missing from the value.
+                item.id = cursor.primaryKey as number; 
+                items.push(item);
+                cursor.continue();
+            } else {
+                // Cursor is done, all items have been collected.
+                resolve(items);
+            }
         };
 
         request.onerror = () => {
-            console.error('Error fetching all items:', request.error);
+            console.error('Error fetching all items with cursor:', request.error);
             reject('Gagal memuat riwayat.');
         };
     });
