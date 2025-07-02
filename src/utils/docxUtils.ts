@@ -19,16 +19,15 @@ export const exportToDocx = (htmlContent: string, fileName: string) => {
                             h1, h2, h3, h4, h5, h6 { font-family: 'Cambria', 'Times New Roman', serif; margin-top: 18pt; margin-bottom: 10pt; }
                             
                             /* --- Fix for List Indentation in Word --- */
-                            /* This approach gives more predictable control over indentation in Word. */
-                            /* We reset the list's own padding and apply a margin to the list items instead. */
+                            /* This approach removes all list indentation for a flat, left-aligned layout. */
                             ul, ol {
                                 margin-top: 0;
                                 margin-bottom: 8pt;
                                 padding-left: 0; /* Remove default browser/Word padding on the container. */
                             }
                             li {
-                                list-style-position: outside; /* Crucial: Puts the bullet/number outside the text block, allowing a clean indent. */
-                                margin-left: 30pt;           /* This becomes the primary indentation for the list item. */
+                                list-style-position: inside; /* Crucial: Puts the bullet/number INSIDE the text block, aligning it left. */
+                                margin-left: 0;           /* Remove any margin-based indentation. */
                                 margin-bottom: 4pt;          /* Spacing between list items. */
                                 padding-left: 0;             /* Ensure no extra padding is added. */
                             }
