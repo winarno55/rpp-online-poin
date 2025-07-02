@@ -1,8 +1,8 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import dbConnect from '../_lib/db.js';
-import User from '../_lib/models/User.js';
-import Transaction from '../_lib/models/Transaction.js';
+import dbConnect from '../_lib/db';
+import User from '../_lib/models/User';
+import Transaction from '../_lib/models/Transaction';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import crypto from 'crypto';
@@ -16,27 +16,17 @@ const corsHandler = cors();
 /**
  * Verifies the incoming webhook signature.
  * This is a critical security measure to ensure the request is from Lynk.id.
- * @param {string | undefined} signature - The signature from a header like 'x-lynk-signature'.
- * @param {VercelRequest['body']} body - The raw request body.
- * @param {string} secret - The Webhook Secret from your environment variables.
- * @returns {boolean} - True if the signature is valid, false otherwise.
  */
 function verifySignature(signature: string | undefined, body: VercelRequest['body'], secret: string): boolean {
     if (!signature) {
         return false;
     }
-    // Lynk.id might use a different hashing algorithm or signature format.
-    // This HMAC SHA256 example is a common pattern. Adjust as per documentation.
     const hmac = crypto.createHmac('sha256', secret);
     // IMPORTANT: Webhook signing often uses the raw string body, not the parsed JSON.
-    // Assuming JSON.stringify is sufficient for now, but a more robust solution might
-    // need to disable Vercel's body parser for this route and read the raw stream.
     hmac.update(JSON.stringify(body)); 
     const expectedSignature = hmac.digest('hex');
 
-    // Use timingSafeEqual to prevent timing attacks
     try {
-        // Ensure buffers have the same length to prevent timingSafeEqual from throwing
         const sigBuffer = Buffer.from(signature);
         const expectedSigBuffer = Buffer.from(expectedSignature);
         if (sigBuffer.length !== expectedSigBuffer.length) {
@@ -54,7 +44,7 @@ async function apiHandler(req: VercelRequest, res: VercelResponse) {
     
     // 1. Security Verification
     const LYNK_WEBHOOK_SECRET = process.env.LYNK_WEBHOOK_SECRET;
-    // NOTE: The header name 'x-lynk-signature' is hypothetical and must be confirmed with Lynk.id docs.
+    // NOTE: The header name 'x-lynk-signature' is hypothetical.
     const signature = req.headers['x-lynk-signature'] as string | undefined;
     
     if (LYNK_WEBHOOK_SECRET) {
@@ -63,19 +53,17 @@ async function apiHandler(req: VercelRequest, res: VercelResponse) {
             return res.status(401).send('Invalid signature. Webhook request rejected.');
         }
     } else {
-        // This is a major security risk in production.
         console.error("CRITICAL: LYNK_WEBHOOK_SECRET is not set. Skipping webhook signature verification. THIS IS NOT SAFE FOR PRODUCTION.");
     }
     
     // 2. Parse the webhook payload
-    // NOTE: Payload structure is hypothetical. Adjust keys ('reference_id', 'status') based on Lynk.id docs.
+    // NOTE: Payload structure is hypothetical.
     const { reference_id, status, provider_transaction_id } = req.body;
 
     if (!reference_id || !mongoose.Types.ObjectId.isValid(reference_id)) {
         return res.status(400).json({ message: 'Invalid or missing reference_id (Transaction ID)' });
     }
 
-    // Only process successful payments. Acknowledge other statuses to prevent re-sends.
     // NOTE: The status value 'COMPLETED' or 'PAID' is hypothetical.
     if (status !== 'COMPLETED' && status !== 'PAID') { 
         console.log(`Webhook for transaction ${reference_id} received with non-completed status: '${status}'. No action taken.`);
@@ -90,14 +78,13 @@ async function apiHandler(req: VercelRequest, res: VercelResponse) {
             const transaction = await Transaction.findById(reference_id).session(session);
 
             if (!transaction) {
-                // If transaction not found, throw error to abort.
                 throw new Error('Transaction not found.');
             }
             
-            // 4. Idempotency Check: If already completed, do nothing further.
+            // 4. Idempotency Check
             if (transaction.status === 'COMPLETED') {
                 console.log(`Transaction ${reference_id} is already completed. Idempotency check passed.`);
-                return; // Exit the transaction block successfully.
+                return;
             }
 
             const user = await User.findById(transaction.userId).session(session);

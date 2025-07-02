@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface ITransaction extends Document {
+  _id: mongoose.Types.ObjectId; // Ditambahkan untuk mengatasi error tipe
   userId: mongoose.Types.ObjectId;
   packageId: mongoose.Types.ObjectId;
   points: number;

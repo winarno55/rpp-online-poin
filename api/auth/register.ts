@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import dbConnect from '../_lib/db.js';
-import User, { IUser } from '../_lib/models/User.js';
+import dbConnect from '../_lib/db';
+import User, { IUser } from '../_lib/models/User';
 import cors from 'cors';
 
 const corsHandler = cors();

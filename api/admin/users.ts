@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { protect, admin } from '../_lib/auth.js';
-import dbConnect from '../_lib/db.js';
-import User from '../_lib/models/User.js';
+import { protect, admin } from '../_lib/auth';
+import dbConnect from '../_lib/db';
+import User from '../_lib/models/User';
 import cors from 'cors';
 
 const corsHandler = cors();

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import dbConnect from './_lib/db.js';
+import dbConnect from './_lib/db';
 import mongoose from 'mongoose';
 import cors from 'cors';
 
