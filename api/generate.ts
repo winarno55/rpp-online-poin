@@ -1,12 +1,13 @@
 
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI } from '@google/genai';
-import { protect } from './_lib/auth';
-import dbConnect from './_lib/db';
-import User, { IUser } from './_lib/models/User';
-import PricingConfig from './_lib/models/PricingConfig';
-import { generateLessonPlanPrompt } from '../src/services/geminiService';
-import { LessonPlanInput } from '../src/types';
+import { protect } from './_lib/auth.js';
+import dbConnect from './_lib/db.js';
+import User, { IUser } from './_lib/models/User.js';
+import PricingConfig from './_lib/models/PricingConfig.js';
+import { generateLessonPlanPrompt } from '../src/services/geminiService.js';
+import { LessonPlanInput } from '../src/types.js';
 import cors from 'cors';
 
 const corsHandler = cors();

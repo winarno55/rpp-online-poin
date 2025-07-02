@@ -1,9 +1,10 @@
 
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { protect } from '../../_lib/auth';
-import dbConnect from '../../_lib/db';
-import User, { IUser } from '../../_lib/models/User';
-import Transaction from '../../_lib/models/Transaction';
+import { protect } from '../../_lib/auth.js';
+import dbConnect from '../../_lib/db.js';
+import User, { IUser } from '../../_lib/models/User.js';
+import Transaction from '../../_lib/models/Transaction.js';
 import mongoose from 'mongoose';
 import cors from 'cors';
 

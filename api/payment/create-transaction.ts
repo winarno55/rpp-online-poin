@@ -1,10 +1,11 @@
 
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { protect } from '../_lib/auth';
-import dbConnect from '../_lib/db';
-import { IUser } from '../_lib/models/User';
-import PricingConfig from '../_lib/models/PricingConfig';
-import Transaction, { ITransaction } from '../_lib/models/Transaction';
+import { protect } from '../_lib/auth.js';
+import dbConnect from '../_lib/db.js';
+import { IUser } from '../_lib/models/User.js';
+import PricingConfig from '../_lib/models/PricingConfig.js';
+import Transaction, { ITransaction } from '../_lib/models/Transaction.js';
 import cors from 'cors';
 
 const corsHandler = cors();
