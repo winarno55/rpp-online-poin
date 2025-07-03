@@ -1,5 +1,6 @@
 
 
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { protect } from '../_lib/auth.js';
 import dbConnect from '../_lib/db.js';
@@ -49,17 +50,17 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             points: selectedPackage.points,
             price: selectedPackage.price,
             status: 'PENDING',
-            provider: 'lynk', // Keep provider name simple for consistency
+            provider: 'lynk',
         });
 
         const protocol = (req.headers['x-forwarded-proto'] as string) || 'http';
         const host = req.headers.host;
         const redirectUrl = `${protocol}://${host}/app/payment-status?transaction_id=${transaction._id.toString()}`;
+        // ** NEW: Define the webhook URL for server-to-server confirmation **
+        const webhookUrl = `${protocol}://${host}/api/payment/webhook/lynk`;
 
-        // Calculate expiration time (1 hour from now) as a Unix timestamp for Payme.id
         const expired_at = Math.floor(Date.now() / 1000) + 3600;
 
-        // Correct payload for Payme.id API v2
         const paymePayload = {
             reference_id: transaction._id.toString(),
             amount: selectedPackage.price,
@@ -67,15 +68,15 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             customer_name: req.user!.email,
             customer_email: req.user!.email,
             redirect_url: redirectUrl,
+            webhook_url: webhookUrl, // ** NEW: Send the webhook URL to Payme.id **
             expired_at: expired_at,
         };
         
-        // Correct endpoint and headers for Payme.id API v2
         const paymeResponse = await fetch('https://api.payme.id/v2/transactions', { 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-API-KEY': LYNK_MERCHANT_KEY, // Use X-API-KEY for auth
+                'X-API-KEY': LYNK_MERCHANT_KEY,
             },
             body: JSON.stringify(paymePayload),
         });
@@ -90,7 +91,6 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             throw new Error(`Gagal membuat link pembayaran: ${errorMessage}`);
         }
         
-        // Save the transaction ID from Payme.id
         transaction.providerTransactionId = paymeData.id; 
         await transaction.save();
 

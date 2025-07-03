@@ -1,4 +1,6 @@
-import React, { createContext, useState, useEffect, useMemo } from 'react';
+
+
+import React, { createContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { User, AuthContextType } from '../types';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,11 +45,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { ...prev, user: updatedUser };
     });
   };
+  
+  // New function to refetch user data from the server
+  const refetchUser = useCallback(async () => {
+    if (!authData.token) return; // Can't refetch without a token
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${authData.token}`
+        }
+      });
+      if (!response.ok) {
+        // If the token is invalid (e.g., expired), log the user out
+        if (response.status === 401) {
+            logout();
+        }
+        throw new Error('Could not refetch user data');
+      }
+      const refreshedUser: User = await response.json();
+      // Use the login function to update the user state everywhere
+      login(authData.token, refreshedUser);
+    } catch (error) {
+      console.error("Failed to refetch user:", error);
+    }
+  }, [authData.token]);
+
 
   const isAuthenticated = !!authData.token && !!authData.user;
   const isAdmin = authData.user?.role === 'admin';
 
-  const value = useMemo(() => ({ authData, login, logout, updatePoints, isAuthenticated, isAdmin }), [authData]);
+  const value = useMemo(() => ({ authData, login, logout, updatePoints, refetchUser, isAuthenticated, isAdmin }), [authData, refetchUser]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
