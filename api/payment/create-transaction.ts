@@ -49,44 +49,52 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             points: selectedPackage.points,
             price: selectedPackage.price,
             status: 'PENDING',
-            provider: 'lynk',
+            provider: 'lynk', // Keep provider name simple for consistency
         });
 
         const protocol = (req.headers['x-forwarded-proto'] as string) || 'http';
         const host = req.headers.host;
         const redirectUrl = `${protocol}://${host}/app/payment-status?transaction_id=${transaction._id.toString()}`;
 
-        const lynkPayload = {
-            amount: selectedPackage.price,
-            description: `Top-up: ${selectedPackage.points} Poin untuk ModulAjarCerdas`,
+        // Calculate expiration time (1 hour from now) as a Unix timestamp for Payme.id
+        const expired_at = Math.floor(Date.now() / 1000) + 3600;
+
+        // Correct payload for Payme.id API v2
+        const paymePayload = {
             reference_id: transaction._id.toString(),
+            amount: selectedPackage.price,
+            note: `Top-up: ${selectedPackage.points} Poin untuk ModulAjarCerdas`,
             customer_name: req.user!.email,
             customer_email: req.user!.email,
             redirect_url: redirectUrl,
+            expired_at: expired_at,
         };
         
-        const lynkResponse = await fetch('https://api.ly-nk.id/v1/payments', { 
+        // Correct endpoint and headers for Payme.id API v2
+        const paymeResponse = await fetch('https://api.payme.id/v2/transactions', { 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${LYNK_MERCHANT_KEY}`,
+                'X-API-KEY': LYNK_MERCHANT_KEY, // Use X-API-KEY for auth
             },
-            body: JSON.stringify(lynkPayload),
+            body: JSON.stringify(paymePayload),
         });
 
-        const lynkData = await lynkResponse.json();
+        const paymeData = await paymeResponse.json();
 
-        if (!lynkResponse.ok) {
+        if (!paymeResponse.ok) {
             transaction.status = 'FAILED';
             await transaction.save();
-            console.error('Lynk API Error:', lynkData);
-            throw new Error(`Gagal membuat link pembayaran dengan Lynk.id: ${lynkData.message || 'Error tidak diketahui'}`);
+            console.error('Payme.id API Error:', paymeData);
+            const errorMessage = paymeData.message || (paymeData.errors ? JSON.stringify(paymeData.errors) : 'Error tidak diketahui');
+            throw new Error(`Gagal membuat link pembayaran: ${errorMessage}`);
         }
         
-        transaction.providerTransactionId = lynkData.transaction_id;
+        // Save the transaction ID from Payme.id
+        transaction.providerTransactionId = paymeData.id; 
         await transaction.save();
 
-        res.status(200).json({ paymentUrl: lynkData.payment_url });
+        res.status(200).json({ paymentUrl: paymeData.payment_url });
 
     } catch (error: any) {
         console.error("Create transaction error:", error);

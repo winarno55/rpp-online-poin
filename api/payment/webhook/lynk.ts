@@ -14,50 +14,76 @@ type AuthRequest = VercelRequest & {
   user?: IUser;
 };
 
+// This endpoint is NOT a webhook receiver. It's a client-driven payment verifier.
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
+    const LYNK_MERCHANT_KEY = process.env.LYNK_MERCHANT_KEY;
+    if (!LYNK_MERCHANT_KEY) {
+        return res.status(500).json({ message: 'Konfigurasi pembayaran di sisi server belum lengkap.' });
+    }
+
     await dbConnect();
 
-    const { transactionId } = req.body;
+    const { transactionId } = req.body; // This is our internal ID, used as reference_id
     if (!transactionId || !mongoose.Types.ObjectId.isValid(transactionId)) {
         return res.status(400).json({ message: 'Valid Transaction ID is required.' });
     }
 
     const session = await mongoose.startSession();
     try {
+        let finalMessage = 'Payment confirmation failed.';
         let newPoints = req.user!.points || 0;
-        let finalMessage = 'Payment was already confirmed.';
+        let confirmationStatus: 'success' | 'failed' | 'pending' = 'failed';
 
-        await session.withTransaction(async () => {
-            const transaction = await Transaction.findById(transactionId).session(session);
-
-            if (!transaction) {
-                throw new Error('Transaction could not be verified.');
-            }
-
-            if (transaction.userId.toString() !== req.user!._id.toString()) {
-                console.warn(`Security alert: User ${req.user!.email} tried to confirm transaction ${transactionId} belonging to user ${transaction.userId}.`);
-                throw new Error('You are not authorized to confirm this transaction.');
-            }
-            
-            if (transaction.status === 'PENDING') {
-                const user = await User.findById(req.user!._id).session(session);
-                if (!user) {
-                    throw new Error('Associated user account not found.');
-                }
-                
-                user.points += transaction.points;
-                transaction.status = 'COMPLETED';
-                
-                await user.save({ session });
-                await transaction.save({ session });
-                
-                newPoints = user.points;
-                finalMessage = `Successfully added ${transaction.points} points. Your payment is confirmed!`;
-            }
+        // Securely verify the transaction status with the Payme.id API
+        const verifyResponse = await fetch(`https://api.payme.id/v2/transactions/${transactionId}`, {
+            method: 'GET',
+            headers: { 'X-API-KEY': LYNK_MERCHANT_KEY }
         });
 
+        const paymeData = await verifyResponse.json();
+
+        if (!verifyResponse.ok) {
+            throw new Error(`Failed to verify payment with provider: ${paymeData.message || 'Unknown error'}`);
+        }
+
+        const isPaid = paymeData.status === 'PAID';
+
+        if (isPaid) {
+            // Use a database transaction to ensure atomicity
+            await session.withTransaction(async () => {
+                const transaction = await Transaction.findById(transactionId).session(session);
+
+                if (!transaction) { throw new Error('Transaction not found in our database.'); }
+                if (transaction.userId.toString() !== req.user!._id.toString()) { throw new Error('You are not authorized to confirm this transaction.'); }
+
+                // Only award points if the transaction is still PENDING to prevent double-crediting
+                if (transaction.status === 'PENDING') {
+                    const user = await User.findById(req.user!._id).session(session);
+                    if (!user) { throw new Error('Associated user account not found.'); }
+                    
+                    user.points += transaction.points;
+                    transaction.status = 'COMPLETED';
+                    
+                    await user.save({ session });
+                    await transaction.save({ session });
+                    
+                    newPoints = user.points;
+                    finalMessage = `Successfully added ${transaction.points} points. Your payment is confirmed!`;
+                } else {
+                    finalMessage = 'Payment was already confirmed.';
+                    const user = await User.findById(req.user!._id).session(session);
+                    newPoints = user?.points || newPoints; // Ensure points are up-to-date
+                }
+            });
+            confirmationStatus = 'success';
+        } else {
+            // Handle cases where payment is not yet confirmed by the provider
+            finalMessage = `Payment status is '${paymeData.status}'. Please try again shortly or contact support if payment has been made.`;
+            confirmationStatus = paymeData.status === 'PENDING' ? 'pending' : 'failed';
+        }
+        
         res.status(200).json({
-            success: true,
+            success: confirmationStatus === 'success',
             message: finalMessage,
             newPoints: newPoints
         });
