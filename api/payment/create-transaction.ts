@@ -65,7 +65,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             redirect_url: redirectUrl,
         };
         
-        const lynkResponse = await fetch('https://api.lynk.id/v1/payments', { 
+        const lynkResponse = await fetch('https://api.ly-nk.id/v1/payments', { 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
