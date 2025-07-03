@@ -1,5 +1,3 @@
-
-
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI } from '@google/genai';
 import { protect } from './_lib/auth.js';
@@ -12,25 +10,29 @@ import cors from 'cors';
 
 const corsHandler = cors();
 
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+if (!GEMINI_API_KEY) {
+    throw new Error('Please define the GEMINI_API_KEY environment variable');
+}
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
 type AuthRequest = VercelRequest & {
   user?: IUser;
 };
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_API_KEY) {
-        return res.status(500).json({ message: 'Server configuration error: Missing Gemini API Key.' });
-    }
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
+    // This outer try-catch will handle DB connection errors, user fetching errors, etc.
     try {
         await dbConnect();
 
-        if (req.user!.role === 'admin') {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+        if (req.user.role === 'admin') {
             return res.status(403).json({ message: 'Admin users cannot generate lesson plans.' });
         }
         
-        const user = await User.findById(req.user!._id);
+        const user = await User.findById(req.user._id);
         if (!user) {
             return res.status(401).json({ message: 'User not found.' });
         }
@@ -53,6 +55,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             return res.status(403).json({ message: `Poin Anda tidak cukup untuk membuat modul ajar ${numSessions} sesi (butuh ${dynamicCost} poin).` });
         }
     
+        // ---- Start of the new, smarter error handling ----
         let lessonPlan;
         try {
             const prompt = generateLessonPlanPrompt(lessonPlanData);
@@ -83,9 +86,13 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             } else {
                  userMessage = 'Gagal berkomunikasi dengan AI. Ini bisa terjadi jika permintaan terlalu lama diproses (timeout) atau ada gangguan sementara. Silakan coba lagi.';
             }
+
+            // Return a specific error status (like 424 Failed Dependency) and DO NOT deduct points.
             return res.status(424).json({ message: userMessage, error: aiError.message });
         }
+        // ---- End of the new, smarter error handling ----
 
+        // This part only runs if the AI call was successful.
         user.points -= dynamicCost;
         await user.save();
 
@@ -94,32 +101,19 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             newPoints: user.points,
         });
 
-    } catch (serverError: any) {
-        console.error('General Server Error (DB, etc.):', serverError);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server saat memproses permintaan Anda.', error: serverError.message });
+    } catch (dbError: any) {
+        // This outer catch now primarily handles database errors or other unexpected server issues.
+        console.error('General Server Error (DB, etc.):', dbError);
+        res.status(500).json({ message: 'Terjadi kesalahan pada server saat memproses permintaan Anda.', error: dbError.message });
     }
 }
 
-async function protectedApiRoute(req: AuthRequest, res: VercelResponse) {
-    let nextCalled = false;
-    const next = () => { nextCalled = true; };
-
-    await protect(req, res, next);
-    if (res.headersSent) return;
-    if (!nextCalled) throw new Error("Middleware 'protect' failed to call next or send response.");
-
-    await apiHandler(req, res);
-}
-
-export default function(req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, async () => {
-        try {
-            await protectedApiRoute(req as AuthRequest, res);
-        } catch (e: any) {
-            console.error("API Route Unhandled Exception:", e.message);
-            if (!res.headersSent) {
-                res.status(500).json({ message: "An unexpected error occurred in the handler wrapper." });
-            }
-        }
+// The wrapper code remains the same.
+export default function (req: VercelRequest, res: VercelResponse) {
+    corsHandler(req, res, () => {
+        protect(req as AuthRequest, res, () => {
+            if (res.headersSent) return;
+            apiHandler(req as AuthRequest, res);
+        });
     });
-}
+};

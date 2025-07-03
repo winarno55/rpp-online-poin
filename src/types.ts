@@ -1,5 +1,3 @@
-
-
 import { JUMLAH_PERTEMUAN_OPTIONS } from './constants';
 
 // Note: Fase and Semester types are no longer needed with the new form structure.
@@ -36,7 +34,6 @@ export interface AuthContextType {
   login: (token: string, user: User) => void;
   logout: () => void;
   updatePoints: (newPoints: number) => void;
-  refetchUser: () => Promise<void>; // Added function to refetch user from server
   isAuthenticated: boolean;
   isAdmin: boolean;
 }

@@ -1,4 +1,4 @@
-import { LessonPlanInput } from '../types.js';
+import { LessonPlanInput } from '../types';
 
 // Helper function to create a section for the prompt only if the data exists.
 // It also provides a clear "not filled" message for the AI to interpret.
