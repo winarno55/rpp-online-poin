@@ -18,18 +18,17 @@ export const exportToDocx = (htmlContent: string, fileName: string) => {
                             td, th { border: 1px solid black; padding: 5px; }
                             h1, h2, h3, h4, h5, h6 { font-family: 'Cambria', 'Times New Roman', serif; margin-top: 18pt; margin-bottom: 10pt; }
                             
-                            /* --- Fix for List Indentation in Word --- */
-                            /* This approach removes all list indentation for a flat, left-aligned layout. */
+                            /* --- Word Compatibility: Flatten all lists --- */
+                            /* This removes bullets/numbering and indentation, effectively turning list items into paragraphs. */
+                            /* Sub-headings that use bolded list items will appear as simple bolded text. */
                             ul, ol {
-                                margin-top: 0;
-                                margin-bottom: 8pt;
-                                padding-left: 0; /* Remove default browser/Word padding on the container. */
+                                margin: 0 0 8pt 0; /* Keep bottom margin for spacing after the list block */
+                                padding: 0; /* Remove all padding */
                             }
                             li {
-                                list-style-position: inside; /* Crucial: Puts the bullet/number INSIDE the text block, aligning it left. */
-                                margin-left: 0;           /* Remove any margin-based indentation. */
-                                margin-bottom: 4pt;          /* Spacing between list items. */
-                                padding-left: 0;             /* Ensure no extra padding is added. */
+                                list-style-type: none; /* Hide the bullet point or number */
+                                margin: 0 0 4pt 0; /* Add a bit of space below each item */
+                                padding: 0; /* Remove all padding */
                             }
                           </style>
                         </head><body>`;
