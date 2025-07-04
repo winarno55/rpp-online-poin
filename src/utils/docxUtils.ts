@@ -17,25 +17,22 @@ export const exportToDocx = (htmlContent: string, fileName: string) => {
                             table { border-collapse: collapse; width: 100%; margin-bottom: 10pt; }
                             td, th { border: 1px solid black; padding: 5px; }
                             h1, h2, h3, h4, h5, h6 { font-family: 'Cambria', 'Times New Roman', serif; margin-top: 18pt; margin-bottom: 10pt; }
-                            
-                            /* --- Word Compatibility: Flatten all lists --- */
-                            /* This removes bullets/numbering and indentation, effectively turning list items into paragraphs. */
-                            /* Sub-headings that use bolded list items will appear as simple bolded text. */
-                            ul, ol {
-                                margin: 0 0 8pt 0; /* Keep bottom margin for spacing after the list block */
-                                padding: 0; /* Remove all padding */
-                            }
-                            li {
-                                list-style-type: none; /* Hide the bullet point or number */
-                                margin: 0 0 4pt 0; /* Add a bit of space below each item */
-                                padding: 0; /* Remove all padding */
-                            }
                           </style>
                         </head><body>`;
     const footer = "</body></html>";
     
+    // --- KEY CHANGE: Flatten all lists by replacing list tags with paragraph tags ---
+    // This prevents Word from auto-formatting multilevel lists, which was the user's complaint.
+    const flattenedHtml = htmlContent
+        .replace(/<ul[^>]*>/gi, '')   // Remove opening <ul>, including attributes
+        .replace(/<\/ul>/gi, '')      // Remove closing </ul>
+        .replace(/<ol[^>]*>/gi, '')   // Remove opening <ol>, including attributes
+        .replace(/<\/ol>/gi, '')      // Remove closing </ol>
+        .replace(/<li[^>]*>/gi, '<p>') // Replace opening <li> with <p>, dropping attributes
+        .replace(/<\/li>/gi, '</p>');  // Replace closing </li> with </p>
+
     // Replace self-closing <br /> tags with <br> for better compatibility
-    const wordCompatibleHtml = htmlContent.replace(/<br \/>/g, '<br>');
+    const wordCompatibleHtml = flattenedHtml.replace(/<br \/>/g, '<br>');
 
     const fullHtml = header + wordCompatibleHtml + footer;
 
