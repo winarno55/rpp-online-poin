@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LessonPlanInput } from '../types';
-import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS } from '../constants';
+import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_FASE_OPTIONS } from '../constants';
 
 interface SessionCost {
   sessions: number;
@@ -16,7 +16,7 @@ interface LessonPlanFormProps {
 export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, sessionCosts }) => {
   const [formData, setFormData] = useState<LessonPlanInput>({
     mataPelajaran: '',
-    kelasFase: '',
+    kelasFase: KELAS_FASE_OPTIONS[0],
     materi: '',
     jumlahPertemuan: JUMLAH_PERTEMUAN_OPTIONS[0],
     jamPelajaran: '',
@@ -78,7 +78,11 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
         </div>
         <div>
             <label htmlFor="kelasFase" className={labelClass}>Kelas/Fase</label>
-            <input type="text" name="kelasFase" id="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass} placeholder="cth: X / Fase E, IV / Fase B" required />
+            <select name="kelasFase" id="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass} required>
+                {KELAS_FASE_OPTIONS.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                ))}
+            </select>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
