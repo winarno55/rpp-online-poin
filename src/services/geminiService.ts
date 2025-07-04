@@ -15,7 +15,7 @@ const createOptionalSection = (label: string, data: string | undefined | null | 
 export const generateLessonPlanPrompt = (input: LessonPlanInput): string => {
   const { 
     mataPelajaran, kelasFase, materi, jumlahPertemuan, tujuanPembelajaran, praktikPedagogis,
-    pesertaDidik, dimensiProfilLulusan, capaianPembelajaran, lintasDisiplinIlmu,
+    jamPelajaran, pesertaDidik, dimensiProfilLulusan, capaianPembelajaran, lintasDisiplinIlmu,
     lingkunganPembelajaran, pemanfaatanDigital, kemitraanPembelajaran
   } = input;
 
@@ -33,6 +33,7 @@ Mata Pelajaran: ${mataPelajaran}
 Kelas/Fase: ${kelasFase}
 Materi: ${materi}
 Jumlah Pertemuan: ${jumlahPertemuan}
+Jam Pelajaran per Pertemuan: ${jamPelajaran} JP
 ${createOptionalSection('Peserta Didik', pesertaDidik)}
 
 ### IDENTIFIKASI
@@ -55,7 +56,7 @@ Hasilkan Modul Ajar dalam format Markdown yang rapi, terstruktur, dan siap pakai
 - **Mata Pelajaran:** ${mataPelajaran}
 - **Kelas/Fase:** ${kelasFase}
 - **Materi:** ${materi}
-- **Jumlah Pertemuan:** ${jumlahPertemuan}
+- **Alokasi Waktu:** [Hitung total alokasi waktu. Gunakan input Jumlah Pertemuan (${jumlahPertemuan}), Jam Pelajaran per pertemuan (${jamPelajaran} JP), dan Kelas/Fase (${kelasFase}). Asumsikan: 1 JP SD = 35 menit, 1 JP SMP = 40 menit, 1 JP SMA/SMK = 45 menit. Tentukan jenjang (SD/SMP/SMA) dari input Kelas/Fase. Tampilkan hasilnya dalam format 'X Pertemuan @ Y JP (Z menit per pertemuan)'. Contoh untuk 3 Pertemuan @ 2 JP di SMA: '3 Pertemuan @ 2 JP (90 menit per pertemuan)']
 - **Peserta Didik:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${pesertaDidik}"]
 
 ## IDENTIFIKASI

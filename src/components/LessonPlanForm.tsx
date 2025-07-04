@@ -19,6 +19,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     kelasFase: '',
     materi: '',
     jumlahPertemuan: JUMLAH_PERTEMUAN_OPTIONS[0],
+    jamPelajaran: '',
     pesertaDidik: '',
     dimensiProfilLulusan: [],
     capaianPembelajaran: '',
@@ -75,16 +76,20 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
           <label htmlFor="mataPelajaran" className={labelClass}>Mata Pelajaran</label>
           <input type="text" name="mataPelajaran" id="mataPelajaran" value={formData.mataPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: Bahasa Indonesia, Matematika" required />
         </div>
+        <div>
+            <label htmlFor="kelasFase" className={labelClass}>Kelas/Fase</label>
+            <input type="text" name="kelasFase" id="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass} placeholder="cth: X / Fase E, IV / Fase B" required />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label htmlFor="kelasFase" className={labelClass}>Kelas/Fase</label>
-                <input type="text" name="kelasFase" id="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass} placeholder="cth: X / Fase E" required />
-            </div>
             <div>
                 <label htmlFor="jumlahPertemuan" className={labelClass}>Jumlah Pertemuan</label>
                 <select name="jumlahPertemuan" id="jumlahPertemuan" value={formData.jumlahPertemuan} onChange={handleChange} className={inputClass} required>
                     {JUMLAH_PERTEMUAN_OPTIONS.map(s => (<option key={s} value={s}>{s}</option>))}
                 </select>
+            </div>
+            <div>
+                <label htmlFor="jamPelajaran" className={labelClass}>JP per Pertemuan</label>
+                <input type="number" name="jamPelajaran" id="jamPelajaran" value={formData.jamPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: 2" required min="1" />
             </div>
         </div>
         <div>

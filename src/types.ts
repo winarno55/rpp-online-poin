@@ -8,6 +8,7 @@ export interface LessonPlanInput {
   kelasFase: string;
   materi: string;
   jumlahPertemuan: JumlahPertemuan;
+  jamPelajaran: string;
   pesertaDidik: string; // opsional
   dimensiProfilLulusan: string[];
   capaianPembelajaran: string; // opsional
