@@ -64,7 +64,28 @@ Hasilkan Modul Ajar dalam format Markdown yang rapi, terstruktur, dan siap pakai
 - **Capaian Pembelajaran:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${capaianPembelajaran}"]
 - **Dimensi Profil Lulusan:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${dimensiProfilLulusan.join(', ')}"]
 - **Lintas Disiplin Ilmu:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${lintasDisiplinIlmu}"]
-- **Tujuan Pembelajaran:** [Kembangkan tujuan pembelajaran awal ("${tujuanPembelajaran}") menjadi lebih rinci, operasional, dan SMART (Specific, Measurable, Achievable, Relevant, Time-bound) sesuai dengan kelas/fase dan materi.]
+- **Tujuan Pembelajaran:** [
+    **Analisis Input Pengguna:** "${tujuanPembelajaran}"
+    **Instruksi Penting:**
+    1.  Identifikasi **semua kompetensi utama** yang diminta oleh pengguna (misalnya: "menganalisis", "membuat", "mempresentasikan").
+    2.  Untuk **SETIAP** kompetensi utama tersebut, kembangkan menjadi beberapa tujuan pembelajaran yang lebih spesifik dan operasional.
+    3.  Saat mengembangkan tujuan, pertimbangkan dan jelaskan secara eksplisit dalam tiga ranah berikut, jika relevan:
+        *   **Ranah Kognitif:** Tujuan yang berkaitan dengan pengetahuan, pemahaman, dan proses berpikir (Contoh: Menjelaskan, menganalisis, membandingkan).
+        *   **Ranah Psikomotor:** Tujuan yang berkaitan dengan keterampilan fisik atau penggunaan alat (Contoh: Menulis, menggambar, mempraktikkan, merancang).
+        *   **Ranah Afektif:** Tujuan yang berkaitan dengan sikap, nilai, dan karakter (Contoh: Menunjukkan sikap kritis, bekerja sama, bertanggung jawab).
+    4.  Sajikan hasilnya dalam format daftar yang terstruktur. Kelompokkan tujuan berdasarkan kompetensi utama jika ada lebih dari satu.
+    
+    **Contoh Format Output (jika input "menganalisis dan menyajikan data"):**
+    Melalui serangkaian kegiatan pembelajaran, peserta didik diharapkan dapat:
+    1.  **Menganalisis Data:**
+        *   (Kognitif) Mengidentifikasi informasi kunci dari set data yang diberikan dengan tepat.
+        *   (Kognitif) Membandingkan tren atau pola dalam data menggunakan metode yang sesuai.
+        *   (Afektif) Menunjukkan ketelitian dan sikap kritis saat memeriksa validitas data.
+    2.  **Menyajikan Data:**
+        *   (Kognitif) Memilih bentuk penyajian (grafik, tabel) yang paling efektif untuk data yang dianalisis.
+        *   (Psikomotor) Membuat visualisasi data yang jelas dan mudah dibaca menggunakan alat bantu yang ditentukan.
+        *   (Afektif) Menunjukkan rasa percaya diri dan bertanggung jawab saat mempresentasikan hasil analisisnya.
+]
 - **Praktik Pedagogis:** ${praktikPedagogis}
 - **Lingkungan Pembelajaran:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${lingkunganPembelajaran}"]
 - **Pemanfaatan Digital:** [Hanya tampilkan jika diisi oleh pengguna. Isinya adalah: "${pemanfaatanDigital}"]
