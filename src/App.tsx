@@ -21,6 +21,10 @@ import HomePage from './pages/HomePage';
 import AdminPage from './pages/AdminPage';
 import HistoryPage from './pages/HistoryPage';
 import HistoryDetailPage from './pages/HistoryDetailPage';
+import GeneratorBankSoalPage from './pages/GeneratorBankSoalPage';
+import GeneratorMateriAjarPage from './pages/GeneratorMateriAjarPage';
+import AsistenPenilaianPage from './pages/AsistenPenilaianPage';
+
 
 const App: React.FC = () => {
   const location = useLocation();
@@ -53,6 +57,30 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <HomePage />
+              </ProtectedRoute>
+            } 
+          />
+           <Route 
+            path="/app/bank-soal" 
+            element={
+              <ProtectedRoute>
+                <GeneratorBankSoalPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/app/materi-ajar" 
+            element={
+              <ProtectedRoute>
+                <GeneratorMateriAjarPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/app/penilaian" 
+            element={
+              <ProtectedRoute>
+                <AsistenPenilaianPage />
               </ProtectedRoute>
             } 
           />

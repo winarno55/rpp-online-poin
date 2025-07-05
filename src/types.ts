@@ -1,7 +1,10 @@
-import { JUMLAH_PERTEMUAN_OPTIONS } from './constants';
+import { JUMLAH_PERTEMUAN_OPTIONS, TIPE_SOAL_OPTIONS, TINGKAT_KESULITAN_OPTIONS, TIPE_MATERI_AJAR_OPTIONS } from './constants';
 
 // Note: Fase and Semester types are no longer needed with the new form structure.
 export type JumlahPertemuan = typeof JUMLAH_PERTEMUAN_OPTIONS[number];
+export type TipeSoal = typeof TIPE_SOAL_OPTIONS[number];
+export type TingkatKesulitan = typeof TINGKAT_KESULITAN_OPTIONS[number];
+export type TipeMateriAjar = typeof TIPE_MATERI_AJAR_OPTIONS[number];
 
 export interface LessonPlanInput {
   mataPelajaran: string;
@@ -18,6 +21,28 @@ export interface LessonPlanInput {
   lingkunganPembelajaran: string; // opsional
   pemanfaatanDigital: string; // opsional
   kemitraanPembelajaran: string; // opsional
+}
+
+export interface BankSoalInput {
+    mataPelajaran: string;
+    kelasFase: string;
+    materi: string;
+    jumlahSoal: number;
+    tipeSoal: TipeSoal;
+    tingkatKesulitan: TingkatKesulitan;
+    petunjukTambahan: string; // opsional
+}
+
+export interface MateriAjarInput {
+    tipeMateri: TipeMateriAjar;
+    topik: string;
+    sasaran: string; // "Siswa Kelas X", "Anak Usia Dini", etc.
+    detailTambahan: string; // opsional
+}
+
+export interface PenilaianInput {
+    teksSiswa: string;
+    kriteriaPenilaian: string;
 }
 
 export interface User {
