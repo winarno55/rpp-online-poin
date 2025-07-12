@@ -97,21 +97,13 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     return isValid;
   }
 
-  const handleNext = () => {
+  const handleNextClick = () => {
     if (validateStep(step)) {
       nextStep();
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Safeguard: If triggered on early steps (e.g. by Enter key), treat as a "Next" click
-    if (step < 3) {
-      handleNext();
-      return;
-    }
-    
+  const handleFinalSubmit = () => {
     // Final validation for all required fields before submission
     const isStep1Valid = validateStep(1);
     const isStep2Valid = validateStep(2);
@@ -140,7 +132,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
 
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+    <div className="flex flex-col h-full">
       <div className="flex-grow">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-white mb-3">Langkah {step} dari 3: {stepTitles[step - 1]}</h2>
@@ -285,7 +277,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
             {step < 3 ? (
                 <button 
                     type="button" 
-                    onClick={handleNext}
+                    onClick={handleNextClick}
                     disabled={isLoading}
                     className="bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed text-lg"
                     >
@@ -293,7 +285,8 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
                 </button>
             ) : (
                 <button 
-                    type="submit" 
+                    type="button" 
+                    onClick={handleFinalSubmit}
                     disabled={isLoading || !hasEnoughPoints || dynamicCost === 0} 
                     className="bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed text-lg"
                     >
@@ -312,6 +305,6 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
             )}
         </div>
       </div>
-    </form>
+    </div>
   );
 };
