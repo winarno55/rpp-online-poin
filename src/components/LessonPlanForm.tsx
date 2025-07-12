@@ -62,6 +62,14 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // BUG FIX: Only proceed with full submission on the final step.
+    // If submitted on earlier steps (e.g., by pressing Enter), treat it as "next".
+    if (step < 3) {
+      nextStep();
+      return;
+    }
+
     if (!hasEnoughPoints) return;
     
     const dataToSubmit = { ...formData };
