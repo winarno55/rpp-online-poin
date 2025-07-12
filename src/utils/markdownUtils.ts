@@ -247,8 +247,10 @@ export function markdownToHtml(markdown: string): string {
         if (headingMatch) {
             closeOpenList();
             const level = headingMatch[1].length;
-            const content = parseInlineMarkdownToHtmlSpans(headingMatch[2].trim());
-            htmlOutput += `<h${level}>${content}</h${level}>\n`;
+            const contentText = headingMatch[2].trim();
+            const slug = contentText.replace(/\*\*/g, '').toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+            const content = parseInlineMarkdownToHtmlSpans(contentText);
+            htmlOutput += `<h${level} id="${slug}">${content}</h${level}>\n`;
             continue;
         }
         

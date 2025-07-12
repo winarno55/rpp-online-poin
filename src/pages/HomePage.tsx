@@ -15,6 +15,12 @@ interface SessionCost {
 interface PricingConfig {
   sessionCosts: SessionCost[];
 }
+interface NavLink {
+    id: string;
+    text: string;
+    level: number;
+}
+
 
 const HomePage: React.FC = () => {
   const { authData, updatePoints } = useAuth();
@@ -24,6 +30,7 @@ const HomePage: React.FC = () => {
   const [error, setError] = useState<React.ReactNode | null>(null);
   const [dynamicCost, setDynamicCost] = useState(0);
   const [pricingConfig, setPricingConfig] = useState<PricingConfig | null>(null);
+  const [navLinks, setNavLinks] = useState<NavLink[]>([]);
 
   useEffect(() => {
     initDB().catch(err => {
@@ -44,6 +51,31 @@ const HomePage: React.FC = () => {
     fetchPricingConfig();
 
   }, []);
+  
+  useEffect(() => {
+    if (generatedPlan && !isLoading) {
+        const lines = generatedPlan.split('\n');
+        const headings: NavLink[] = [];
+        const headingRegex = /^(#{1,3})\s+(.*)/;
+        
+        lines.forEach(line => {
+            const match = line.match(headingRegex);
+            if (match) {
+                const level = match[1].length;
+                // Hanya ambil H1 dan H2 untuk navigasi utama
+                if (level > 2) return;
+                
+                const text = match[2].replace(/\*\*/g, '').trim();
+                const id = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+                headings.push({ id, text, level });
+            }
+        });
+        setNavLinks(headings);
+    } else if (!generatedPlan) {
+        setNavLinks([]); // Hapus navigasi jika tidak ada plan
+    }
+  }, [generatedPlan, isLoading]);
+
 
   const handleFormSubmit = useCallback(async (data: LessonPlanInput) => {
     if (!authData.token || !authData.user) {
@@ -53,7 +85,7 @@ const HomePage: React.FC = () => {
     
     const numSessions = parseInt(data.jumlahPertemuan) || 1;
     const costConfig = pricingConfig?.sessionCosts.find(sc => sc.sessions === numSessions);
-    const calculatedCost = costConfig ? costConfig.cost : 0; // Default to 0 if not found, but should be there
+    const calculatedCost = costConfig ? costConfig.cost : 0;
     
     if (calculatedCost === 0) {
         setError("Konfigurasi biaya untuk jumlah sesi yang dipilih tidak ditemukan.");
@@ -76,8 +108,9 @@ const HomePage: React.FC = () => {
 
     setIsLoading(true);
     setError(null);
-    setGeneratedPlan(null);
+    setGeneratedPlan(''); // Reset to empty string for streaming
     setLessonPlanInput(data);
+    setNavLinks([]); // Hapus navigasi lama
 
     try {
       const response = await fetch('/api/generate', {
@@ -89,27 +122,39 @@ const HomePage: React.FC = () => {
         body: JSON.stringify(data),
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.message || 'Gagal terhubung ke server.');
+        const errorResult = await response.json();
+        throw new Error(errorResult.message || 'Gagal terhubung ke server.');
       }
       
-      const { lessonPlan, newPoints } = result;
-      
-      if (!lessonPlan || lessonPlan.trim() === "") {
-        setGeneratedPlan(null);
-        setError("Gagal menghasilkan konten Modul Ajar. AI mengembalikan respons kosong.");
-      } else {
-        setGeneratedPlan(lessonPlan);
-        updatePoints(newPoints);
-        
-        try {
-          await addRppToHistory(data, lessonPlan);
-        } catch (dbError) {
-          console.error("Gagal menyimpan Modul Ajar ke riwayat:", dbError);
-        }
+      if (!response.body) {
+          throw new Error("Respons streaming tidak memiliki body.");
       }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedPlan = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        accumulatedPlan += chunk;
+        setGeneratedPlan(accumulatedPlan);
+      }
+      
+      // Update points and save to history after stream is complete
+      const finalUserPoints = authData.user.points - calculatedCost;
+      updatePoints(finalUserPoints);
+
+      try {
+        await addRppToHistory(data, accumulatedPlan);
+      } catch (dbError) {
+        console.error("Gagal menyimpan Modul Ajar ke riwayat:", dbError);
+        // This is a non-critical error, so we just log it.
+      }
+
 
     } catch (e) {
       console.error("Error generating lesson plan:", e);
@@ -183,7 +228,7 @@ const HomePage: React.FC = () => {
         </div>
 
         <div id="lesson-plan-display-container" className="bg-slate-200 shadow-inner rounded-xl p-2 sm:p-4 min-h-[400px] print-content">
-          {isLoading && <div className="flex items-center justify-center h-full"><div className="text-slate-800"><LoadingSpinner /></div></div>}
+          {isLoading && !generatedPlan && <div className="flex items-center justify-center h-full"><div className="text-slate-800"><LoadingSpinner /></div></div>}
           {error && !isLoading && (
              <div className="flex items-center justify-center h-full p-4">
                 <div className="text-center text-red-700 bg-red-100 p-4 rounded-lg w-full max-w-md border border-red-300">
@@ -192,25 +237,50 @@ const HomePage: React.FC = () => {
                 </div>
             </div>
           )}
-          {generatedPlan && !isLoading && !error && lessonPlanInput && (
-            <div className="w-full">
-              <div className="text-center mb-6 no-print">
-                 <h2 className="text-2xl font-bold text-slate-800">Modul Ajar Berhasil Dibuat!</h2>
-                 <p className="text-slate-600 mb-1">Anda telah menggunakan {dynamicCost} poin.</p>
-                 <p className="text-slate-700 mb-4 text-md">Sisa poin Anda: <span className="font-bold text-emerald-600">{authData.user?.points}</span></p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <button onClick={handleDownloadDocx} className={`${downloadButtonBaseClass} bg-blue-600 hover:bg-blue-700`} disabled={isLoading}>Unduh DOCX</button>
-                  <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`} disabled={isLoading}>Unduh TXT</button>
-                  <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`} disabled={isLoading}>Cetak / Simpan PDF</button>
+          {generatedPlan !== null && !error && lessonPlanInput && (
+            <div className="w-full flex flex-col lg:flex-row gap-6">
+               {navLinks.length > 0 && !isLoading && (
+                    <nav className="w-full lg:w-1/4 h-full lg:h-screen lg:sticky top-24 self-start no-print bg-slate-100 p-4 rounded-lg border border-slate-300">
+                        <h3 className="font-bold text-slate-800 mb-3 text-lg">Navigasi Cepat</h3>
+                        <ul className="space-y-2">
+                            {navLinks.map(link => (
+                                <li key={link.id}>
+                                    <a href={`#${link.id}`} 
+                                       className={`block text-sm hover:text-sky-600 transition-colors ${
+                                           link.level === 1 ? 'font-bold text-slate-700' : 'text-slate-600 pl-3'
+                                       }`}>
+                                        {link.text}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="text-center mb-6 no-print">
+                    <h2 className="text-2xl font-bold text-slate-800">Modul Ajar Dihasilkan</h2>
+                    {!isLoading && (
+                        <>
+                            <p className="text-slate-600 mb-1">Anda telah menggunakan {dynamicCost} poin.</p>
+                            <p className="text-slate-700 mb-4 text-md">Sisa poin Anda: <span className="font-bold text-emerald-600">{authData.user?.points}</span></p>
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                            <button onClick={handleDownloadDocx} className={`${downloadButtonBaseClass} bg-blue-600 hover:bg-blue-700`}>Unduh DOCX</button>
+                            <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`}>Unduh TXT</button>
+                            <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`}>Cetak / Simpan PDF</button>
+                            </div>
+                        </>
+                    )}
+                    {isLoading && (
+                        <p className="text-slate-600 animate-pulse">AI sedang menulis, mohon tunggu...</p>
+                    )}
+                  </div>
+                  <div id="rpp-paper-preview" className="bg-white rounded-md shadow-lg mx-auto p-8 md:p-12" style={{maxWidth: '8.5in'}}>
+                      <LessonPlanDisplay planText={generatedPlan} />
+                  </div>
                 </div>
-              </div>
-              
-              <div id="rpp-paper-preview" className="bg-white rounded-md shadow-lg mx-auto p-8 md:p-12" style={{maxWidth: '8.5in'}}>
-                  <LessonPlanDisplay planText={generatedPlan} />
-              </div>
             </div>
           )}
-          {!isLoading && !error && !generatedPlan && (
+          {!isLoading && !error && generatedPlan === null && (
             <div className="flex-grow flex flex-col items-center justify-center h-full text-slate-500 text-center no-print p-4">
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-24 h-24 mb-4 opacity-50"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>
               <p className="text-xl text-slate-600">Modul Ajar akan dihasilkan di sini.</p>

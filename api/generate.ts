@@ -21,7 +21,6 @@ type AuthRequest = VercelRequest & {
 };
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
-    // This outer try-catch will handle DB connection errors, user fetching errors, etc.
     try {
         await dbConnect();
 
@@ -54,57 +53,63 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         if (user.points < dynamicCost) {
             return res.status(403).json({ message: `Poin Anda tidak cukup untuk membuat modul ajar ${numSessions} sesi (butuh ${dynamicCost} poin).` });
         }
-    
-        // ---- Start of the new, smarter error handling ----
-        let lessonPlan;
+
+        // Deduct points before starting the generation process
+        user.points -= dynamicCost;
+        await user.save();
+        
         try {
             const prompt = generateLessonPlanPrompt(lessonPlanData);
             
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash-preview-04-17',
+            const responseStream = await ai.models.generateContentStream({
+                model: 'gemini-2.5-flash',
                 contents: prompt,
             });
+
+            // Set headers for streaming
+            res.writeHead(200, {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+            });
             
-            lessonPlan = response.text;
-            
-            if (!lessonPlan || lessonPlan.trim() === "") {
-                throw new Error('AI mengembalikan respons kosong.');
+            for await (const chunk of responseStream) {
+                if (chunk.text) {
+                    res.write(chunk.text);
+                }
             }
+            
+            res.end(); // End the stream when Gemini is done
+
         } catch (aiError: any) {
             console.error('Gemini API Error:', aiError);
             
-            let userMessage = 'Gagal berkomunikasi dengan AI. Ini bisa terjadi jika permintaan terlalu kompleks atau ada gangguan sementara. Silakan coba lagi.';
-            
-            if (aiError.message) {
-                 if (aiError.message.toLowerCase().includes('safety')) {
-                    userMessage = 'Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah materi atau tujuan pembelajaran Anda.';
-                 } else if (aiError.message.toLowerCase().includes('deadline_exceeded') || aiError.message.toLowerCase().includes('timeout')) {
-                    userMessage = 'Permintaan Anda membutuhkan waktu terlalu lama untuk diproses oleh server AI (timeout). Coba kurangi jumlah pertemuan atau sederhanakan materi Anda.';
-                 } else if (aiError.message.includes('respons kosong')) {
-                    userMessage = 'AI berhasil dihubungi namun mengembalikan respons kosong. Coba lagi dengan prompt yang berbeda.';
-                 }
+            // If an AI error occurs, we have already deducted points.
+            // We should not write to a response that's already started streaming.
+            // This error handling will primarily catch pre-stream errors (e.g., safety violations on the prompt).
+            if (!res.headersSent) {
+                 // Refund points if generation fails before starting
+                user.points += dynamicCost;
+                await user.save();
+              
+                let userMessage = 'Gagal berkomunikasi dengan AI. Poin Anda telah dikembalikan.';
+                if (aiError.message) {
+                    if (aiError.message.toLowerCase().includes('safety')) {
+                        userMessage = 'Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah materi atau tujuan pembelajaran Anda. Poin Anda telah dikembalikan.';
+                    }
+                }
+                res.status(424).json({ message: userMessage, error: aiError.message });
             } else {
-                 userMessage = 'Gagal berkomunikasi dengan AI. Ini bisa terjadi jika permintaan terlalu lama diproses (timeout) atau ada gangguan sementara. Silakan coba lagi.';
+                // If stream has started, we just end it. The client will see a truncated response.
+                res.end();
             }
-
-            // Return a specific error status (like 424 Failed Dependency) and DO NOT deduct points.
-            return res.status(424).json({ message: userMessage, error: aiError.message });
         }
-        // ---- End of the new, smarter error handling ----
-
-        // This part only runs if the AI call was successful.
-        user.points -= dynamicCost;
-        await user.save();
-
-        res.status(200).json({
-            lessonPlan,
-            newPoints: user.points,
-        });
 
     } catch (dbError: any) {
-        // This outer catch now primarily handles database errors or other unexpected server issues.
-        console.error('General Server Error (DB, etc.):', dbError);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server saat memproses permintaan Anda.', error: dbError.message });
+        console.error('General Server Error (DB, auth, etc.):', dbError);
+        if (!res.headersSent) {
+            res.status(500).json({ message: 'Terjadi kesalahan pada server saat memproses permintaan Anda.', error: dbError.message });
+        }
     }
 }
 

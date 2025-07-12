@@ -14,6 +14,7 @@ interface LessonPlanFormProps {
 }
 
 export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, sessionCosts }) => {
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<LessonPlanInput>({
     mataPelajaran: '',
     kelasFase: KELAS_FASE_OPTIONS[0],
@@ -55,7 +56,9 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
         return { ...prev, dimensiProfilLulusan: newDimensions };
     });
   };
-
+  
+  const nextStep = () => setStep(prev => Math.min(prev + 1, 3));
+  const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,136 +74,167 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
 
   const inputClass = "w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-slate-100 disabled:opacity-50";
   const labelClass = "block mb-2 text-sm font-medium text-sky-300";
-  const fieldSetClass = "space-y-4 border-b border-slate-700 pb-6 mb-6";
-  const headingClass = "text-xl font-semibold text-white mb-4";
+  const fieldSetClass = "space-y-4";
+  const stepTitles = ['Identitas Dasar', 'Desain Pembelajaran', 'Detail Tambahan (Opsional)'];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      
-      <div className={fieldSetClass}>
-        <h3 className={headingClass}>Identitas</h3>
-        <div>
-          <label htmlFor="mataPelajaran" className={labelClass}>Mata Pelajaran</label>
-          <input type="text" name="mataPelajaran" id="mataPelajaran" value={formData.mataPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: Bahasa Indonesia, Matematika" required />
-        </div>
-        <div>
-            <label htmlFor="kelasFase" className={labelClass}>Kelas/Fase</label>
-            <select name="kelasFase" id="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass} required>
-                {KELAS_FASE_OPTIONS.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                ))}
-            </select>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label htmlFor="jumlahPertemuan" className={labelClass}>Jumlah Pertemuan</label>
-                <select name="jumlahPertemuan" id="jumlahPertemuan" value={formData.jumlahPertemuan} onChange={handleChange} className={inputClass} required>
-                    {JUMLAH_PERTEMUAN_OPTIONS.map(s => (<option key={s} value={s}>{s}</option>))}
-                </select>
+    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+      <div className="flex-grow">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-white mb-3">Langkah {step} dari 3: {stepTitles[step - 1]}</h2>
+            <div className="flex w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+              <div style={{ width: `${(step / 3) * 100}%` }} className="bg-gradient-to-r from-sky-500 to-emerald-500 transition-all duration-500 ease-in-out rounded-full"></div>
             </div>
-            <div>
-                <label htmlFor="jamPelajaran" className={labelClass}>JP per Pertemuan</label>
-                <input type="number" name="jamPelajaran" id="jamPelajaran" value={formData.jamPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: 2" required min="1" />
-            </div>
-        </div>
-        <div>
-          <label htmlFor="materi" className={labelClass}>Materi</label>
-          <input type="text" name="materi" id="materi" value={formData.materi} onChange={handleChange} className={inputClass} placeholder="Tuliskan topik pembelajaran" required />
-        </div>
-        <div>
-          <label htmlFor="pesertaDidik" className={labelClass}>Peserta Didik <span className="text-slate-400 font-light">(Opsional)</span></label>
-          <textarea name="pesertaDidik" id="pesertaDidik" value={formData.pesertaDidik} onChange={handleChange} rows={3} className={inputClass} placeholder="Identifikasi kesiapan, minat, atau kebutuhan belajar peserta didik..." />
-        </div>
-      </div>
-
-      <div className={fieldSetClass}>
-        <h3 className={headingClass}>Identifikasi Desain Pembelajaran</h3>
-        <div>
-            <label className={labelClass}>Dimensi Profil Lulusan</label>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                {DIMENSI_PROFIL_LULUSAN.map(dim => (
-                    <label key={dim} className="flex items-center space-x-2 text-slate-200 cursor-pointer">
-                        <input type="checkbox"
-                            className="h-4 w-4 rounded bg-slate-600 border-slate-500 text-sky-500 focus:ring-sky-600"
-                            value={dim}
-                            checked={formData.dimensiProfilLulusan.includes(dim)}
-                            onChange={() => handleDimensionChange(dim)}
-                        />
-                        <span>{dim}</span>
-                    </label>
-                ))}
-            </div>
-        </div>
-        <div>
-          <label htmlFor="capaianPembelajaran" className={labelClass}>Capaian Pembelajaran <span className="text-slate-400 font-light">(Opsional)</span></label>
-          <textarea name="capaianPembelajaran" id="capaianPembelajaran" value={formData.capaianPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="Tuliskan capaian pembelajaran sesuai fase..." />
-        </div>
-        <div>
-          <label htmlFor="tujuanPembelajaran" className={labelClass}>Tujuan Pembelajaran</label>
-          <textarea name="tujuanPembelajaran" id="tujuanPembelajaran" value={formData.tujuanPembelajaran} onChange={handleChange} rows={4} className={inputClass} placeholder="Tuliskan tujuan pembelajaran yang mencakup kompetensi dan konten..." required />
-        </div>
-         <div>
-          <label htmlFor="praktikPedagogis" className={labelClass}>Praktik Pedagogis</label>
-          <select name="praktikPedagogis" id="praktikPedagogis" value={formData.praktikPedagogis} onChange={handleChange} className={inputClass} required>
-            {PRAKTIK_PEDAGOGIS_OPTIONS.map(p => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
-          {formData.praktikPedagogis === PRAKTIK_PEDAGOGIS_LAINNYA && (
-            <div className="mt-4">
-              <label htmlFor="customPraktik" className={labelClass}>Tuliskan Praktik Pedagogis Pilihan Anda</label>
-              <textarea 
-                id="customPraktik" 
-                name="customPraktik" 
-                value={customPraktik} 
-                onChange={(e) => setCustomPraktik(e.target.value)} 
-                className={inputClass} 
-                rows={2} 
-                placeholder="cth: Pembelajaran berbasis permainan (game-based learning)" 
-                required 
-              />
-            </div>
+          </div>
+        
+          {step === 1 && (
+            <fieldset className={fieldSetClass}>
+              <div>
+                <label htmlFor="mataPelajaran" className={labelClass}>Mata Pelajaran</label>
+                <input type="text" name="mataPelajaran" id="mataPelajaran" value={formData.mataPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: Bahasa Indonesia, Matematika" required />
+              </div>
+              <div>
+                  <label htmlFor="kelasFase" className={labelClass}>Kelas/Fase</label>
+                  <select name="kelasFase" id="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass} required>
+                      {KELAS_FASE_OPTIONS.map(opt => (
+                          <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                  </select>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                      <label htmlFor="jumlahPertemuan" className={labelClass}>Jumlah Pertemuan</label>
+                      <select name="jumlahPertemuan" id="jumlahPertemuan" value={formData.jumlahPertemuan} onChange={handleChange} className={inputClass} required>
+                          {JUMLAH_PERTEMUAN_OPTIONS.map(s => (<option key={s} value={s}>{s}</option>))}
+                      </select>
+                  </div>
+                  <div>
+                      <label htmlFor="jamPelajaran" className={labelClass}>JP per Pertemuan</label>
+                      <input type="number" name="jamPelajaran" id="jamPelajaran" value={formData.jamPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: 2" required min="1" />
+                  </div>
+              </div>
+              <div>
+                <label htmlFor="materi" className={labelClass}>Materi</label>
+                <input type="text" name="materi" id="materi" value={formData.materi} onChange={handleChange} className={inputClass} placeholder="Tuliskan topik pembelajaran" required />
+              </div>
+            </fieldset>
           )}
-        </div>
-        <div>
-          <label htmlFor="lintasDisiplinIlmu" className={labelClass}>Lintas Disiplin Ilmu <span className="text-slate-400 font-light">(Opsional)</span></label>
-          <input type="text" name="lintasDisiplinIlmu" id="lintasDisiplinIlmu" value={formData.lintasDisiplinIlmu} onChange={handleChange} className={inputClass} placeholder="cth: Sosiologi, Ekonomi" />
-        </div>
-         <div>
-          <label htmlFor="lingkunganPembelajaran" className={labelClass}>Lingkungan Pembelajaran <span className="text-slate-400 font-light">(Opsional)</span></label>
-          <textarea name="lingkunganPembelajaran" id="lingkunganPembelajaran" value={formData.lingkunganPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="Jelaskan budaya belajar atau ruang fisik/virtual yang diinginkan..." />
-        </div>
-         <div>
-          <label htmlFor="pemanfaatanDigital" className={labelClass}>Pemanfaatan Digital <span className="text-slate-400 font-light">(Opsional)</span></label>
-          <textarea name="pemanfaatanDigital" id="pemanfaatanDigital" value={formData.pemanfaatanDigital} onChange={handleChange} rows={3} className={inputClass} placeholder="cth: Video pembelajaran, platform, perpustakaan digital..." />
-        </div>
-        <div>
-          <label htmlFor="kemitraanPembelajaran" className={labelClass}>Kemitraan Pembelajaran <span className="text-slate-400 font-light">(Opsional)</span></label>
-          <textarea name="kemitraanPembelajaran" id="kemitraanPembelajaran" value={formData.kemitraanPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="cth: Kolaborasi dengan guru mapel lain, orang tua, komunitas..." />
-        </div>
+
+          {step === 2 && (
+            <fieldset className={fieldSetClass}>
+              <div>
+                  <label className={labelClass}>Dimensi Profil Lulusan</label>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                      {DIMENSI_PROFIL_LULUSAN.map(dim => (
+                          <label key={dim} className="flex items-center space-x-2 text-slate-200 cursor-pointer">
+                              <input type="checkbox"
+                                  className="h-4 w-4 rounded bg-slate-600 border-slate-500 text-sky-500 focus:ring-sky-600"
+                                  value={dim}
+                                  checked={formData.dimensiProfilLulusan.includes(dim)}
+                                  onChange={() => handleDimensionChange(dim)}
+                              />
+                              <span>{dim}</span>
+                          </label>
+                      ))}
+                  </div>
+              </div>
+              <div>
+                <label htmlFor="capaianPembelajaran" className={labelClass}>Capaian Pembelajaran <span className="text-slate-400 font-light">(Opsional)</span></label>
+                <textarea name="capaianPembelajaran" id="capaianPembelajaran" value={formData.capaianPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="Tuliskan capaian pembelajaran sesuai fase..." />
+              </div>
+              <div>
+                <label htmlFor="tujuanPembelajaran" className={labelClass}>Tujuan Pembelajaran</label>
+                <textarea name="tujuanPembelajaran" id="tujuanPembelajaran" value={formData.tujuanPembelajaran} onChange={handleChange} rows={4} className={inputClass} placeholder="Tuliskan tujuan pembelajaran yang mencakup kompetensi dan konten..." required />
+              </div>
+               <div>
+                <label htmlFor="praktikPedagogis" className={labelClass}>Praktik Pedagogis</label>
+                <select name="praktikPedagogis" id="praktikPedagogis" value={formData.praktikPedagogis} onChange={handleChange} className={inputClass} required>
+                  {PRAKTIK_PEDAGOGIS_OPTIONS.map(p => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+                {formData.praktikPedagogis === PRAKTIK_PEDAGOGIS_LAINNYA && (
+                  <div className="mt-4">
+                    <label htmlFor="customPraktik" className={labelClass}>Tuliskan Praktik Pedagogis Pilihan Anda</label>
+                    <textarea 
+                      id="customPraktik" 
+                      name="customPraktik" 
+                      value={customPraktik} 
+                      onChange={(e) => setCustomPraktik(e.target.value)} 
+                      className={inputClass} 
+                      rows={2} 
+                      placeholder="cth: Pembelajaran berbasis permainan (game-based learning)" 
+                      required 
+                    />
+                  </div>
+                )}
+              </div>
+            </fieldset>
+          )}
+
+          {step === 3 && (
+            <fieldset className={fieldSetClass}>
+              <div>
+                <label htmlFor="pesertaDidik" className={labelClass}>Peserta Didik <span className="text-slate-400 font-light">(Opsional)</span></label>
+                <textarea name="pesertaDidik" id="pesertaDidik" value={formData.pesertaDidik} onChange={handleChange} rows={3} className={inputClass} placeholder="Identifikasi kesiapan, minat, atau kebutuhan belajar peserta didik..." />
+              </div>
+              <div>
+                <label htmlFor="lintasDisiplinIlmu" className={labelClass}>Lintas Disiplin Ilmu <span className="text-slate-400 font-light">(Opsional)</span></label>
+                <input type="text" name="lintasDisiplinIlmu" id="lintasDisiplinIlmu" value={formData.lintasDisiplinIlmu} onChange={handleChange} className={inputClass} placeholder="cth: Sosiologi, Ekonomi" />
+              </div>
+               <div>
+                <label htmlFor="lingkunganPembelajaran" className={labelClass}>Lingkungan Pembelajaran <span className="text-slate-400 font-light">(Opsional)</span></label>
+                <textarea name="lingkunganPembelajaran" id="lingkunganPembelajaran" value={formData.lingkunganPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="Jelaskan budaya belajar atau ruang fisik/virtual yang diinginkan..." />
+              </div>
+               <div>
+                <label htmlFor="pemanfaatanDigital" className={labelClass}>Pemanfaatan Digital <span className="text-slate-400 font-light">(Opsional)</span></label>
+                <textarea name="pemanfaatanDigital" id="pemanfaatanDigital" value={formData.pemanfaatanDigital} onChange={handleChange} rows={3} className={inputClass} placeholder="cth: Video pembelajaran, platform, perpustakaan digital..." />
+              </div>
+              <div>
+                <label htmlFor="kemitraanPembelajaran" className={labelClass}>Kemitraan Pembelajaran <span className="text-slate-400 font-light">(Opsional)</span></label>
+                <textarea name="kemitraanPembelajaran" id="kemitraanPembelajaran" value={formData.kemitraanPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="cth: Kolaborasi dengan guru mapel lain, orang tua, komunitas..." />
+              </div>
+            </fieldset>
+          )}
       </div>
 
-
-      <button 
-        type="submit" 
-        disabled={isLoading || !hasEnoughPoints || dynamicCost === 0} 
-        className="w-full flex items-center justify-center bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed text-lg"
-      >
-        {isLoading ? (
-          <>
-            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Memproses...
-          </>
-        ) : (
-          `Buat Modul Ajar (Biaya: ${dynamicCost > 0 ? dynamicCost : '...'} Poin)`
+      <div className="mt-8 pt-6 border-t border-slate-700">
+        {step === 3 && !isLoading && (
+            <div className="text-center mb-4">
+                {!hasEnoughPoints && dynamicCost > 0 && (
+                    <p className="text-red-400 text-sm">Poin Anda tidak cukup (butuh {dynamicCost} poin).</p>
+                )}
+            </div>
         )}
-      </button>
-      {!hasEnoughPoints && !isLoading && dynamicCost > 0 && (
-        <p className="text-center text-red-400 mt-2">Poin tidak cukup (butuh {dynamicCost} poin).</p>
-      )}
+        <div className="flex justify-between items-center">
+            <button 
+              type="button" 
+              onClick={prevStep}
+              disabled={isLoading || step === 1}
+              className="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Kembali
+            </button>
+            <button 
+              type={step === 3 ? "submit" : "button"} 
+              onClick={step < 3 ? nextStep : undefined}
+              disabled={isLoading || (step === 3 && (!hasEnoughPoints || dynamicCost === 0))} 
+              className="bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Memproses...
+                </>
+              ) : (
+                step < 3 ? 'Selanjutnya' : `Buat Modul Ajar (${dynamicCost > 0 ? `${dynamicCost} Poin` : '...'})`
+              )}
+            </button>
+        </div>
+      </div>
     </form>
   );
 };
