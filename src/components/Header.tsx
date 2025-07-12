@@ -67,6 +67,9 @@ export const Header: React.FC = () => {
             ) : (
               // Tampilan Header untuk Halaman Publik
               <>
+                <Link to="/" className={`text-sm font-medium ${navLinkClass} transition-colors`}>
+                  Beranda
+                </Link>
                 <Link to="/#fitur" className={`text-sm font-medium ${navLinkClass} transition-colors`}>
                   Fitur
                 </Link>

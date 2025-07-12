@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 // SVG component untuk visualisasi jaringan saraf
@@ -42,6 +42,15 @@ const NeuralNetworkIcon: React.FC = () => (
     </svg>
 );
 
+const TutorialStep: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
+    <div className="flex flex-col items-center text-center">
+        <div className="bg-sky-100 text-sky-600 rounded-full p-4 mb-4 ring-8 ring-sky-50">
+            {icon}
+        </div>
+        <h3 className="text-xl font-semibold text-slate-800 mb-2">{title}</h3>
+        <p className="text-slate-600 px-2">{description}</p>
+    </div>
+);
 
 const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
     <div className="bg-white p-6 rounded-lg shadow-md border border-slate-200 text-left transform hover:-translate-y-2 transition-transform duration-300">
@@ -53,6 +62,19 @@ const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description:
 
 const LandingPage: React.FC = () => {
     const { isAuthenticated } = useAuth();
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.hash) {
+            const id = location.hash.substring(1); // remove #
+            setTimeout(() => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+        }
+    }, [location]);
 
     if (isAuthenticated) {
         return <Navigate to="/app" replace />;
@@ -73,13 +95,41 @@ const LandingPage: React.FC = () => {
                         <Link to="/register" className="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out text-lg text-center">
                             Mulai Evolusi Anda
                         </Link>
-                        <Link to="/#fitur" className="bg-white hover:bg-slate-100 text-slate-700 font-semibold py-3 px-8 rounded-lg shadow-md border border-slate-300 transition-all text-center">
-                            Pelajari Lebih Lanjut
+                        <Link to="/#tutorial" className="bg-white hover:bg-slate-100 text-slate-700 font-semibold py-3 px-8 rounded-lg shadow-md border border-slate-300 transition-all text-center">
+                            Pelajari Cara Kerja
                         </Link>
                     </div>
                 </div>
                  <div className="w-full max-w-sm mx-auto md:max-w-md lg:max-w-lg">
                     <NeuralNetworkIcon />
+                </div>
+            </section>
+            
+            {/* Tutorial Section */}
+            <section id="tutorial" className="text-center bg-slate-50 py-16 rounded-2xl shadow-lg border border-slate-200">
+                <h2 className="text-3xl font-bold text-slate-800">Cara Kerja dalam 4 Langkah Mudah</h2>
+                <p className="mt-2 text-slate-500 max-w-3xl mx-auto">Dari ide menjadi Modul Ajar siap pakai dalam beberapa menit.</p>
+                <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 px-6">
+                    <TutorialStep
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
+                        title="1. Isi Formulir"
+                        description="Daftar akun gratis, lalu isi formulir cerdas kami dengan ide-ide dasar pembelajaran Anda."
+                    />
+                     <TutorialStep
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.375 3.375 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>}
+                        title="2. Biarkan AI Bekerja"
+                        description="Sistem AI deep learning kami akan menganalisis input Anda dan menyusun draf Modul Ajar secara real-time."
+                    />
+                     <TutorialStep
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>}
+                        title="3. Tinjau & Sempurnakan"
+                        description="Lihat hasil yang digenerate AI. Gunakan langsung atau salin teksnya untuk disesuaikan lebih lanjut."
+                    />
+                     <TutorialStep
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>}
+                        title="4. Unduh & Gunakan"
+                        description="Unduh Modul Ajar dalam format DOCX atau TXT. Siap untuk dicetak dan digunakan di kelas Anda!"
+                    />
                 </div>
             </section>
 
