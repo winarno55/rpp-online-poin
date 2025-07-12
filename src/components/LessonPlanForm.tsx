@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LessonPlanInput } from '../types';
-import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_FASE_OPTIONS } from '../constants';
+import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_FASE_OPTIONS, PRAKTIK_PEDAGOGIS_LAINNYA } from '../constants';
 
 interface SessionCost {
   sessions: number;
@@ -31,6 +31,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     kemitraanPembelajaran: '',
   });
   
+  const [customPraktik, setCustomPraktik] = useState('');
   const [dynamicCost, setDynamicCost] = useState(0);
 
   useEffect(() => {
@@ -59,7 +60,13 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!hasEnoughPoints) return;
-    onSubmit(formData);
+    
+    const dataToSubmit = { ...formData };
+    if (formData.praktikPedagogis === PRAKTIK_PEDAGOGIS_LAINNYA) {
+        dataToSubmit.praktikPedagogis = customPraktik;
+    }
+    
+    onSubmit(dataToSubmit);
   };
 
   const inputClass = "w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-slate-100 disabled:opacity-50";
@@ -139,6 +146,21 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
+          {formData.praktikPedagogis === PRAKTIK_PEDAGOGIS_LAINNYA && (
+            <div className="mt-4">
+              <label htmlFor="customPraktik" className={labelClass}>Tuliskan Praktik Pedagogis Pilihan Anda</label>
+              <textarea 
+                id="customPraktik" 
+                name="customPraktik" 
+                value={customPraktik} 
+                onChange={(e) => setCustomPraktik(e.target.value)} 
+                className={inputClass} 
+                rows={2} 
+                placeholder="cth: Pembelajaran berbasis permainan (game-based learning)" 
+                required 
+              />
+            </div>
+          )}
         </div>
         <div>
           <label htmlFor="lintasDisiplinIlmu" className={labelClass}>Lintas Disiplin Ilmu <span className="text-slate-400 font-light">(Opsional)</span></label>

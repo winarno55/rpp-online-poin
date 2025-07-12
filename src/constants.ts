@@ -34,6 +34,8 @@ export const DIMENSI_PROFIL_LULUSAN = [
     "Kesehatan"
 ] as const;
 
+export const PRAKTIK_PEDAGOGIS_LAINNYA = "Lainnya... (Tuliskan di bawah)";
+
 export const PRAKTIK_PEDAGOGIS_OPTIONS = [
     "Pembelajaran Berbasis Masalah (Problem-Based Learning)",
     "Pembelajaran Berbasis Proyek (Project-Based Learning)",
@@ -41,7 +43,7 @@ export const PRAKTIK_PEDAGOGIS_OPTIONS = [
     "Pembelajaran Kontekstual (Contextual Teaching and Learning)",
     "Pembelajaran Kooperatif (Cooperative Learning)",
     "Pembelajaran Berdiferensiasi (Differentiated Learning)",
-    "Lainnya (Akan dijelaskan dalam Langkah Pembelajaran)"
+    PRAKTIK_PEDAGOGIS_LAINNYA
 ] as const;
 
 
