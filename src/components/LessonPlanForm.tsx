@@ -34,6 +34,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
   
   const [customPraktik, setCustomPraktik] = useState('');
   const [dynamicCost, setDynamicCost] = useState(0);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const numSessions = parseInt(formData.jumlahPertemuan) || 1;
@@ -46,6 +47,24 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) {
+        setErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[e.target.name];
+            return newErrors;
+        });
+    }
+  };
+
+  const handleCustomPraktikChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCustomPraktik(e.target.value);
+    if (errors.customPraktik) {
+        setErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors.customPraktik;
+            return newErrors;
+        });
+    }
   };
   
   const handleDimensionChange = (dimension: string) => {
@@ -60,13 +79,46 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
   const nextStep = () => setStep(prev => Math.min(prev + 1, 3));
   const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
 
+  const validateStep = (stepToValidate: number): boolean => {
+    const newErrors: { [key: string]: string } = {};
+    let isValid = true;
+
+    if (stepToValidate === 1) {
+        if (!formData.mataPelajaran.trim()) { newErrors.mataPelajaran = 'Mata Pelajaran wajib diisi.'; isValid = false; }
+        if (!formData.materi.trim()) { newErrors.materi = 'Materi wajib diisi.'; isValid = false; }
+        if (!formData.jamPelajaran.trim() || Number(formData.jamPelajaran) <= 0) { newErrors.jamPelajaran = 'JP harus berupa angka positif.'; isValid = false; }
+    } else if (stepToValidate === 2) {
+        if (!formData.tujuanPembelajaran.trim()) { newErrors.tujuanPembelajaran = 'Tujuan Pembelajaran wajib diisi.'; isValid = false; }
+        if (formData.praktikPedagogis === PRAKTIK_PEDAGOGIS_LAINNYA && !customPraktik.trim()) {
+            newErrors.customPraktik = 'Praktik Pedagogis kustom wajib diisi.'; isValid = false;
+        }
+    }
+    setErrors(newErrors);
+    return isValid;
+  }
+
+  const handleNext = () => {
+    if (validateStep(step)) {
+      nextStep();
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // BUG FIX: Only proceed with full submission on the final step.
-    // If submitted on earlier steps (e.g., by pressing Enter), treat it as "next".
+    // Safeguard: If triggered on early steps (e.g. by Enter key), treat as a "Next" click
     if (step < 3) {
-      nextStep();
+      handleNext();
+      return;
+    }
+    
+    // Final validation for all required fields before submission
+    const isStep1Valid = validateStep(1);
+    const isStep2Valid = validateStep(2);
+    if (!isStep1Valid || !isStep2Valid) {
+      // If validation fails, force user back to the first step with errors
+      if (!isStep1Valid) setStep(1);
+      else if (!isStep2Valid) setStep(2);
       return;
     }
 
@@ -84,6 +136,8 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
   const labelClass = "block mb-2 text-sm font-medium text-sky-300";
   const fieldSetClass = "space-y-4";
   const stepTitles = ['Identitas Dasar', 'Desain Pembelajaran', 'Detail Tambahan (Opsional)'];
+  const errorTextClass = "text-red-400 text-sm mt-1";
+
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full">
@@ -99,11 +153,12 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
             <fieldset className={fieldSetClass}>
               <div>
                 <label htmlFor="mataPelajaran" className={labelClass}>Mata Pelajaran</label>
-                <input type="text" name="mataPelajaran" id="mataPelajaran" value={formData.mataPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: Bahasa Indonesia, Matematika" required />
+                <input type="text" name="mataPelajaran" id="mataPelajaran" value={formData.mataPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: Bahasa Indonesia, Matematika" />
+                {errors.mataPelajaran && <p className={errorTextClass}>{errors.mataPelajaran}</p>}
               </div>
               <div>
                   <label htmlFor="kelasFase" className={labelClass}>Kelas/Fase</label>
-                  <select name="kelasFase" id="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass} required>
+                  <select name="kelasFase" id="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass} >
                       {KELAS_FASE_OPTIONS.map(opt => (
                           <option key={opt} value={opt}>{opt}</option>
                       ))}
@@ -112,18 +167,20 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                       <label htmlFor="jumlahPertemuan" className={labelClass}>Jumlah Pertemuan</label>
-                      <select name="jumlahPertemuan" id="jumlahPertemuan" value={formData.jumlahPertemuan} onChange={handleChange} className={inputClass} required>
+                      <select name="jumlahPertemuan" id="jumlahPertemuan" value={formData.jumlahPertemuan} onChange={handleChange} className={inputClass} >
                           {JUMLAH_PERTEMUAN_OPTIONS.map(s => (<option key={s} value={s}>{s}</option>))}
                       </select>
                   </div>
                   <div>
                       <label htmlFor="jamPelajaran" className={labelClass}>JP per Pertemuan</label>
-                      <input type="number" name="jamPelajaran" id="jamPelajaran" value={formData.jamPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: 2" required min="1" />
+                      <input type="number" name="jamPelajaran" id="jamPelajaran" value={formData.jamPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: 2" min="1" />
+                      {errors.jamPelajaran && <p className={errorTextClass}>{errors.jamPelajaran}</p>}
                   </div>
               </div>
               <div>
                 <label htmlFor="materi" className={labelClass}>Materi</label>
-                <input type="text" name="materi" id="materi" value={formData.materi} onChange={handleChange} className={inputClass} placeholder="Tuliskan topik pembelajaran" required />
+                <input type="text" name="materi" id="materi" value={formData.materi} onChange={handleChange} className={inputClass} placeholder="Tuliskan topik pembelajaran" />
+                {errors.materi && <p className={errorTextClass}>{errors.materi}</p>}
               </div>
             </fieldset>
           )}
@@ -152,11 +209,12 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
               </div>
               <div>
                 <label htmlFor="tujuanPembelajaran" className={labelClass}>Tujuan Pembelajaran</label>
-                <textarea name="tujuanPembelajaran" id="tujuanPembelajaran" value={formData.tujuanPembelajaran} onChange={handleChange} rows={4} className={inputClass} placeholder="Tuliskan tujuan pembelajaran yang mencakup kompetensi dan konten..." required />
+                <textarea name="tujuanPembelajaran" id="tujuanPembelajaran" value={formData.tujuanPembelajaran} onChange={handleChange} rows={4} className={inputClass} placeholder="Tuliskan tujuan pembelajaran yang mencakup kompetensi dan konten..." />
+                {errors.tujuanPembelajaran && <p className={errorTextClass}>{errors.tujuanPembelajaran}</p>}
               </div>
                <div>
                 <label htmlFor="praktikPedagogis" className={labelClass}>Praktik Pedagogis</label>
-                <select name="praktikPedagogis" id="praktikPedagogis" value={formData.praktikPedagogis} onChange={handleChange} className={inputClass} required>
+                <select name="praktikPedagogis" id="praktikPedagogis" value={formData.praktikPedagogis} onChange={handleChange} className={inputClass}>
                   {PRAKTIK_PEDAGOGIS_OPTIONS.map(p => (
                     <option key={p} value={p}>{p}</option>
                   ))}
@@ -168,12 +226,12 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
                       id="customPraktik" 
                       name="customPraktik" 
                       value={customPraktik} 
-                      onChange={(e) => setCustomPraktik(e.target.value)} 
+                      onChange={handleCustomPraktikChange} 
                       className={inputClass} 
                       rows={2} 
                       placeholder="cth: Pembelajaran berbasis permainan (game-based learning)" 
-                      required 
                     />
+                     {errors.customPraktik && <p className={errorTextClass}>{errors.customPraktik}</p>}
                   </div>
                 )}
               </div>
@@ -223,24 +281,35 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
             >
               Kembali
             </button>
-            <button 
-              type={step === 3 ? "submit" : "button"} 
-              onClick={step < 3 ? nextStep : undefined}
-              disabled={isLoading || (step === 3 && (!hasEnoughPoints || dynamicCost === 0))} 
-              className="bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed text-lg"
-            >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Memproses...
-                </>
-              ) : (
-                step < 3 ? 'Selanjutnya' : `Buat Modul Ajar (${dynamicCost > 0 ? `${dynamicCost} Poin` : '...'})`
-              )}
-            </button>
+
+            {step < 3 ? (
+                <button 
+                    type="button" 
+                    onClick={handleNext}
+                    disabled={isLoading}
+                    className="bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                    >
+                    Selanjutnya
+                </button>
+            ) : (
+                <button 
+                    type="submit" 
+                    disabled={isLoading || !hasEnoughPoints || dynamicCost === 0} 
+                    className="bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                    >
+                    {isLoading ? (
+                        <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Memproses...
+                        </>
+                    ) : (
+                        `Buat Modul Ajar (${dynamicCost > 0 ? `${dynamicCost} Poin` : '...'})`
+                    )}
+                </button>
+            )}
         </div>
       </div>
     </form>
