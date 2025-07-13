@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { LessonPlanForm } from '../components/LessonPlanForm';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
+import { LessonPlanEditor } from '../components/LessonPlanEditor';
 import { LessonPlanInput, addRppToHistory, initDB } from '../types';
-import { markdownToPlainText, markdownToHtml } from '../utils/markdownUtils';
+import { markdownToPlainText, markdownToHtml, htmlToPlainText } from '../utils/markdownUtils';
 import { exportToDocx } from '../utils/docxUtils';
 import { useAuth } from '../hooks/useAuth';
 
@@ -25,7 +26,9 @@ interface NavLink {
 const HomePage: React.FC = () => {
   const { authData, updatePoints } = useAuth();
   const [lessonPlanInput, setLessonPlanInput] = useState<LessonPlanInput | null>(null);
-  const [generatedPlan, setGeneratedPlan] = useState<string | null>(null);
+  const [generatedMarkdown, setGeneratedMarkdown] = useState<string | null>(null);
+  const [displayHtml, setDisplayHtml] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<React.ReactNode | null>(null);
   const [dynamicCost, setDynamicCost] = useState(0);
@@ -52,29 +55,40 @@ const HomePage: React.FC = () => {
 
   }, []);
   
+  // Effect to convert markdown to HTML when generation is complete
   useEffect(() => {
-    if (generatedPlan && !isLoading) {
-        const lines = generatedPlan.split('\n');
-        const headings: NavLink[] = [];
-        const headingRegex = /^(#{1,3})\s+(.*)/;
-        
-        lines.forEach(line => {
-            const match = line.match(headingRegex);
-            if (match) {
-                const level = match[1].length;
-                // Hanya ambil H1 dan H2 untuk navigasi utama
-                if (level > 2) return;
-                
-                const text = match[2].replace(/\*\*/g, '').trim();
-                const id = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
-                headings.push({ id, text, level });
-            }
-        });
-        setNavLinks(headings);
-    } else if (!generatedPlan) {
-        setNavLinks([]); // Hapus navigasi jika tidak ada plan
+    if (generatedMarkdown) {
+      setDisplayHtml(markdownToHtml(generatedMarkdown));
+    } else {
+      setDisplayHtml(null);
     }
-  }, [generatedPlan, isLoading]);
+    // Always exit edit mode when a new plan is generated
+    setIsEditing(false); 
+  }, [generatedMarkdown]);
+
+  // Effect to update nav links when display HTML changes
+  useEffect(() => {
+    if (displayHtml && !isLoading) {
+        const headings: NavLink[] = [];
+        const headingRegex = /<h([1-2]) id="([^"]+)">([\s\S]*?)<\/h\1>/g;
+        let match;
+        const tempDiv = document.createElement('div');
+
+        while ((match = headingRegex.exec(displayHtml)) !== null) {
+            const level = parseInt(match[1], 10);
+            const id = match[2];
+            
+            // Use DOM parsing to safely get text content from the inner HTML
+            tempDiv.innerHTML = match[3];
+            const text = tempDiv.textContent || '';
+            
+            headings.push({ id, text, level });
+        }
+        setNavLinks(headings);
+    } else if (!displayHtml) {
+        setNavLinks([]);
+    }
+  }, [displayHtml, isLoading]);
 
 
   const handleFormSubmit = useCallback(async (data: LessonPlanInput) => {
@@ -108,7 +122,7 @@ const HomePage: React.FC = () => {
 
     setIsLoading(true);
     setError(null);
-    setGeneratedPlan(''); // Reset to empty string for streaming
+    setGeneratedMarkdown(''); // Reset to empty string for streaming
     setLessonPlanInput(data);
     setNavLinks([]); // Hapus navigasi lama
 
@@ -141,24 +155,21 @@ const HomePage: React.FC = () => {
 
         const chunk = decoder.decode(value, { stream: true });
         accumulatedPlan += chunk;
-        setGeneratedPlan(accumulatedPlan);
+        setGeneratedMarkdown(accumulatedPlan); // Stream raw markdown
       }
       
-      // Update points and save to history after stream is complete
       const finalUserPoints = authData.user.points - calculatedCost;
       updatePoints(finalUserPoints);
 
       try {
-        await addRppToHistory(data, accumulatedPlan);
+        await addRppToHistory(data, accumulatedPlan); // Save raw markdown to history
       } catch (dbError) {
         console.error("Gagal menyimpan Modul Ajar ke riwayat:", dbError);
-        // This is a non-critical error, so we just log it.
       }
-
 
     } catch (e) {
       console.error("Error generating lesson plan:", e);
-      setGeneratedPlan(null);
+      setGeneratedMarkdown(null);
       if (e instanceof Error) {
         setError(`Terjadi kesalahan: ${e.message}`);
       } else {
@@ -170,9 +181,9 @@ const HomePage: React.FC = () => {
   }, [authData, updatePoints, pricingConfig]);
   
   const handleDownloadTxt = useCallback(async () => {
-    if (!generatedPlan || !lessonPlanInput) return;
+    if (!displayHtml || !lessonPlanInput) return;
      try {
-        const plainTextContent = markdownToPlainText(generatedPlan);
+        const plainTextContent = htmlToPlainText(displayHtml);
         const fileName = `ModulAjar_${lessonPlanInput.mataPelajaran.replace(/\s+/g, '_')}.txt`;
         const blob = new Blob([plainTextContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
@@ -185,26 +196,35 @@ const HomePage: React.FC = () => {
         console.error("Error TXT", e);
         setError(e instanceof Error ? `Kesalahan TXT: ${e.message}` : 'Gagal membuat TXT.');
     }
-  }, [generatedPlan, lessonPlanInput]);
+  }, [displayHtml, lessonPlanInput]);
 
   const handleDownloadDocx = useCallback(() => {
-    if (!generatedPlan || !lessonPlanInput) return;
+    if (!displayHtml || !lessonPlanInput) return;
     try {
-        const htmlContent = markdownToHtml(generatedPlan);
         const fileName = `ModulAjar_${lessonPlanInput.mataPelajaran.replace(/\s+/g, '_')}`;
-        exportToDocx(htmlContent, fileName);
+        exportToDocx(displayHtml, fileName);
     } catch (e) {
         console.error("Error creating DOCX", e);
         setError(e instanceof Error ? `Kesalahan DOCX: ${e.message}` : 'Gagal membuat DOCX.');
     }
-  }, [generatedPlan, lessonPlanInput]);
+  }, [displayHtml, lessonPlanInput]);
   
   const handlePrint = useCallback(() => {
-    if (!generatedPlan) return;
+    if (!generatedMarkdown) return;
     window.print();
-  }, [generatedPlan]);
+  }, [generatedMarkdown]);
+
+  const handleEdit = () => setIsEditing(true);
+  const handleSave = () => setIsEditing(false);
+  const handleCancel = () => {
+      setIsEditing(false);
+      if (generatedMarkdown) {
+          setDisplayHtml(markdownToHtml(generatedMarkdown));
+      }
+  };
 
   const downloadButtonBaseClass = "text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out text-base flex items-center justify-center gap-2 w-full sm:w-auto no-print";
+  const editButtonBaseClass = "font-semibold py-2 px-4 rounded-lg shadow-sm transition-all text-sm flex items-center gap-2";
 
   return (
     <>
@@ -228,7 +248,7 @@ const HomePage: React.FC = () => {
         </div>
 
         <div id="lesson-plan-display-container" className="bg-slate-200 shadow-inner rounded-xl p-2 sm:p-4 min-h-[400px] print-content">
-          {isLoading && !generatedPlan && <div className="flex items-center justify-center h-full"><div className="text-slate-800"><LoadingSpinner /></div></div>}
+          {isLoading && !displayHtml && <div className="flex items-center justify-center h-full"><div className="text-slate-800"><LoadingSpinner /></div></div>}
           {error && !isLoading && (
              <div className="flex items-center justify-center h-full p-4">
                 <div className="text-center text-red-700 bg-red-100 p-4 rounded-lg w-full max-w-md border border-red-300">
@@ -237,7 +257,7 @@ const HomePage: React.FC = () => {
                 </div>
             </div>
           )}
-          {generatedPlan !== null && !error && lessonPlanInput && (
+          {displayHtml !== null && !error && lessonPlanInput && (
             <div className="w-full flex flex-col lg:flex-row gap-6">
                {navLinks.length > 0 && !isLoading && (
                     <nav className="w-full lg:w-1/4 h-full lg:h-screen lg:sticky top-24 self-start no-print bg-slate-100 p-4 rounded-lg border border-slate-300">
@@ -264,9 +284,28 @@ const HomePage: React.FC = () => {
                             <p className="text-slate-600 mb-1">Anda telah menggunakan {dynamicCost} poin.</p>
                             <p className="text-slate-700 mb-4 text-md">Sisa poin Anda: <span className="font-bold text-emerald-600">{authData.user?.points}</span></p>
                             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                            <button onClick={handleDownloadDocx} className={`${downloadButtonBaseClass} bg-blue-600 hover:bg-blue-700`}>Unduh DOCX</button>
-                            <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`}>Unduh TXT</button>
-                            <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`}>Cetak / Simpan PDF</button>
+                                <button onClick={handleDownloadDocx} className={`${downloadButtonBaseClass} bg-blue-600 hover:bg-blue-700`}>Unduh DOCX</button>
+                                <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`}>Unduh TXT</button>
+                                <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`}>Cetak / Simpan PDF</button>
+                            </div>
+                             <div className="mt-4 flex flex-row gap-3 justify-center">
+                                {!isEditing ? (
+                                    <button onClick={handleEdit} className={`${editButtonBaseClass} bg-slate-600 hover:bg-slate-700 text-white`}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" /></svg>
+                                        Edit Modul
+                                    </button>
+                                ) : (
+                                    <>
+                                        <button onClick={handleSave} className={`${editButtonBaseClass} bg-green-500 hover:bg-green-600 text-white`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                            Simpan Perubahan
+                                        </button>
+                                        <button onClick={handleCancel} className={`${editButtonBaseClass} bg-gray-500 hover:bg-gray-600 text-white`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                            Batalkan
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </>
                     )}
@@ -275,12 +314,16 @@ const HomePage: React.FC = () => {
                     )}
                   </div>
                   <div id="rpp-paper-preview" className="bg-white rounded-md shadow-lg mx-auto p-8 md:p-12" style={{maxWidth: '8.5in'}}>
-                      <LessonPlanDisplay planText={generatedPlan} />
+                      {isEditing ? (
+                        <LessonPlanEditor html={displayHtml} onChange={setDisplayHtml} />
+                      ) : (
+                        <LessonPlanDisplay htmlContent={displayHtml} />
+                      )}
                   </div>
                 </div>
             </div>
           )}
-          {!isLoading && !error && generatedPlan === null && (
+          {!isLoading && !error && displayHtml === null && (
             <div className="flex-grow flex flex-col items-center justify-center h-full text-slate-500 text-center no-print p-4">
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-24 h-24 mb-4 opacity-50"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>
               <p className="text-xl text-slate-600">Modul Ajar akan dihasilkan di sini.</p>

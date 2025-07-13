@@ -133,7 +133,7 @@ const HistoryDetailPage: React.FC = () => {
             </div>
             
             <div id="rpp-paper-preview" className="bg-white rounded-md shadow-lg mx-auto p-8 md:p-12" style={{maxWidth: '8.5in'}}>
-                <LessonPlanDisplay planText={rpp.generatedPlan} />
+                <LessonPlanDisplay htmlContent={markdownToHtml(rpp.generatedPlan)} />
             </div>
         </div>
     );

@@ -358,3 +358,32 @@ export function markdownToPlainText(rawMarkdown: string): string {
 
     return text;
 }
+
+export function htmlToPlainText(html: string): string {
+    // Create a temporary DOM element to parse the HTML string
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    // Replace <br> tags with newlines for better formatting
+    tempDiv.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+    // Handle paragraphs and list items by adding a newline after them
+    tempDiv.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6').forEach(el => {
+        el.appendChild(document.createTextNode('\n'));
+    });
+    // For tables, add tabs between cells and newlines between rows
+    tempDiv.querySelectorAll('tr').forEach(tr => {
+        tr.querySelectorAll('td, th').forEach(cell => {
+             cell.appendChild(document.createTextNode('\t'));
+        });
+        tr.appendChild(document.createTextNode('\n'));
+    });
+
+    // Use textContent to get the plain text, which automatically decodes HTML entities
+    let text = tempDiv.textContent || '';
+    
+    // Clean up extra whitespace
+    text = text.replace(/[ \t]{2,}/g, ' '); // Replace multiple spaces/tabs with a single space
+    text = text.replace(/\n{3,}/g, '\n\n'); // Replace multiple newlines with double newlines
+    
+    return text.trim();
+}
