@@ -156,14 +156,16 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-grow">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-white mb-3">Langkah {step} dari 3: {stepTitles[step - 1]}</h2>
-            <div className="flex w-full h-2 bg-slate-700 rounded-full overflow-hidden">
-              <div style={{ width: `${(step / 3) * 100}%` }} className="bg-gradient-to-r from-sky-500 to-emerald-500 transition-all duration-500 ease-in-out rounded-full"></div>
-            </div>
+      <div className="flex-shrink-0">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-white mb-3">Langkah {step} dari 3: {stepTitles[step - 1]}</h2>
+          <div className="flex w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+            <div style={{ width: `${(step / 3) * 100}%` }} className="bg-gradient-to-r from-sky-500 to-emerald-500 transition-all duration-500 ease-in-out rounded-full"></div>
           </div>
-        
+        </div>
+      </div>
+
+      <div className="flex-grow overflow-y-auto pr-2">
           {step === 1 && (
             <fieldset className={fieldSetClass}>
               <div>
@@ -279,7 +281,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
           )}
       </div>
 
-      <div className="mt-8 pt-6 border-t border-slate-700">
+      <div className="flex-shrink-0 mt-auto pt-6 border-t border-slate-700">
         {step === 3 && !isLoading && (
             <div className="text-center mb-4">
                 {!hasEnoughPoints && dynamicCost > 0 && (

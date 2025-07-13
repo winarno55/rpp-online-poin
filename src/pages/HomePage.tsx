@@ -246,9 +246,9 @@ const HomePage: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-slate-800 shadow-2xl rounded-xl p-6 sm:p-8 no-print">
-          <div className="mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <div className="flex flex-col bg-slate-800 shadow-2xl rounded-xl p-6 sm:p-8 no-print h-[calc(100vh-14rem)] min-h-[700px]">
+          <div className="flex-shrink-0 mb-6">
               <label htmlFor="template-selector" className="block mb-2 text-sm font-medium text-sky-300">Mulai Dengan...</label>
               <select 
                 id="template-selector" 
@@ -261,13 +261,15 @@ const HomePage: React.FC = () => {
                 ))}
               </select>
           </div>
-          <LessonPlanForm 
-            onSubmit={handleFormSubmit} 
-            isLoading={isLoading || !pricingConfig} 
-            points={authData.user?.points ?? 0}
-            sessionCosts={pricingConfig?.sessionCosts || []}
-            initialData={templateData}
-          />
+          <div className="flex-grow min-h-0">
+            <LessonPlanForm 
+              onSubmit={handleFormSubmit} 
+              isLoading={isLoading || !pricingConfig} 
+              points={authData.user?.points ?? 0}
+              sessionCosts={pricingConfig?.sessionCosts || []}
+              initialData={templateData}
+            />
+          </div>
         </div>
 
         <div id="lesson-plan-display-container" className="bg-slate-200 shadow-inner rounded-xl p-2 sm:p-4 min-h-[400px] print-content">
