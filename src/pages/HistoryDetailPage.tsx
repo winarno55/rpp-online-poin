@@ -5,7 +5,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
 import { LessonPlanEditor } from '../components/LessonPlanEditor'; // Import editor
 import { markdownToHtml, htmlToPlainText } from '../utils/markdownUtils'; // Import htmlToPlainText
-import { exportAsDoc, exportAsDocx } from '../utils/docxUtils';
+import { exportToWord } from '../utils/docxUtils';
 
 const HistoryDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -75,21 +75,10 @@ const HistoryDetailPage: React.FC = () => {
         if (!rpp || !displayHtml) return;
         try {
             const fileName = `ModulAjar_${rpp.mataPelajaran.replace(/\s+/g, '_')}`;
-            exportAsDoc(displayHtml, fileName);
+            exportToWord(displayHtml, fileName);
         } catch (e) {
             console.error("Error creating DOC file:", e);
             setError(e instanceof Error ? `Kesalahan saat membuat file DOC: ${e.message}` : 'Gagal membuat file DOC.');
-        }
-    }, [rpp, displayHtml]);
-
-    const handleDownloadDocx = useCallback(() => {
-        if (!rpp || !displayHtml) return;
-        try {
-            const fileName = `ModulAjar_${rpp.mataPelajaran.replace(/\s+/g, '_')}`;
-            exportAsDocx(displayHtml, fileName); // Gunakan HTML yang sudah diedit
-        } catch (e) {
-            console.error("Error creating DOCX file:", e);
-            setError(e instanceof Error ? `Kesalahan saat membuat file DOCX: ${e.message}` : 'Gagal membuat file DOCX.');
         }
     }, [rpp, displayHtml]);
     
@@ -155,8 +144,7 @@ const HistoryDetailPage: React.FC = () => {
                 <h1 className="text-3xl font-bold text-white">{rpp.mataPelajaran}</h1>
                 <p className="text-slate-300 mt-1 text-lg">{rpp.materi}</p>
                 <div className="flex flex-wrap gap-3 justify-center mt-6">
-                    <button onClick={handleDownloadDocx} className={`${downloadButtonBaseClass} bg-blue-600 hover:bg-blue-700`}>Unduh DOCX</button>
-                    <button onClick={handleDownloadDoc} className={`${downloadButtonBaseClass} bg-teal-600 hover:bg-teal-700`}>Unduh DOC (Kompatibel)</button>
+                    <button onClick={handleDownloadDoc} className={`${downloadButtonBaseClass} bg-blue-600 hover:bg-blue-700`}>Unduh DOC (Word)</button>
                     <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`}>Unduh TXT</button>
                     <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`}>Cetak / Simpan PDF</button>
                 </div>

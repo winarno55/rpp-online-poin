@@ -34,20 +34,13 @@ const triggerDownload = (blob: Blob, fileName: string) => {
 };
 
 /**
- * Exports content as a .doc file. This version flattens lists to <p> tags
- * to ensure maximum compatibility and prevent auto-formatting issues in older Word versions.
+ * Exports content as a .doc file. This version preserves list tags and provides
+ * a reliable way to open the content in various Word versions.
  * This is effectively an HTML file disguised as a .doc file.
  */
-export const exportAsDoc = (htmlContent: string, fileName: string) => {
-    const flattenedHtml = htmlContent
-        .replace(/<ul[^>]*>/gi, '')   // Remove opening <ul>
-        .replace(/<\/ul>/gi, '')      // Remove closing </ul>
-        .replace(/<ol[^>]*>/gi, '')   // Remove opening <ol>
-        .replace(/<\/ol>/gi, '')      // Remove closing </ol>
-        .replace(/<li[^>]*>/gi, '<p>') // Replace <li> with <p>
-        .replace(/<\/li>/gi, '</p>');  // Replace </li> with </p>
-
-    const wordCompatibleHtml = flattenedHtml.replace(/<br \/>/g, '<br>');
+export const exportToWord = (htmlContent: string, fileName: string) => {
+    // Ensure lists are preserved and <br> tags are Word-compatible
+    const wordCompatibleHtml = htmlContent.replace(/<br \/>/g, '<br>');
     const fullHtml = createWordHtml(wordCompatibleHtml);
     
     const blob = new Blob(['\ufeff', fullHtml], {
@@ -55,20 +48,4 @@ export const exportAsDoc = (htmlContent: string, fileName: string) => {
     });
 
     triggerDownload(blob, `${fileName}.doc`);
-};
-
-/**
- * Exports content as a .docx file. This version preserves list tags (<ul>, <ol>, <li>)
- * for better formatting in modern versions of Word.
- * This is effectively an HTML file disguised as a .docx file.
- */
-export const exportAsDocx = (htmlContent: string, fileName: string) => {
-    const wordCompatibleHtml = htmlContent.replace(/<br \/>/g, '<br>');
-    const fullHtml = createWordHtml(wordCompatibleHtml);
-
-    const blob = new Blob(['\ufeff', fullHtml], {
-        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    });
-
-    triggerDownload(blob, `${fileName}.docx`);
 };
