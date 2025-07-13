@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { initDB, getRppById, RppHistoryItem } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
-import { markdownToPlainText, markdownToHtml } from '../utils/markdownUtils';
+import { LessonPlanEditor } from '../components/LessonPlanEditor'; // Import editor
+import { markdownToHtml, htmlToPlainText } from '../utils/markdownUtils'; // Import htmlToPlainText
 import { exportToDocx } from '../utils/docxUtils';
 
 const HistoryDetailPage: React.FC = () => {
@@ -11,6 +12,11 @@ const HistoryDetailPage: React.FC = () => {
     const [rpp, setRpp] = useState<RppHistoryItem | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // State untuk fitur editor interaktif
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [displayHtml, setDisplayHtml] = useState<string | null>(null);
+    const [originalHtml, setOriginalHtml] = useState<string | null>(null);
 
     useEffect(() => {
         const loadRpp = async () => {
@@ -30,6 +36,9 @@ const HistoryDetailPage: React.FC = () => {
                 const item = await getRppById(numericId);
                 if (item) {
                     setRpp(item);
+                    const html = markdownToHtml(item.generatedPlan);
+                    setDisplayHtml(html);
+                    setOriginalHtml(html);
                 } else {
                     setError(`Modul Ajar dengan ID ${id} tidak ditemukan di riwayat Anda.`);
                 }
@@ -44,9 +53,9 @@ const HistoryDetailPage: React.FC = () => {
     }, [id]);
 
     const handleDownloadTxt = useCallback(async () => {
-        if (!rpp) return;
+        if (!rpp || !displayHtml) return;
         try {
-            const plainTextContent = markdownToPlainText(rpp.generatedPlan);
+            const plainTextContent = htmlToPlainText(displayHtml); // Gunakan HTML yang sudah diedit
             const fileName = `ModulAjar_${rpp.mataPelajaran.replace(/\s+/g, '_')}.txt`;
             const blob = new Blob([plainTextContent], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
@@ -60,24 +69,33 @@ const HistoryDetailPage: React.FC = () => {
             console.error("Error generating TXT file:", e);
             setError(e instanceof Error ? `Kesalahan saat membuat file TXT: ${e.message}` : 'Gagal membuat file TXT.');
         }
-    }, [rpp]);
+    }, [rpp, displayHtml]);
 
     const handleDownloadDocx = useCallback(() => {
-        if (!rpp) return;
+        if (!rpp || !displayHtml) return;
         try {
-            const htmlContent = markdownToHtml(rpp.generatedPlan);
             const fileName = `ModulAjar_${rpp.mataPelajaran.replace(/\s+/g, '_')}`;
-            exportToDocx(htmlContent, fileName);
+            exportToDocx(displayHtml, fileName); // Gunakan HTML yang sudah diedit
         } catch (e) {
             console.error("Error creating DOCX file:", e);
             setError(e instanceof Error ? `Kesalahan saat membuat file DOCX: ${e.message}` : 'Gagal membuat file DOCX.');
         }
-    }, [rpp]);
+    }, [rpp, displayHtml]);
     
     const handlePrint = useCallback(() => {
         if (!rpp) return;
         window.print();
     }, [rpp]);
+
+    // Handler untuk fungsionalitas edit
+    const handleEdit = () => setIsEditing(true);
+    const handleSave = () => setIsEditing(false); // Perubahan sudah tersimpan di state `displayHtml`
+    const handleCancel = () => {
+        setIsEditing(false);
+        if (originalHtml) {
+            setDisplayHtml(originalHtml); // Kembalikan ke konten asli
+        }
+    };
 
     if (loading) {
         return <div className="flex justify-center items-center h-64"><LoadingSpinner /></div>;
@@ -109,7 +127,7 @@ const HistoryDetailPage: React.FC = () => {
     }
     
     const downloadButtonBaseClass = "text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out text-base flex items-center justify-center gap-2 w-full sm:w-auto no-print";
-
+    const editButtonBaseClass = "font-semibold py-2 px-4 rounded-lg shadow-sm transition-all text-sm flex items-center gap-2";
 
     return (
         <div className="w-full">
@@ -130,10 +148,35 @@ const HistoryDetailPage: React.FC = () => {
                     <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`}>Unduh TXT</button>
                     <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`}>Cetak / Simpan PDF</button>
                 </div>
+                 <div className="mt-4 flex flex-row gap-3 justify-center">
+                    {!isEditing ? (
+                        <button onClick={handleEdit} className={`${editButtonBaseClass} bg-slate-600 hover:bg-slate-700 text-white`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" /></svg>
+                            Edit Modul
+                        </button>
+                    ) : (
+                        <>
+                            <button onClick={handleSave} className={`${editButtonBaseClass} bg-green-500 hover:bg-green-600 text-white`}>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                Simpan Perubahan
+                            </button>
+                            <button onClick={handleCancel} className={`${editButtonBaseClass} bg-gray-500 hover:bg-gray-600 text-white`}>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                Batalkan
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
             
             <div id="rpp-paper-preview" className="bg-white rounded-md shadow-lg mx-auto p-8 md:p-12" style={{maxWidth: '8.5in'}}>
-                <LessonPlanDisplay htmlContent={markdownToHtml(rpp.generatedPlan)} />
+                 {displayHtml && (
+                    isEditing ? (
+                        <LessonPlanEditor html={displayHtml} onChange={setDisplayHtml} />
+                    ) : (
+                        <LessonPlanDisplay htmlContent={displayHtml} />
+                    )
+                )}
             </div>
         </div>
     );
