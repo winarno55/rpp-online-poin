@@ -5,6 +5,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
 import { LessonPlanEditor } from '../components/LessonPlanEditor';
 import { LessonPlanInput, addRppToHistory, initDB } from '../types';
+import { templates } from '../templates'; // Import templates
 import { markdownToPlainText, markdownToHtml, htmlToPlainText } from '../utils/markdownUtils';
 import { exportToWord } from '../utils/docxUtils';
 import { useAuth } from '../hooks/useAuth';
@@ -34,6 +35,8 @@ const HomePage: React.FC = () => {
   const [dynamicCost, setDynamicCost] = useState(0);
   const [pricingConfig, setPricingConfig] = useState<PricingConfig | null>(null);
   const [navLinks, setNavLinks] = useState<NavLink[]>([]);
+  const [templateData, setTemplateData] = useState<LessonPlanInput | null>(null);
+
 
   useEffect(() => {
     initDB().catch(err => {
@@ -223,6 +226,12 @@ const HomePage: React.FC = () => {
       }
   };
 
+  const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedTitle = e.target.value;
+    const selectedTemplate = templates.find(t => t.title === selectedTitle);
+    setTemplateData(selectedTemplate ? selectedTemplate.data : null);
+  };
+
   const downloadButtonBaseClass = "text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out text-base flex items-center justify-center gap-2 w-full sm:w-auto no-print";
   const editButtonBaseClass = "font-semibold py-2 px-4 rounded-lg shadow-sm transition-all text-sm flex items-center gap-2";
 
@@ -239,11 +248,25 @@ const HomePage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-slate-800 shadow-2xl rounded-xl p-6 sm:p-8 no-print">
+          <div className="mb-6">
+              <label htmlFor="template-selector" className="block mb-2 text-sm font-medium text-sky-300">Mulai Dengan...</label>
+              <select 
+                id="template-selector" 
+                onChange={handleTemplateChange}
+                className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors text-slate-100"
+              >
+                <option value="">Formulir Kosong</option>
+                {templates.map(template => (
+                  <option key={template.title} value={template.title}>{template.title}</option>
+                ))}
+              </select>
+          </div>
           <LessonPlanForm 
             onSubmit={handleFormSubmit} 
             isLoading={isLoading || !pricingConfig} 
             points={authData.user?.points ?? 0}
             sessionCosts={pricingConfig?.sessionCosts || []}
+            initialData={templateData}
           />
         </div>
 

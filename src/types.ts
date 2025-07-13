@@ -3,6 +3,12 @@ import { JUMLAH_PERTEMUAN_OPTIONS } from './constants';
 // Note: Fase and Semester types are no longer needed with the new form structure.
 export type JumlahPertemuan = typeof JUMLAH_PERTEMUAN_OPTIONS[number];
 
+export interface LessonPlanTemplate {
+  title: string;
+  description: string;
+  data: LessonPlanInput;
+}
+
 export interface LessonPlanInput {
   mataPelajaran: string;
   kelasFase: string;

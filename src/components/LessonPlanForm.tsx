@@ -11,11 +11,10 @@ interface LessonPlanFormProps {
   isLoading: boolean;
   points: number;
   sessionCosts: SessionCost[];
+  initialData?: LessonPlanInput | null;
 }
 
-export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, sessionCosts }) => {
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<LessonPlanInput>({
+const emptyForm: LessonPlanInput = {
     mataPelajaran: '',
     kelasFase: KELAS_FASE_OPTIONS[0],
     materi: '',
@@ -30,11 +29,35 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     lingkunganPembelajaran: '',
     pemanfaatanDigital: '',
     kemitraanPembelajaran: '',
-  });
+};
+
+export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, sessionCosts, initialData }) => {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState<LessonPlanInput>(emptyForm);
   
   const [customPraktik, setCustomPraktik] = useState('');
   const [dynamicCost, setDynamicCost] = useState(0);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    // This effect handles both setting template data and resetting the form.
+    const dataToSet = initialData || emptyForm;
+    setFormData(dataToSet);
+
+    // Also check if the praktik pedagogis from the template is a custom one.
+    const isCustom = !PRAKTIK_PEDAGOGIS_OPTIONS.includes(dataToSet.praktikPedagogis as any);
+    if (isCustom) {
+        setCustomPraktik(dataToSet.praktikPedagogis);
+        setFormData(prev => ({ ...prev, praktikPedagogis: PRAKTIK_PEDAGOGIS_LAINNYA }));
+    } else {
+        setCustomPraktik('');
+    }
+
+    setStep(1); // Reset to the first step
+    setErrors({}); // Clear any previous errors
+
+  }, [initialData]);
+
 
   useEffect(() => {
     const numSessions = parseInt(formData.jumlahPertemuan) || 1;
