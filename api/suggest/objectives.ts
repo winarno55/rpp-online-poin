@@ -57,8 +57,12 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             }
         });
         
-        const jsonText = response.text.trim();
-        const jsonResponse = JSON.parse(jsonText);
+        const jsonText = response.text;
+        if (!jsonText) {
+            throw new Error("Respons dari AI tidak berisi teks yang valid.");
+        }
+        
+        const jsonResponse = JSON.parse(jsonText.trim());
         res.status(200).json(jsonResponse);
 
     } catch (aiError: any) {
