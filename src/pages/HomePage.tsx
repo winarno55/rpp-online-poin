@@ -268,6 +268,7 @@ const HomePage: React.FC = () => {
               points={authData.user?.points ?? 0}
               sessionCosts={pricingConfig?.sessionCosts || []}
               initialData={templateData}
+              token={authData.token}
             />
           </div>
         </div>

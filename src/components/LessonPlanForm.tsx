@@ -12,6 +12,7 @@ interface LessonPlanFormProps {
   points: number;
   sessionCosts: SessionCost[];
   initialData?: LessonPlanInput | null;
+  token: string | null;
 }
 
 const emptyForm: LessonPlanInput = {
@@ -31,13 +32,18 @@ const emptyForm: LessonPlanInput = {
     kemitraanPembelajaran: '',
 };
 
-export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, sessionCosts, initialData }) => {
+export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, sessionCosts, initialData, token }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<LessonPlanInput>(emptyForm);
   
   const [customPraktik, setCustomPraktik] = useState('');
   const [dynamicCost, setDynamicCost] = useState(0);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // State untuk fitur saran AI
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
 
   useEffect(() => {
     // This effect handles both setting template data and resetting the form.
@@ -55,6 +61,8 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
 
     setStep(1); // Reset to the first step
     setErrors({}); // Clear any previous errors
+    setSuggestions([]); // Clear suggestions
+    setSuggestionError(null); // Clear suggestion errors
 
   }, [initialData]);
 
@@ -125,6 +133,64 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
       nextStep();
     }
   };
+  
+  const handleGetSuggestions = async () => {
+    if (!formData.materi.trim() || !formData.mataPelajaran.trim()) {
+        setSuggestionError('Mata Pelajaran dan Materi wajib diisi untuk mendapatkan saran.');
+        return;
+    }
+    if (!token) {
+        setSuggestionError('Sesi tidak valid. Silakan muat ulang halaman.');
+        return;
+    }
+    setIsSuggesting(true);
+    setSuggestionError(null);
+    setSuggestions([]);
+
+    try {
+        const response = await fetch('/api/suggest/objectives', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                mataPelajaran: formData.mataPelajaran,
+                kelasFase: formData.kelasFase,
+                materi: formData.materi
+            })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Gagal mengambil saran.');
+        }
+        if(!data.suggestions || data.suggestions.length === 0){
+             setSuggestionError("AI tidak dapat memberikan saran untuk topik ini. Coba ubah input materi Anda.");
+             return;
+        }
+        setSuggestions(data.suggestions);
+    } catch (err) {
+        setSuggestionError(err instanceof Error ? err.message : 'Terjadi kesalahan tidak diketahui.');
+    } finally {
+        setIsSuggesting(false);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setFormData(prev => ({
+        ...prev,
+        tujuanPembelajaran: suggestion // Replace content
+    }));
+    setSuggestions([]);
+     if (errors.tujuanPembelajaran) {
+        setErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors.tujuanPembelajaran;
+            return newErrors;
+        });
+    }
+  };
+
 
   const handleFinalSubmit = () => {
     // Final validation for all required fields before submission
@@ -225,9 +291,44 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
                 <textarea name="capaianPembelajaran" id="capaianPembelajaran" value={formData.capaianPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="Tuliskan capaian pembelajaran sesuai fase..." />
               </div>
               <div>
-                <label htmlFor="tujuanPembelajaran" className={labelClass}>Tujuan Pembelajaran</label>
-                <textarea name="tujuanPembelajaran" id="tujuanPembelajaran" value={formData.tujuanPembelajaran} onChange={handleChange} rows={4} className={inputClass} placeholder="Tuliskan tujuan pembelajaran yang mencakup kompetensi dan konten..." />
+                <div className="flex justify-between items-center mb-2">
+                    <label htmlFor="tujuanPembelajaran" className={labelClass}>Tujuan Pembelajaran</label>
+                    <button 
+                        type="button" 
+                        onClick={handleGetSuggestions} 
+                        disabled={!formData.materi.trim() || !formData.mataPelajaran.trim() || isSuggesting} 
+                        className="text-xs flex items-center gap-1 text-sky-400 hover:text-sky-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        aria-label="Dapatkan saran Tujuan Pembelajaran dari AI"
+                    >
+                        {isSuggesting ? (
+                            <>
+                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                Meminta...
+                            </>
+                        ) : (
+                            <>✨ Dapatkan Saran AI</>
+                        )}
+                    </button>
+                </div>
+                <textarea name="tujuanPembelajaran" id="tujuanPembelajaran" value={formData.tujuanPembelajaran} onChange={handleChange} rows={4} className={inputClass} placeholder="Tuliskan tujuan pembelajaran atau klik dapatkan saran AI di atas..." />
                 {errors.tujuanPembelajaran && <p className={errorTextClass}>{errors.tujuanPembelajaran}</p>}
+                
+                {suggestionError && <p className={`${errorTextClass} mt-2`}>{suggestionError}</p>}
+                {suggestions.length > 0 && !isSuggesting && (
+                    <div className="mt-2 space-y-2 bg-slate-900/50 p-3 rounded-lg">
+                        <p className="text-sm text-slate-300 mb-2">Pilih salah satu saran:</p>
+                        {suggestions.map((suggestion, index) => (
+                            <button
+                            key={index}
+                            type="button"
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            className="w-full text-left p-2 bg-slate-700 hover:bg-slate-600 rounded-md text-slate-200 text-sm transition-colors"
+                            >
+                            {suggestion}
+                            </button>
+                        ))}
+                    </div>
+                )}
               </div>
                <div>
                 <label htmlFor="praktikPedagogis" className={labelClass}>Praktik Pedagogis</label>
