@@ -43,6 +43,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
 
   // State untuk fitur saran AI
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
 
@@ -63,6 +64,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     setStep(1); // Reset to the first step
     setErrors({}); // Clear any previous errors
     setSuggestions([]); // Clear suggestions
+    setSelectedSuggestions([]); // Clear selected suggestions
     setSuggestionError(null); // Clear suggestion errors
 
   }, [initialData]);
@@ -152,6 +154,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     setIsSuggesting(true);
     setSuggestionError(null);
     setSuggestions([]);
+    setSelectedSuggestions([]);
 
     try {
         const response = await fetch('/api/suggest/objectives', {
@@ -187,13 +190,32 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     }
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
+  const handleSuggestionSelectionChange = (suggestion: string) => {
+    setSelectedSuggestions(prev =>
+      prev.includes(suggestion)
+        ? prev.filter(s => s !== suggestion)
+        : [...prev, suggestion]
+    );
+  };
+
+  const handleAddSelectedSuggestions = () => {
+    if (selectedSuggestions.length === 0) return;
+
+    const newObjectives = selectedSuggestions.map(s => s.trim()).join('\n');
+    const existingText = formData.tujuanPembelajaran.trim();
+    const newText = existingText ? `${existingText}\n${newObjectives}` : newObjectives;
+
     setFormData(prev => ({
-        ...prev,
-        tujuanPembelajaran: suggestion // Replace content
+      ...prev,
+      tujuanPembelajaran: newText
     }));
+
+    // Clear selections and suggestions list after adding
+    setSelectedSuggestions([]);
     setSuggestions([]);
-     if (errors.tujuanPembelajaran) {
+
+    // Clear error message if any
+    if (errors.tujuanPembelajaran) {
         setErrors(prev => {
             const newErrors = { ...prev };
             delete newErrors.tujuanPembelajaran;
@@ -327,17 +349,29 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
                 {suggestionError && <p className={`${errorTextClass} mt-2`}>{suggestionError}</p>}
                 {suggestions.length > 0 && !isSuggesting && (
                     <div className="mt-2 space-y-2 bg-slate-900/50 p-3 rounded-lg">
-                        <p className="text-sm text-slate-300 mb-2">Pilih salah satu saran:</p>
-                        {suggestions.map((suggestion, index) => (
+                        <p className="text-sm text-slate-300 mb-2">Pilih satu atau lebih saran untuk ditambahkan:</p>
+                        <div className="space-y-2">
+                            {suggestions.map((suggestion, index) => (
+                                <label key={index} className="flex items-start p-2 bg-slate-700 hover:bg-slate-600 rounded-md text-slate-200 text-sm transition-colors cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="h-4 w-4 rounded bg-slate-800 border-slate-500 text-sky-500 focus:ring-sky-600 mt-1 mr-3 flex-shrink-0"
+                                        checked={selectedSuggestions.includes(suggestion)}
+                                        onChange={() => handleSuggestionSelectionChange(suggestion)}
+                                    />
+                                    <span>{suggestion}</span>
+                                </label>
+                            ))}
+                        </div>
+                        {selectedSuggestions.length > 0 && (
                             <button
-                            key={index}
-                            type="button"
-                            onClick={() => handleSuggestionClick(suggestion)}
-                            className="w-full text-left p-2 bg-slate-700 hover:bg-slate-600 rounded-md text-slate-200 text-sm transition-colors"
+                                type="button"
+                                onClick={handleAddSelectedSuggestions}
+                                className="mt-3 w-full text-center p-2 bg-sky-600 hover:bg-sky-500 rounded-md text-white font-semibold transition-colors"
                             >
-                            {suggestion}
+                                Tambahkan {selectedSuggestions.length} Tujuan Terpilih
                             </button>
-                        ))}
+                        )}
                     </div>
                 )}
               </div>
