@@ -95,27 +95,33 @@ Hasilkan Modul Ajar dalam format Markdown yang rapi, terstruktur, dan siap pakai
 ## Pengalaman Belajar
 
 ### Langkah-Langkah Pembelajaran
-[PENTING: Rincikan langkah-langkah untuk setiap pertemuan, dari Pertemuan 1 hingga ${jumlahPertemuan}. Setiap pertemuan harus memiliki struktur AWAL, INTI, dan PENUTUP. Rancang aktivitas pada bagian INTI agar selaras dengan Dimensi Profil Lulusan yang dipilih.]
+[PENTING: Rincikan langkah-langkah untuk setiap pertemuan, dari Pertemuan 1 hingga ${jumlahPertemuan}. Setiap pertemuan harus memiliki struktur AWAL, INTI, dan PENUTUP.
+**Instruksi Khusus untuk Prinsip Pembelajaran:** Untuk setiap aktivitas yang Anda rincikan dalam tahap AWAL, INTI, dan PENUTUP, jelaskan secara singkat bagaimana aktivitas tersebut menerapkan salah satu atau lebih dari prinsip **Mindful, Joyful, atau Meaningful Learning**. Tandai setiap aktivitas dengan prinsip yang relevan setelah deskripsinya, contoh: \`(Mindful)\`, \`(Joyful)\`, \`(Meaningful)\`.]
 
 ---
 #### **PERTEMUAN 1**
 ---
-**AWAL (Prinsip: Mindful, Joyful, Meaningful)**
-[Rincikan kegiatan pembuka untuk mempersiapkan siswa: orientasi bermakna, apersepsi kontekstual, dan motivasi yang menggembirakan.]
+**AWAL**
+[Rincikan kegiatan pembuka. Contoh:
+- Guru memulai dengan teknik stop sejenak untuk memusatkan perhatian siswa. (Mindful)
+- Guru menampilkan gambar atau video lucu terkait topik untuk membangkitkan semangat. (Joyful)
+- Guru mengaitkan topik dengan pengalaman sehari-hari siswa. (Meaningful)]
 
-**INTI (Prinsip: Mindful, Joyful, Meaningful)**
-[Pada tahap ini, siswa aktif terlibat dalam pengalaman belajar. Rancang aktivitas agar murid juga dapat meningkatkan kompetensi globalnya sesuai Dimensi Profil Lulusan yang dipilih. Bagi menjadi tiga sub-tahap berikut:]
+**INTI**
+[Rancang aktivitas inti agar selaras dengan Dimensi Profil Lulusan yang dipilih. Bagi menjadi tiga sub-tahap berikut dan tandai setiap aktivitas dengan prinsip yang sesuai:]
 1.  **Memahami:** [Rincikan kegiatan yang memfasilitasi siswa untuk aktif membangun pengetahuan dari berbagai sumber dan konteks terkait materi.]
 2.  **Mengaplikasi:** [Rincikan kegiatan di mana siswa mengaplikasikan pemahaman mereka dalam konteks dunia nyata untuk mengembangkan kompetensi.]
 3.  **Merefleksi:** [Rincikan kegiatan yang memfasilitasi siswa untuk mengevaluasi proses dan hasil belajar, memaknai pengalaman, dan merencanakan tindak lanjut.]
 
-**PENUTUP (Prinsip: Mindful, Joyful, Meaningful)**
-[Rincikan kegiatan penutup: umpan balik konstruktif, kesimpulan bersama, dan pelibatan siswa dalam perencanaan pembelajaran selanjutnya.]
+**PENUTUP**
+[Rincikan kegiatan penutup, pastikan untuk menandai aktivitas dengan prinsip yang sesuai. Contoh:
+- Siswa menuliskan satu hal baru yang dipelajari dan perasaannya hari ini di jurnal belajar. (Mindful, Meaningful)
+- Guru memberikan apresiasi kepada kelompok yang paling aktif. (Joyful)]
 
 ---
 #### **PERTEMUAN 2** (dan seterusnya, ulangi struktur yang sama hingga pertemuan terakhir)
 ---
-[Ulangi struktur AWAL, INTI (Memahami, Mengaplikasi, Merefleksi), dan PENUTUP untuk setiap pertemuan berikutnya, pastikan ada kesinambungan logis antar pertemuan.]
+[Ulangi struktur AWAL, INTI (Memahami, Mengaplikasi, Merefleksi), dan PENUTUP untuk setiap pertemuan berikutnya, pastikan ada kesinambungan logis antar pertemuan dan setiap aktivitas ditandai dengan prinsip yang relevan.]
 
 
 ### Asesmen Pembelajaran
