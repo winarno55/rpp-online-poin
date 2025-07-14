@@ -13,6 +13,7 @@ interface LessonPlanFormProps {
   sessionCosts: SessionCost[];
   initialData?: LessonPlanInput | null;
   token: string | null;
+  updatePoints: (newPoints: number) => void;
 }
 
 const emptyForm: LessonPlanInput = {
@@ -32,7 +33,7 @@ const emptyForm: LessonPlanInput = {
     kemitraanPembelajaran: '',
 };
 
-export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, sessionCosts, initialData, token }) => {
+export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, sessionCosts, initialData, token, updatePoints }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<LessonPlanInput>(emptyForm);
   
@@ -139,6 +140,11 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
         setSuggestionError('Mata Pelajaran dan Materi wajib diisi untuk mendapatkan saran.');
         return;
     }
+    const SUGGESTION_COST = 5;
+    if (points < SUGGESTION_COST) {
+        setSuggestionError(`Poin tidak cukup. Fitur ini membutuhkan ${SUGGESTION_COST} poin.`);
+        return;
+    }
     if (!token) {
         setSuggestionError('Sesi tidak valid. Silakan muat ulang halaman.');
         return;
@@ -164,6 +170,11 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
         if (!response.ok) {
             throw new Error(data.message || 'Gagal mengambil saran.');
         }
+
+        if (data.newPoints !== undefined) {
+            updatePoints(data.newPoints);
+        }
+
         if(!data.suggestions || data.suggestions.length === 0){
              setSuggestionError("AI tidak dapat memberikan saran untuk topik ini. Coba ubah input materi Anda.");
              return;
@@ -306,7 +317,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
                                 Meminta...
                             </>
                         ) : (
-                            <>✨ Dapatkan Saran AI</>
+                            <>✨ Dapatkan Saran AI (-5 Poin)</>
                         )}
                     </button>
                 </div>

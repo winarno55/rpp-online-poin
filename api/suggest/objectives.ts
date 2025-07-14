@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI, Type } from '@google/genai';
 import { protect } from '../_lib/auth.js';
-import { IUser } from '../_lib/models/User.js';
+import User, { IUser } from '../_lib/models/User.js';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -16,6 +16,8 @@ type AuthRequest = VercelRequest & {
   user?: IUser;
 };
 
+const SUGGESTION_COST = 5;
+
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
     if (!req.user) {
         return res.status(401).json({ message: 'Not authorized' });
@@ -26,6 +28,19 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     if (!materi || !kelasFase || !mataPelajaran) {
         return res.status(400).json({ message: 'Mata Pelajaran, Kelas/Fase, dan Materi diperlukan untuk mendapatkan saran.' });
     }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+        return res.status(401).json({ message: 'User not found in database.' });
+    }
+
+    if (user.points < SUGGESTION_COST) {
+        return res.status(403).json({ message: `Poin tidak cukup. Fitur ini membutuhkan ${SUGGESTION_COST} poin.` });
+    }
+    
+    // Deduct points before making the API call
+    user.points -= SUGGESTION_COST;
+    await user.save();
 
     try {
         const prompt = `
@@ -63,13 +78,17 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         }
         
         const jsonResponse = JSON.parse(jsonText.trim());
-        res.status(200).json(jsonResponse);
+        res.status(200).json({ ...jsonResponse, newPoints: user.points });
 
     } catch (aiError: any) {
+        // AI call failed, so we refund the points.
+        user.points += SUGGESTION_COST;
+        await user.save();
+        
         console.error('Gemini Suggestion API Error:', aiError);
-        let userMessage = 'Gagal mendapatkan saran dari AI.';
+        let userMessage = `Gagal mendapatkan saran dari AI. ${SUGGESTION_COST} poin Anda telah dikembalikan.`;
         if (aiError.message && aiError.message.toLowerCase().includes('safety')) {
-            userMessage = 'Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah input materi Anda.';
+            userMessage = `Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah input materi Anda. ${SUGGESTION_COST} poin Anda telah dikembalikan.`;
         }
         res.status(500).json({ message: userMessage, error: aiError.message });
     }
