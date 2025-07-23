@@ -10,7 +10,7 @@ const createWordHtml = (bodyContent: string): string => {
                             /* --- General Word Compatibility Styles --- */
                             body { font-family: Calibri, sans-serif; font-size: 11pt; line-height: 1.3; }
                             p { margin: 0 0 8pt 0; }
-                            ul, ol { margin-top: 0; margin-bottom: 8pt; padding-left: 40px; }
+                            ul, ol { margin-top: 0; margin-bottom: 8pt; padding-left: 1.8em; }
                             li { margin-bottom: 4pt; }
                             table { border-collapse: collapse; width: 100%; margin-bottom: 10pt; }
                             td, th { border: 1px solid black; padding: 5px; }
