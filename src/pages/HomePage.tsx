@@ -7,7 +7,6 @@ import { LessonPlanEditor } from '../components/LessonPlanEditor';
 import { LessonPlanInput, addRppToHistory, initDB } from '../types';
 import { templates } from '../templates'; // Import templates
 import { markdownToPlainText, markdownToHtml, htmlToPlainText, parseMarkdownToDocxJson } from '../utils/markdownUtils';
-import { exportToWord, exportWithDocxTemplater } from '../utils/docxUtils';
 import { useAuth } from '../hooks/useAuth';
 
 interface SessionCost {
@@ -201,9 +200,10 @@ const HomePage: React.FC = () => {
     }
   }, [displayHtml, lessonPlanInput]);
 
-  const handleDownloadDoc = useCallback(() => {
+  const handleDownloadDoc = useCallback(async () => {
     if (!displayHtml || !lessonPlanInput) return;
     try {
+        const { exportToWord } = await import('../utils/docxUtils');
         const fileName = `ModulAjar_${lessonPlanInput.mataPelajaran.replace(/\s+/g, '_')}`;
         exportToWord(displayHtml, fileName);
     } catch (e) {
@@ -215,6 +215,7 @@ const HomePage: React.FC = () => {
   const handleDownloadDocx = useCallback(async () => {
     if (!generatedMarkdown || !lessonPlanInput) return;
     try {
+        const { exportWithDocxTemplater } = await import('../utils/docxUtils');
         const jsonData = parseMarkdownToDocxJson(generatedMarkdown);
         const fileName = `ModulAjar_${lessonPlanInput.mataPelajaran.replace(/\s+/g, '_')}.docx`;
         await exportWithDocxTemplater(jsonData, fileName);
