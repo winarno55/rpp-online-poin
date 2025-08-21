@@ -91,7 +91,7 @@ const HistoryDetailPage: React.FC = () => {
             await exportWithDocxTemplater(jsonData, fileName);
         } catch (e) {
             console.error("Error creating DOCX from template:", e);
-            setError(e instanceof Error ? `Gagal membuat file DOCX. Pastikan file 'template.docx' ada di folder public. Kesalahan: ${e.message}` : 'Gagal membuat DOCX.');
+            setError(e instanceof Error ? `Gagal membuat file DOCX. Kesalahan: ${e.message}` : 'Gagal membuat DOCX.');
         }
     }, [rpp]);
     

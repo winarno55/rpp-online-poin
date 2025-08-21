@@ -10,10 +10,16 @@ export const exportWithDocxTemplater = async (data: DocxJson, fileName: string) 
     const Docxtemplater = (await import('docxtemplater')).default;
     const { saveAs } = await import('file-saver');
     
-    // 1. Fetch the template file from the public folder.
-    const response = await fetch('/template.docx');
+    // 1. Fetch the template file from the dedicated API endpoint.
+    const response = await fetch('/api/template');
     if (!response.ok) {
-        throw new Error(`Server tidak dapat menemukan template.docx (status: ${response.status}). Pastikan file berada di folder 'public' pada direktori utama proyek Anda.`);
+        // Try to parse the error message from the API if available
+        try {
+            const errorData = await response.json();
+            throw new Error(`Gagal mengambil file template dari server: ${errorData.message || response.statusText}`);
+        } catch (e) {
+            throw new Error(`Gagal mengambil file template dari server (status: ${response.status}).`);
+        }
     }
     const templateBlob = await response.arrayBuffer();
 
@@ -41,18 +47,9 @@ export const exportWithDocxTemplater = async (data: DocxJson, fileName: string) 
         saveAs(out, fileName);
 
     } catch (error) {
-        // --- DIAGNOSIS CERDAS ---
-        // Menangkap error 'zip' yang membingungkan dan memberikan pesan yang lebih baik.
+        // The 'zip' error is the most common one when the template is invalid.
         if (error instanceof Error && error.message.includes("Can't find end of central directory")) {
-            const contentType = response.headers.get('content-type');
-            
-            // Cek apakah server mengirimkan file HTML
-            if (contentType && contentType.includes('text/html')) {
-                throw new Error("Kesalahan Konfigurasi Server: Server mengirimkan halaman web (HTML) alih-alih file template.docx. Pastikan folder 'public' berada di direktori utama (root) proyek dan konfigurasi 'vercel.json' Anda sudah benar.");
-            } else {
-                // Server mengirimkan file lain yang bukan DOCX valid.
-                throw new Error(`File template.docx yang diterima dari server tampaknya rusak atau bukan format yang benar. Tipe file yang diterima: ${contentType || 'tidak diketahui'}.`);
-            }
+            throw new Error('File template yang diterima dari server rusak atau tidak valid. Silakan hubungi admin.');
         }
         // Lemparkan kembali error lain yang tidak terduga.
         throw error;
