@@ -215,7 +215,7 @@ const HomePage: React.FC = () => {
   const handleDownloadDocx = useCallback(async () => {
     if (!generatedMarkdown || !lessonPlanInput) return;
     try {
-        const { exportWithDocxTemplater } = await import('../utils/docxUtils');
+        const { exportWithDocxTemplater } = await import('../utils/docxTemplaterUtils');
         const jsonData = parseMarkdownToDocxJson(generatedMarkdown);
         const fileName = `ModulAjar_${lessonPlanInput.mataPelajaran.replace(/\s+/g, '_')}.docx`;
         await exportWithDocxTemplater(jsonData, fileName);
