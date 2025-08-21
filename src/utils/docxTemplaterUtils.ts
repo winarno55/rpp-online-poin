@@ -1,6 +1,3 @@
-import PizZip from 'pizzip';
-import Docxtemplater from 'docxtemplater';
-import { saveAs } from 'file-saver';
 import { DocxJson } from './markdownUtils';
 
 /**
@@ -8,6 +5,11 @@ import { DocxJson } from './markdownUtils';
  * Fetches a template file from the server, fills it with data, and triggers a download.
  */
 export const exportWithDocxTemplater = async (data: DocxJson, fileName: string) => {
+    // Dynamically import libraries only when the function is called to prevent initial load crashes.
+    const PizZip = (await import('pizzip')).default;
+    const Docxtemplater = (await import('docxtemplater')).default;
+    const { saveAs } = await import('file-saver');
+    
     // 1. Fetch the template file from the public folder.
     const response = await fetch('/template.docx');
     if (!response.ok) {
