@@ -5,7 +5,7 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/((?!api/|bundle.js|config.js|favicon.ico|robots.txt|sitemap.xml).*)",
+      "source": "/((?!api/|bundle.js|config.js|favicon.ico|robots.txt|sitemap.xml|template.docx).*)",
       "destination": "/index.html"
     }
   ]
