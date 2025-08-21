@@ -4,7 +4,7 @@ import { initDB, getRppById, RppHistoryItem } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
 import { LessonPlanEditor } from '../components/LessonPlanEditor'; // Import editor
-import { markdownToHtml, htmlToPlainText } from '../utils/markdownUtils'; // Import htmlToPlainText
+import { markdownToHtml, htmlToPlainText, parseMarkdownToDocxJson } from '../utils/markdownUtils';
 import { exportToWord } from '../utils/docxUtils';
 
 const HistoryDetailPage: React.FC = () => {
@@ -82,6 +82,19 @@ const HistoryDetailPage: React.FC = () => {
         }
     }, [rpp, displayHtml]);
     
+    const handleDownloadDocx = useCallback(async () => {
+        if (!rpp) return;
+        try {
+            const { exportWithDocxTemplater } = await import('../utils/docxTemplaterUtils');
+            const jsonData = parseMarkdownToDocxJson(rpp.generatedPlan); // Use original markdown for parsing
+            const fileName = `ModulAjar_${rpp.mataPelajaran.replace(/\s+/g, '_')}.docx`;
+            await exportWithDocxTemplater(jsonData, fileName);
+        } catch (e) {
+            console.error("Error creating DOCX from template:", e);
+            setError(e instanceof Error ? `Gagal membuat file DOCX. Pastikan file 'template.docx' ada di folder public. Kesalahan: ${e.message}` : 'Gagal membuat DOCX.');
+        }
+    }, [rpp]);
+    
     const handlePrint = useCallback(() => {
         if (!rpp) return;
         window.print();
@@ -144,7 +157,8 @@ const HistoryDetailPage: React.FC = () => {
                 <h1 className="text-3xl font-bold text-white">{rpp.mataPelajaran}</h1>
                 <p className="text-slate-300 mt-1 text-lg">{rpp.materi}</p>
                 <div className="flex flex-wrap gap-3 justify-center mt-6">
-                    <button onClick={handleDownloadDoc} className={`${downloadButtonBaseClass} bg-blue-600 hover:bg-blue-700`}>Unduh DOC (Word)</button>
+                    <button onClick={handleDownloadDocx} className={`${downloadButtonBaseClass} bg-blue-600 hover:bg-blue-700`}>Unduh DOCX (Template)</button>
+                    <button onClick={handleDownloadDoc} className={`${downloadButtonBaseClass} bg-gray-600 hover:bg-gray-700`}>Unduh DOC (Lama)</button>
                     <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`}>Unduh TXT</button>
                     <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`}>Cetak / Simpan PDF</button>
                 </div>
