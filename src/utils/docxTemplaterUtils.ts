@@ -8,7 +8,8 @@ export const exportWithDocxTemplater = async (data: DocxJson, fileName: string) 
     // Dynamically import libraries only when the function is called to prevent initial load crashes.
     const PizZip = (await import('pizzip')).default;
     const Docxtemplater = (await import('docxtemplater')).default;
-    const { saveAs } = await import('file-saver');
+    // FIX: The 'file-saver' library exports 'saveAs' as a default export when used via esm.sh.
+    const saveAs = (await import('file-saver')).default;
     
     // 1. Fetch the template file from the dedicated API endpoint.
     const response = await fetch('/api/template');
