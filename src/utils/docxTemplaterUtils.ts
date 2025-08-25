@@ -2,7 +2,7 @@ import { DocxJson } from './markdownUtils';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import saveAs from 'file-saver';
-import HtmlModule from 'docxtemplater-html-module';
+import HtmlModule from 'docxtemplater-html-module-fixed';
 
 /**
  * Generates a DOCX file from a template and JSON data.
