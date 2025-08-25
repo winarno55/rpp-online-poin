@@ -1,16 +1,14 @@
 import { DocxJson } from './markdownUtils';
+import PizZip from 'pizzip';
+import Docxtemplater from 'docxtemplater';
+import saveAs from 'file-saver';
+import HtmlModule from 'docxtemplater-html-module';
 
 /**
  * Generates a DOCX file from a template and JSON data.
  * Fetches a template file, fills it with data, and triggers a download.
  */
 export const exportWithDocxTemplater = async (data: DocxJson, fileName: string) => {
-    // Dynamically import libraries only when the function is called to prevent initial load crashes.
-    const PizZip = (await import('pizzip')).default;
-    const Docxtemplater = (await import('docxtemplater')).default;
-    // FIX: The 'file-saver' library exports 'saveAs' as a default export when used via esm.sh.
-    const saveAs = (await import('file-saver')).default;
-    
     // 1. Fetch the template file from the dedicated API endpoint.
     const response = await fetch('/api/template');
     if (!response.ok) {
@@ -25,9 +23,10 @@ export const exportWithDocxTemplater = async (data: DocxJson, fileName: string) 
     const templateBlob = await response.arrayBuffer();
 
     try {
-        // 2. Load the template with PizZip and create a Docxtemplater instance.
+        // 2. Load the template with PizZip and create a Docxtemplater instance with the HtmlModule.
         const zip = new PizZip(templateBlob);
         const doc = new Docxtemplater(zip, {
+            modules: [new HtmlModule({})],
             paragraphLoop: true,
             linebreaks: true, // Handles newlines (\n) in data by converting them to <w:br/>
         });
