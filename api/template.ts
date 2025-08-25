@@ -2,7 +2,6 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import path from 'path';
 import fs from 'fs';
 import cors from 'cors';
-import { process } from 'process';
 
 const corsHandler = cors();
 
