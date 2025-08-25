@@ -4,12 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "npx esbuild src/index.tsx --bundle --outfile=bundle.js --format=esm --jsx=automatic --loader:.ts=tsx --resolve-extensions=.tsx,.ts,.js,.jsx --external:react --external:react-dom/client --external:react-router-dom --external:pizzip --external:docxtemplater --external:file-saver --external:docxtemplater-html-module",
+    "build": "npx esbuild src/index.tsx --bundle --outfile=bundle.js --format=esm --jsx=automatic --loader:.ts=tsx --resolve-extensions=.tsx,.ts,.js,.jsx --external:react --external:react-dom/client --external:react-router-dom --external:pizzip --external:docxtemplater --external:file-saver",
     "dev": "vercel dev"
   },
   "dependencies": {
     "@google/genai": "^1.6.0",
-    "docxtemplater-html-module": "4.0.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
