@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "npx esbuild src/index.tsx --bundle --outfile=bundle.js --format=esm --jsx=automatic --loader:.ts=tsx --resolve-extensions=.tsx,.ts,.js,.jsx --external:react --external:react-dom/client --external:react-router-dom --external:pizzip --external:docxtemplater --external:file-saver",
+    "build": "npx esbuild src/index.tsx --bundle --outfile=bundle.js --format=esm --jsx=automatic --loader:.ts=tsx --resolve-extensions=.tsx,.ts,.js,.jsx --external:react --external:react-dom/client --external:react-router-dom --external:pizzip --external:docxtemplater --external:file-saver --external:docxtemplater-html-module",
     "dev": "vercel dev"
   },
   "dependencies": {
