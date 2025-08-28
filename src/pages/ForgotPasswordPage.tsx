@@ -11,7 +11,7 @@ const ForgotPasswordPage: React.FC = () => {
         setIsLoading(true);
         setMessage(null);
         try {
-            const response = await fetch('/api/auth/forgot-password', {
+            const response = await fetch('/api/auth?action=forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),

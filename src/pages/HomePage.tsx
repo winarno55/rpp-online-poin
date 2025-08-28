@@ -44,7 +44,7 @@ const HomePage: React.FC = () => {
 
     const fetchPricingConfig = async () => {
         try {
-            const response = await fetch('/api/pricing/config');
+            const response = await fetch('/api/pricing');
             const data = await response.json();
             if (!response.ok) throw new Error('Gagal memuat konfigurasi biaya.');
             setPricingConfig(data);

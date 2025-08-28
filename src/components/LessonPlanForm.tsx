@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { LessonPlanInput } from '../types';
-import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_FASE_OPTIONS, PRAKTIK_PEDAGOGIS_LAINNYA } from '../constants';
+// Fix: Added .js extension to module imports to resolve module loading error.
+import { LessonPlanInput } from '../types.js';
+// Fix: Added .js extension to module imports to resolve module loading error.
+import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_FASE_OPTIONS, PRAKTIK_PEDAGOGIS_LAINNYA } from '../constants.js';
 
 interface SessionCost {
   sessions: number;
@@ -157,7 +159,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     setSelectedSuggestions([]);
 
     try {
-        const response = await fetch('/api/suggest/objectives', {
+        const response = await fetch('/api/suggest?action=objectives', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
