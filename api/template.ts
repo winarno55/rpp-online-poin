@@ -1,8 +1,10 @@
+
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import path from 'path';
 import fs from 'fs';
 import cors from 'cors';
-// FIX: Import 'cwd' from 'process' to resolve TypeScript type error for 'process.cwd'.
+// FIX: Import `cwd` from `process` to resolve a TypeScript type error where `process.cwd` was not found.
 import { cwd } from 'process';
 
 const corsHandler = cors();
@@ -14,6 +16,8 @@ const handleRequest = async (req: VercelRequest, res: VercelResponse) => {
     }
 
     try {
+        // vercel.json sekarang dikonfigurasi untuk menyertakan 'public/template.docx' dengan fungsi ini,
+        // sehingga process.cwd() akan mengarah ke direktori yang benar di lingkungan runtime fungsi.
         const filePath = path.join(cwd(), 'public', 'template.docx');
 
         if (!fs.existsSync(filePath)) {
