@@ -18,6 +18,6 @@
     "allowImportingTsExtensions": true,
     "noEmit": false
   },
-  "include": ["index.tsx", "src/**/*.ts", "src/**/*.tsx", "api/**/*.ts", "shared/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "api/**/*.ts", "shared/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
