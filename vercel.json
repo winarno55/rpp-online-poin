@@ -11,11 +11,7 @@
   ],
   "rewrites": [
     {
-      "source": "/bundle.js",
-      "destination": "/bundle.js"
-    },
-    {
-      "source": "((?!api/|.*\\..*).*)",
+      "source": "/((?!api/|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]
