@@ -4,8 +4,8 @@ import { protect } from './_lib/auth.js';
 import dbConnect from './_lib/db.js';
 import User, { IUser } from './_lib/models/User.js';
 import PricingConfig from './_lib/models/PricingConfig.js';
-import { generateLessonPlanPrompt } from '../src/services/geminiService.js';
-import { LessonPlanInput } from '../src/types.js';
+import { generateLessonPlanPrompt } from '../shared/geminiService.js';
+import { LessonPlanInput } from '../shared/types.js';
 import cors from 'cors';
 
 const corsHandler = cors();

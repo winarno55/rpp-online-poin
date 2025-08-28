@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-// FIX: Add '.ts' extension to fix module resolution errors.
-import { LessonPlanInput } from '../types.ts';
-// FIX: Add '.ts' extension to fix module resolution errors.
-import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_FASE_OPTIONS, PRAKTIK_PEDAGOGIS_LAINNYA } from '../constants.ts';
+import { LessonPlanInput } from '../../shared/types';
+import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_FASE_OPTIONS, PRAKTIK_PEDAGOGIS_LAINNYA } from '../../shared/constants';
 
 interface SessionCost {
   sessions: number;

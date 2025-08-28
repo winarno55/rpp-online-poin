@@ -1,5 +1,3 @@
-
-
 export const JUMLAH_PERTEMUAN_OPTIONS = [
     "1 Kali Pertemuan",
     "2 Kali Pertemuan",

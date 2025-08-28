@@ -1,7 +1,5 @@
-// Menghapus ekstensi '.js' dari impor agar konsisten dengan bundler frontend.
-import { JUMLAH_PERTEMUAN_OPTIONS } from './constants';
+import { JUMLAH_PERTEMUAN_OPTIONS } from './constants.js';
 
-// Note: Fase and Semester types are no longer needed with the new form structure.
 export type JumlahPertemuan = typeof JUMLAH_PERTEMUAN_OPTIONS[number];
 
 export interface LessonPlanTemplate {
@@ -16,15 +14,15 @@ export interface LessonPlanInput {
   materi: string;
   jumlahPertemuan: JumlahPertemuan;
   jamPelajaran: string;
-  pesertaDidik: string; // opsional
+  pesertaDidik: string; 
   dimensiProfilLulusan: string[];
-  capaianPembelajaran: string; // opsional
-  lintasDisiplinIlmu: string; // opsional
+  capaianPembelajaran: string;
+  lintasDisiplinIlmu: string; 
   tujuanPembelajaran: string;
   praktikPedagogis: string;
-  lingkunganPembelajaran: string; // opsional
-  pemanfaatanDigital: string; // opsional
-  kemitraanPembelajaran: string; // opsional
+  lingkunganPembelajaran: string; 
+  pemanfaatanDigital: string; 
+  kemitraanPembelajaran: string; 
 }
 
 export interface User {
@@ -112,7 +110,6 @@ export const getAllRpps = (): Promise<RppHistoryItem[]> => {
         const transaction = db.transaction(['rpp_history'], 'readonly');
         const store = transaction.objectStore('rpp_history');
         const index = store.index('createdAt');
-        // Use a cursor in descending order to get newest items first directly
         const request = index.openCursor(null, 'prev');
         
         const items: RppHistoryItem[] = [];
@@ -120,16 +117,11 @@ export const getAllRpps = (): Promise<RppHistoryItem[]> => {
         request.onsuccess = (event) => {
             const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
             if (cursor) {
-                // The value is the stored object.
                 const item = cursor.value;
-                // The primary key ('id') is available on the cursor.
-                // We assign it to the object to ensure it's always present,
-                // fixing issues where it might be missing from the value.
                 item.id = cursor.primaryKey as number; 
                 items.push(item);
                 cursor.continue();
             } else {
-                // Cursor is done, all items have been collected.
                 resolve(items);
             }
         };
