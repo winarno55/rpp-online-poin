@@ -1,10 +1,9 @@
-
-
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import path from 'path';
 import fs from 'fs';
 import cors from 'cors';
-// FIX: Import `cwd` from `process` to resolve a TypeScript type error where `process.cwd` was not found.
+// FIX: Import `cwd` from the `process` module to resolve a TypeScript type error where the
+// global `process` object might have an incomplete type definition.
 import { cwd } from 'process';
 
 const corsHandler = cors();

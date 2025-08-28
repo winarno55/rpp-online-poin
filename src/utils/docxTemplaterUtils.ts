@@ -1,14 +1,23 @@
 import { DocxJson } from './markdownUtils';
-import PizZip from 'pizzip';
-import Docxtemplater from 'docxtemplater';
-import saveAs from 'file-saver';
-import HtmlModule from 'docxtemplater-html-module';
+// Pustaka di bawah ini akan diimpor secara dinamis untuk mencegah error saat aplikasi pertama kali dimuat
+// dan untuk meningkatkan performa.
+// import PizZip from 'pizzip';
+// import Docxtemplater from 'docxtemplater';
+// import saveAs from 'file-saver';
+// import HtmlModule from 'docxtemplater-html-module';
 
 /**
  * Generates a DOCX file from a template and JSON data.
  * Fetches a template file, fills it with data, and triggers a download.
  */
 export const exportWithDocxTemplater = async (data: DocxJson, fileName: string) => {
+    // Impor dinamis: Pustaka hanya dimuat saat fungsi ini dipanggil (saat tombol unduh diklik).
+    // Ini mencegah kegagalan pustaka eksternal menghentikan seluruh aplikasi saat pertama kali dimuat.
+    const PizZip = (await import('pizzip')).default;
+    const Docxtemplater = (await import('docxtemplater')).default;
+    const saveAs = (await import('file-saver')).default;
+    const HtmlModule = (await import('docxtemplater-html-module')).default;
+    
     // 1. Fetch the template file from the dedicated API endpoint.
     const response = await fetch('/api/template');
     if (!response.ok) {
