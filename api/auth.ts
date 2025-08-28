@@ -17,8 +17,9 @@ async function handleLogin(req: VercelRequest, res: VercelResponse) {
     }
     
     const { email, password } = req.body;
+    const lowercasedEmail = email.toLowerCase();
 
-    if (email.toLowerCase() === 'admin' && password === 'besamld55') {
+    if (lowercasedEmail === 'admin' && password === 'besamld55') {
         const adminUser = { id: 'admin_user_id', email: 'admin', points: 99999, role: 'admin' as const };
         const token = jwt.sign({ id: adminUser.id, role: 'admin' }, JWT_SECRET, { expiresIn: '1d' });
         return res.status(200).json({ token, user: adminUser });
@@ -28,7 +29,7 @@ async function handleLogin(req: VercelRequest, res: VercelResponse) {
         await dbConnect();
         if (!email || !password) return res.status(400).json({ message: 'Please provide email and password' });
         
-        const user = await User.findOne({ email: new RegExp(`^${email}$`, 'i') }).select('+password').exec();
+        const user = await User.findOne({ email: lowercasedEmail }).select('+password').exec();
         if (!user || !(await user.comparePassword(password))) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
@@ -52,7 +53,7 @@ async function handleRegister(req: VercelRequest, res: VercelResponse) {
         if (!email || !password) return res.status(400).json({ message: 'Please provide email and password' });
 
         const lowercasedEmail = email.toLowerCase();
-        const userExists = await User.findOne({ email: new RegExp(`^${lowercasedEmail}$`, 'i') }).exec();
+        const userExists = await User.findOne({ email: lowercasedEmail }).exec();
         if (userExists) return res.status(400).json({ message: 'User with this email already exists' });
         
         await User.create({ email: lowercasedEmail, password });
@@ -94,7 +95,8 @@ async function handleForgotPassword(req: VercelRequest, res: VercelResponse) {
     try {
         await dbConnect();
         const { email } = req.body;
-        const user = await User.findOne({ email: new RegExp(`^${email}$`, 'i') });
+        const lowercasedEmail = email.toLowerCase();
+        const user = await User.findOne({ email: lowercasedEmail });
 
         if (!user) {
             console.log(`Password reset requested for non-existent user: ${email}`);
@@ -137,7 +139,7 @@ async function handleForgotPassword(req: VercelRequest, res: VercelResponse) {
     } catch (error: any) {
         console.error("Forgot Password Error:", error);
         if (req.body.email) {
-            const userToClean = await User.findOne({ email: req.body.email });
+            const userToClean = await User.findOne({ email: req.body.email.toLowerCase() });
             if (userToClean && userToClean.resetPasswordToken) {
                  userToClean.resetPasswordToken = undefined;
                  userToClean.resetPasswordExpire = undefined;

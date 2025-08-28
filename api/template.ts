@@ -2,9 +2,6 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import path from 'path';
 import fs from 'fs';
 import cors from 'cors';
-// FIX: Import `cwd` from the `process` module to resolve a TypeScript type error where the
-// global `process` object might have an incomplete type definition.
-import { cwd } from 'process';
 
 const corsHandler = cors();
 
@@ -17,7 +14,8 @@ const handleRequest = async (req: VercelRequest, res: VercelResponse) => {
     try {
         // vercel.json sekarang dikonfigurasi untuk menyertakan 'public/template.docx' dengan fungsi ini,
         // sehingga process.cwd() akan mengarah ke direktori yang benar di lingkungan runtime fungsi.
-        const filePath = path.join(cwd(), 'public', 'template.docx');
+        // FIX: Replaced `cwd()` with `process.cwd()` which is the correct way to get the current working directory in Node.js. The previous import of `cwd` was incorrect.
+        const filePath = path.join(process.cwd(), 'public', 'template.docx');
 
         if (!fs.existsSync(filePath)) {
             console.error('Template file not found at:', filePath);
