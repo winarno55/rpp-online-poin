@@ -41,16 +41,16 @@ const ResetPasswordPage: React.FC = () => {
         }
     };
     
-    const inputClass = "w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-slate-100";
-    const labelClass = "block mb-2 text-sm font-medium text-sky-300";
+    const inputClass = "w-full p-3 bg-slate-100 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-slate-800";
+    const labelClass = "block mb-2 text-sm font-medium text-slate-600";
 
     return (
-        <div className="flex justify-center items-center">
-            <div className="w-full max-w-md bg-slate-800 shadow-2xl rounded-xl p-8">
-                <h2 className="text-3xl font-bold text-center text-white mb-6">Reset Password Baru</h2>
+        <div className="flex justify-center items-center py-12">
+            <div className="w-full max-w-md bg-white shadow-2xl rounded-xl p-8 border border-slate-200">
+                <h2 className="text-3xl font-bold text-center text-slate-800 mb-6">Reset Password Baru</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {message && (
-                        <p className={`${message.type === 'success' ? 'text-green-400 bg-green-900/50' : 'text-red-400 bg-red-900/50'} p-3 rounded-lg text-center`}>
+                        <p className={`${message.type === 'success' ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'} p-3 rounded-lg text-center`}>
                             {message.text}
                         </p>
                     )}
@@ -67,8 +67,8 @@ const ResetPasswordPage: React.FC = () => {
                     </button>
                 </form>
                 {message?.type === 'success' && (
-                    <p className="text-center text-slate-400 mt-6">
-                        Anda akan diarahkan ke halaman <Link to="/login" className="font-medium text-sky-400 hover:underline">Login</Link>.
+                    <p className="text-center text-slate-500 mt-6">
+                        Anda akan diarahkan ke halaman <Link to="/login" className="font-medium text-sky-600 hover:underline">Login</Link>.
                     </p>
                 )}
             </div>

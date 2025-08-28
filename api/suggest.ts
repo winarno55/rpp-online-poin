@@ -87,7 +87,7 @@ async function handleGetObjectives(req: AuthRequest, res: VercelResponse) {
         console.error('Gemini Suggestion API Error:', aiError);
         let userMessage = `Gagal mendapatkan saran dari AI. ${SUGGESTION_COST} poin Anda telah dikembalikan.`;
         if (aiError.message && aiError.message.toLowerCase().includes('safety')) {
-            userMessage = `Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah input materi Anda. ${SUGGESTION_COST} poin Anda telah dikembalikan.`;
+            userMessage = `Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah input materi Anda. Poin Anda telah dikembalikan.`;
         }
         res.status(500).json({ message: userMessage, error: aiError.message });
     }
@@ -112,4 +112,4 @@ export default function (req: VercelRequest, res: VercelResponse) {
             apiHandler(req as AuthRequest, res);
         });
     });
-};
+}
