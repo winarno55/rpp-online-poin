@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-// Fix: Added .js extension to module imports to resolve module loading error.
-import { LessonPlanInput } from '../types.js';
-// Fix: Added .js extension to module imports to resolve module loading error.
-import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_FASE_OPTIONS, PRAKTIK_PEDAGOGIS_LAINNYA } from '../constants.js';
+// FIX: Add '.ts' extension to fix module resolution errors.
+import { LessonPlanInput } from '../types.ts';
+// FIX: Add '.ts' extension to fix module resolution errors.
+import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_FASE_OPTIONS, PRAKTIK_PEDAGOGIS_LAINNYA } from '../constants.ts';
 
 interface SessionCost {
   sessions: number;

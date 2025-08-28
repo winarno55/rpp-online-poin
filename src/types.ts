@@ -1,5 +1,5 @@
-// Fix: Added .js extension to import to align with project's module resolution strategy.
-import { JUMLAH_PERTEMUAN_OPTIONS } from './constants.js';
+// Menghapus ekstensi '.js' dari impor agar konsisten dengan bundler frontend.
+import { JUMLAH_PERTEMUAN_OPTIONS } from './constants';
 
 // Note: Fase and Semester types are no longer needed with the new form structure.
 export type JumlahPertemuan = typeof JUMLAH_PERTEMUAN_OPTIONS[number];
