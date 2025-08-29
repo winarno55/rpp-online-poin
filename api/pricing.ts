@@ -10,14 +10,15 @@ type AuthRequest = VercelRequest & {
   user?: any;
 };
 
-// --- Logic from pricing/config.ts ---
+// --- Logic for getting pricing config ---
 async function handleGetConfig(req: VercelRequest, res: VercelResponse) {
     try {
         await dbConnect();
         let config = await PricingConfig.findOne().exec();
         
         if (!config) {
-            config = { 
+            // Create a default config if none exists
+            config = await PricingConfig.create({ 
                 pointPackages: [],
                 paymentMethods: [],
                 sessionCosts: [
@@ -27,7 +28,7 @@ async function handleGetConfig(req: VercelRequest, res: VercelResponse) {
                     { sessions: 4, cost: 80 },
                     { sessions: 5, cost: 100 },
                 ]
-            } as any;
+            });
         }
         res.status(200).json(config);
     } catch (error: any) {
@@ -39,9 +40,25 @@ async function handleGetConfig(req: VercelRequest, res: VercelResponse) {
     }
 }
 
-// --- Logic from admin/pricing.ts ---
+// --- Logic for updating pricing config (admin only) ---
 async function handleUpdateConfig(req: AuthRequest, res: VercelResponse) {
     try {
+        // Middleware-style protection for admin
+        let authorized = false;
+        await new Promise<void>((resolve) => {
+            protect(req, res, () => {
+                admin(req, res, () => {
+                    authorized = true;
+                    resolve();
+                });
+            });
+        });
+
+        if (!authorized) {
+            // Response has already been sent by protect/admin middleware
+            return;
+        }
+
         await dbConnect();
         const { pointPackages, paymentMethods, sessionCosts } = req.body;
 
@@ -68,25 +85,18 @@ async function handleUpdateConfig(req: AuthRequest, res: VercelResponse) {
 }
 
 // --- Main Handler ---
-export default function handler(req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, async () => {
-        if (req.method === 'GET') {
-            await handleGetConfig(req, res);
-            return;
-        }
-        if (req.method === 'POST') {
-            // Protect and admin-check the POST route
-            protect(req as AuthRequest, res, () => {
-                if (res.headersSent) return;
-                admin(req as AuthRequest, res, async () => {
-                    if (res.headersSent) return;
-                    await handleUpdateConfig(req as AuthRequest, res);
-                });
-            });
-            return;
-        }
-        
-        res.setHeader('Allow', ['GET', 'POST']);
-        res.status(405).json({ message: `Method ${req.method} Not Allowed on /api/pricing` });
-    });
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+    await new Promise((resolve) => corsHandler(req, res, resolve));
+    
+    if (req.method === 'GET') {
+        await handleGetConfig(req, res);
+        return;
+    }
+    if (req.method === 'POST') {
+        await handleUpdateConfig(req as AuthRequest, res);
+        return;
+    }
+    
+    res.setHeader('Allow', ['GET', 'POST']);
+    res.status(405).json({ message: `Method ${req.method} Not Allowed on /api/pricing` });
 }

@@ -53,6 +53,22 @@ async function handleAddPoints(req: AuthRequest, res: VercelResponse) {
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
     const { action } = req.query;
 
+    // Middleware check
+    let authorized = false;
+    await new Promise<void>((resolve) => {
+        protect(req, res, () => {
+            admin(req, res, () => {
+                authorized = true;
+                resolve();
+            });
+        });
+    });
+
+    if (!authorized) {
+        // Response has already been sent by protect/admin middleware
+        return;
+    }
+
     if (req.method === 'GET' && action === 'users') {
         await handleGetUsers(req, res);
         return;
@@ -67,14 +83,8 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     res.status(404).json({ message: `Admin action '${action}' not found for method ${req.method}` });
 }
 
-export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, () => {
-        protect(req as AuthRequest, res, () => {
-            if (res.headersSent) return;
-            admin(req as AuthRequest, res, async () => {
-                if (res.headersSent) return;
-                await apiHandler(req as AuthRequest, res);
-            });
-        });
-    });
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+    await new Promise((resolve) => corsHandler(req, res, resolve));
+    await apiHandler(req as AuthRequest, res);
 }

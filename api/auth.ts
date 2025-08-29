@@ -10,22 +10,22 @@ const corsHandler = cors();
 
 // --- Logic from login.ts ---
 async function handleLogin(req: VercelRequest, res: VercelResponse) {
-    const JWT_SECRET = process.env.JWT_SECRET;
-    if (!JWT_SECRET) {
-        console.error("JWT_SECRET environment variable is not defined.");
-        return res.status(500).json({ message: 'Internal server configuration error.' });
-    }
-    
-    const { email, password } = req.body;
-    const lowercasedEmail = email.toLowerCase();
-
-    if (lowercasedEmail === 'admin' && password === 'besamld55') {
-        const adminUser = { id: 'admin_user_id', email: 'admin', points: 99999, role: 'admin' as const };
-        const token = jwt.sign({ id: adminUser.id, role: 'admin' }, JWT_SECRET, { expiresIn: '1d' });
-        return res.status(200).json({ token, user: adminUser });
-    }
-
     try {
+        const JWT_SECRET = process.env.JWT_SECRET;
+        if (!JWT_SECRET) {
+            console.error("JWT_SECRET environment variable is not defined.");
+            return res.status(500).json({ message: 'Internal server configuration error.' });
+        }
+        
+        const { email, password } = req.body;
+        const lowercasedEmail = email.toLowerCase();
+
+        if (lowercasedEmail === 'admin' && password === 'besamld55') {
+            const adminUser = { id: 'admin_user_id', email: 'admin', points: 99999, role: 'admin' as const };
+            const token = jwt.sign({ id: adminUser.id, role: 'admin' }, JWT_SECRET, { expiresIn: '1d' });
+            return res.status(200).json({ token, user: adminUser });
+        }
+
         await dbConnect();
         if (!email || !password) return res.status(400).json({ message: 'Please provide email and password' });
         
@@ -139,11 +139,15 @@ async function handleForgotPassword(req: VercelRequest, res: VercelResponse) {
     } catch (error: any) {
         console.error("Forgot Password Error:", error);
         if (req.body.email) {
-            const userToClean = await User.findOne({ email: req.body.email.toLowerCase() });
-            if (userToClean && userToClean.resetPasswordToken) {
-                 userToClean.resetPasswordToken = undefined;
-                 userToClean.resetPasswordExpire = undefined;
-                 await userToClean.save({ validateBeforeSave: false });
+            try {
+                const userToClean = await User.findOne({ email: req.body.email.toLowerCase() });
+                if (userToClean && userToClean.resetPasswordToken) {
+                     userToClean.resetPasswordToken = undefined;
+                     userToClean.resetPasswordExpire = undefined;
+                     await userToClean.save({ validateBeforeSave: false });
+                }
+            } catch(cleanupError) {
+                console.error("Error during cleanup of reset token:", cleanupError);
             }
         }
         res.status(500).json({ message: 'Gagal mengirim email. Hubungi admin.', error: error.message });
@@ -186,28 +190,28 @@ async function handleResetPassword(req: VercelRequest, res: VercelResponse) {
 }
 
 // --- Main Handler ---
-export default function handler(req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, async () => {
-        const { action } = req.query;
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+    await new Promise((resolve) => corsHandler(req, res, resolve));
+    
+    const { action } = req.query;
 
-        if (req.method === 'POST' && action === 'login') {
-            await handleLogin(req, res);
-            return;
-        }
-        if (req.method === 'POST' && action === 'register') {
-            await handleRegister(req, res);
-            return;
-        }
-        if (req.method === 'POST' && action === 'forgot-password') {
-            await handleForgotPassword(req, res);
-            return;
-        }
-        if (req.method === 'PUT' && action === 'reset-password') {
-            await handleResetPassword(req, res);
-            return;
-        }
+    if (req.method === 'POST' && action === 'login') {
+        await handleLogin(req, res);
+        return;
+    }
+    if (req.method === 'POST' && action === 'register') {
+        await handleRegister(req, res);
+        return;
+    }
+    if (req.method === 'POST' && action === 'forgot-password') {
+        await handleForgotPassword(req, res);
+        return;
+    }
+    if (req.method === 'PUT' && action === 'reset-password') {
+        await handleResetPassword(req, res);
+        return;
+    }
 
-        res.setHeader('Allow', ['POST', 'PUT']);
-        res.status(404).json({ message: `Auth action '${action}' not found for method ${req.method}` });
-    });
+    res.setHeader('Allow', ['POST', 'PUT']);
+    res.status(404).json({ message: `Auth action '${action}' not found for method ${req.method}` });
 }

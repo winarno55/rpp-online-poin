@@ -1,20 +1,20 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import path from 'path';
 import fs from 'fs';
-// Fix: Import the 'process' module to explicitly provide type definitions for process.cwd().
-// This resolves the error "Property 'cwd' does not exist on type 'Process'".
-import process from 'process';
 import cors from 'cors';
+// Fix for "Property 'cwd' does not exist on type 'Process'".
+// Explicitly import the 'process' module to ensure TypeScript has the correct type definitions.
+import process from 'process';
 
 const corsHandler = cors();
 
 const handleRequest = async (req: VercelRequest, res: VercelResponse) => {
-    if (req.method !== 'GET') {
-        res.setHeader('Allow', ['GET']);
-        return res.status(405).json({ message: 'Method Not Allowed' });
-    }
-
     try {
+        if (req.method !== 'GET') {
+            res.setHeader('Allow', ['GET']);
+            return res.status(405).json({ message: 'Method Not Allowed' });
+        }
+
         // vercel.json is now configured to include 'public/template.docx' with this function,
         // so process.cwd() will point to the correct directory in the function's runtime environment.
         const filePath = path.join(process.cwd(), 'public', 'template.docx');
@@ -35,8 +35,7 @@ const handleRequest = async (req: VercelRequest, res: VercelResponse) => {
     }
 };
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, async () => {
-        await handleRequest(req, res);
-    });
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+    await new Promise((resolve) => corsHandler(req, res, resolve));
+    await handleRequest(req, res);
 }

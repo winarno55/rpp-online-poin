@@ -21,30 +21,47 @@ const SUGGESTION_COST = 5;
 
 // --- Logic from suggest/objectives.ts ---
 async function handleGetObjectives(req: AuthRequest, res: VercelResponse) {
-    if (!req.user) {
-        return res.status(401).json({ message: 'Not authorized' });
-    }
-
-    const { mataPelajaran, kelasFase, materi } = req.body;
-
-    if (!materi || !kelasFase || !mataPelajaran) {
-        return res.status(400).json({ message: 'Mata Pelajaran, Kelas/Fase, dan Materi diperlukan untuk mendapatkan saran.' });
-    }
-
-    await dbConnect(); // Ensure DB is connected before user operations
-    const user = await User.findById(req.user._id);
-    if (!user) {
-        return res.status(401).json({ message: 'User not found in database.' });
-    }
-
-    if (user.points < SUGGESTION_COST) {
-        return res.status(403).json({ message: `Poin tidak cukup. Fitur ini membutuhkan ${SUGGESTION_COST} poin.` });
-    }
+    let userToRefund: IUser | null = null;
     
-    user.points -= SUGGESTION_COST;
-    await user.save();
-
     try {
+        // Middleware-style protection
+        let authenticated = false;
+        await new Promise<void>((resolve) => {
+            protect(req, res, () => {
+                authenticated = true;
+                resolve();
+            });
+        });
+
+        if (!authenticated) {
+            // Response already sent by 'protect'
+            return;
+        }
+
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
+        const { mataPelajaran, kelasFase, materi } = req.body;
+
+        if (!materi || !kelasFase || !mataPelajaran) {
+            return res.status(400).json({ message: 'Mata Pelajaran, Kelas/Fase, dan Materi diperlukan untuk mendapatkan saran.' });
+        }
+
+        await dbConnect(); // Ensure DB is connected before user operations
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(401).json({ message: 'User not found in database.' });
+        }
+
+        if (user.points < SUGGESTION_COST) {
+            return res.status(403).json({ message: `Poin tidak cukup. Fitur ini membutuhkan ${SUGGESTION_COST} poin.` });
+        }
+        
+        user.points -= SUGGESTION_COST;
+        await user.save();
+        userToRefund = user; // Set user for potential refund
+
         const prompt = `
             Anda adalah seorang ahli dalam desain pembelajaran. Berdasarkan informasi berikut, berikan 3 contoh Tujuan Pembelajaran yang jelas, terukur, dan relevan untuk RPP (Rencana Pelaksanaan Pembelajaran).
             - Mata Pelajaran: ${mataPelajaran}
@@ -82,16 +99,24 @@ async function handleGetObjectives(req: AuthRequest, res: VercelResponse) {
         const jsonResponse = JSON.parse(jsonText.trim());
         res.status(200).json({ ...jsonResponse, newPoints: user.points });
 
-    } catch (aiError: any) {
-        user.points += SUGGESTION_COST;
-        await user.save();
+    } catch (error: any) {
+        console.error('Error in /api/suggest:', error);
         
-        console.error('Gemini Suggestion API Error:', aiError);
+        if (userToRefund) {
+            try {
+                userToRefund.points += SUGGESTION_COST;
+                await userToRefund.save();
+                console.log(`Successfully refunded ${SUGGESTION_COST} points to ${userToRefund.email}`);
+            } catch (refundError) {
+                console.error('CRITICAL: Failed to refund points after an error in suggest API:', refundError);
+            }
+        }
+        
         let userMessage = `Gagal mendapatkan saran dari AI. ${SUGGESTION_COST} poin Anda telah dikembalikan.`;
-        if (aiError.message && aiError.message.toLowerCase().includes('safety')) {
+        if (error.message && error.message.toLowerCase().includes('safety')) {
             userMessage = `Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah input materi Anda. Poin Anda telah dikembalikan.`;
         }
-        res.status(500).json({ message: userMessage, error: aiError.message });
+        res.status(500).json({ message: userMessage, error: error.message });
     }
 }
 
@@ -100,14 +125,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     const { action } = req.query;
 
     if (req.method === 'POST' && action === 'objectives') {
-        try {
-            await handleGetObjectives(req, res);
-        } catch (error: any) {
-            console.error("General error in suggest handler:", error);
-            if (!res.headersSent) {
-                res.status(500).json({ message: 'Terjadi kesalahan internal pada server.', error: error.message });
-            }
-        }
+        await handleGetObjectives(req, res);
         return;
     }
 
@@ -115,11 +133,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     res.status(404).json({ message: `Suggest action '${action}' not found for method ${req.method}` });
 }
 
-export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, () => {
-        protect(req as AuthRequest, res, async () => {
-            if (res.headersSent) return;
-            await apiHandler(req as AuthRequest, res);
-        });
-    });
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+    await new Promise((resolve) => corsHandler(req, res, resolve));
+    await apiHandler(req as AuthRequest, res);
 }

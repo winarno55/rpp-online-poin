@@ -21,7 +21,24 @@ type AuthRequest = VercelRequest & {
 };
 
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
+    let userToRefund: IUser | null = null;
+    let costToRefund = 0;
+
     try {
+        // Middleware-style protection
+        let authenticated = false;
+        await new Promise<void>((resolve) => {
+            protect(req, res, () => {
+                authenticated = true;
+                resolve();
+            });
+        });
+
+        if (!authenticated) {
+            // Response already sent by 'protect'
+            return;
+        }
+
         await dbConnect();
 
         if (!req.user) {
@@ -58,67 +75,61 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         user.points -= dynamicCost;
         await user.save();
         
-        try {
-            const prompt = generateLessonPlanPrompt(lessonPlanData);
-            
-            const responseStream = await ai.models.generateContentStream({
-                model: 'gemini-2.5-flash',
-                contents: prompt,
-            });
+        // Prepare for potential refund
+        userToRefund = user;
+        costToRefund = dynamicCost;
+        
+        const prompt = generateLessonPlanPrompt(lessonPlanData);
+        
+        const responseStream = await ai.models.generateContentStream({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+        });
 
-            // Set headers for streaming
-            res.writeHead(200, {
-                'Content-Type': 'text/plain; charset=utf-8',
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive',
-            });
-            
-            for await (const chunk of responseStream) {
-                if (chunk.text) {
-                    res.write(chunk.text);
-                }
+        // Set headers for streaming
+        res.writeHead(200, {
+            'Content-Type': 'text/plain; charset=utf-8',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+        });
+        
+        for await (const chunk of responseStream) {
+            if (chunk.text) {
+                res.write(chunk.text);
             }
-            
-            res.end(); // End the stream when Gemini is done
+        }
+        
+        res.end(); // End the stream when Gemini is done
 
-        } catch (aiError: any) {
-            console.error('Gemini API Error:', aiError);
-            
-            // If an AI error occurs, we have already deducted points.
-            // We should not write to a response that's already started streaming.
-            // This error handling will primarily catch pre-stream errors (e.g., safety violations on the prompt).
-            if (!res.headersSent) {
-                 // Refund points if generation fails before starting
-                user.points += dynamicCost;
-                await user.save();
-              
-                let userMessage = 'Gagal berkomunikasi dengan AI. Poin Anda telah dikembalikan.';
-                if (aiError.message) {
-                    if (aiError.message.toLowerCase().includes('safety')) {
-                        userMessage = 'Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah materi atau tujuan pembelajaran Anda. Poin Anda telah dikembalikan.';
-                    }
-                }
-                res.status(424).json({ message: userMessage, error: aiError.message });
-            } else {
-                // If stream has started, we just end it. The client will see a truncated response.
-                res.end();
+    } catch (error: any) {
+        console.error('Error in /api/generate:', error);
+
+        // Refund points if they were deducted
+        if (userToRefund && costToRefund > 0) {
+            try {
+                userToRefund.points += costToRefund;
+                await userToRefund.save();
+                console.log(`Successfully refunded ${costToRefund} points to ${userToRefund.email}`);
+            } catch (refundError) {
+                console.error('CRITICAL: Failed to refund points after an error:', refundError);
             }
         }
 
-    } catch (dbError: any) {
-        console.error('General Server Error (DB, auth, etc.):', dbError);
         if (!res.headersSent) {
-            res.status(500).json({ message: 'Terjadi kesalahan pada server saat memproses permintaan Anda.', error: dbError.message });
+            let userMessage = 'Gagal memproses permintaan Anda. Poin Anda telah dikembalikan.';
+            if (error.message && error.message.toLowerCase().includes('safety')) {
+                userMessage = 'Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah materi atau tujuan pembelajaran Anda. Poin Anda telah dikembalikan.';
+            } else if (error.message) {
+                 userMessage = `Terjadi kesalahan: ${error.message}. Poin Anda telah dikembalikan.`
+            }
+            res.status(500).json({ message: userMessage });
+        } else {
+             res.end();
         }
     }
 }
 
-// The wrapper code remains the same.
-export default function (req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, () => {
-        protect(req as AuthRequest, res, async () => {
-            if (res.headersSent) return;
-            await apiHandler(req as AuthRequest, res);
-        });
-    });
-};
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+    await new Promise((resolve) => corsHandler(req, res, resolve));
+    await apiHandler(req as AuthRequest, res);
+}
