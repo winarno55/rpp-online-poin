@@ -435,7 +435,7 @@ export function parseMarkdownToDocxJson(markdown: string): DocxJson {
     json.show_dimensi_profil_lulusan = !!json.dimensi_profil_lulusan;
     json.lintas_disiplin_ilmu = extractValue(identifikasiSection, "Lintas Disiplin Ilmu");
     json.show_lintas_disiplin_ilmu = !!json.lintas_disiplin_ilmu;
-    json.tujuan_pembelajaran = markdownToHtml(getContentBetween(identifikasiSection, "- **Tujuan Pembelajaran:**", "- **Praktik Pedagogis:**").replace(/^- /gm, '').trim());
+    json.tujuan_pembelajaran = getContentBetween(identifikasiSection, "- **Tujuan Pembelajaran:**", "- **Praktik Pedagogis:**").replace(/^- /gm, '').trim();
     json.praktik_pedagogis = extractValue(identifikasiSection, "Praktik Pedagogis");
 
     // 4. Extract Langkah-Langkah Pembelajaran
@@ -447,9 +447,9 @@ export function parseMarkdownToDocxJson(markdown: string): DocxJson {
         const pertemuanKe = pertemuanBlocks[i];
         const blockContent = pertemuanBlocks[i + 1];
         if (blockContent) {
-            const kegiatan_awal = markdownToHtml(getContentBetween(blockContent, "**AWAL**", "**INTI**"));
-            const kegiatan_inti = markdownToHtml(getContentBetween(blockContent, "**INTI**", "**PENUTUP**"));
-            const kegiatan_penutup = markdownToHtml(blockContent.substring(blockContent.indexOf("**PENUTUP**") + "**PENUTUP**".length).trim());
+            const kegiatan_awal = getContentBetween(blockContent, "**AWAL**", "**INTI**");
+            const kegiatan_inti = getContentBetween(blockContent, "**INTI**", "**PENUTUP**");
+            const kegiatan_penutup = blockContent.substring(blockContent.indexOf("**PENUTUP**") + "**PENUTUP**".length).trim();
             json.langkah_pembelajaran.push({
                 pertemuan_ke: pertemuanKe,
                 kegiatan_awal,
@@ -460,14 +460,14 @@ export function parseMarkdownToDocxJson(markdown: string): DocxJson {
     }
     
     // 5. Extract Asesmen
-    json.asesmen_pembelajaran = markdownToHtml(getContentBetween(markdown, "### Asesmen Pembelajaran", "## LAMPIRAN"));
+    json.asesmen_pembelajaran = getContentBetween(markdown, "### Asesmen Pembelajaran", "## LAMPIRAN");
 
     // 6. Extract Lampiran sections
     const lampiranSection = markdown.substring(markdown.indexOf("## LAMPIRAN"));
-    json.rubrik_penilaian = markdownToHtml(getContentBetween(lampiranSection, "### 1. Rubrik Penilaian", "### 2. LKPD"));
-    json.lkpd = markdownToHtml(getContentBetween(lampiranSection, "### 2. LKPD", "### 3. Evaluasi Mandiri"));
-    json.evaluasi_mandiri = markdownToHtml(getContentBetween(lampiranSection, "### 3. Evaluasi Mandiri", "### 4. Materi Ajar"));
-    json.materi_ajar = markdownToHtml(lampiranSection.substring(lampiranSection.indexOf("### 4. Materi Ajar") + "### 4. Materi Ajar".length).trim());
+    json.rubrik_penilaian = getContentBetween(lampiranSection, "### 1. Rubrik Penilaian", "### 2. LKPD");
+    json.lkpd = getContentBetween(lampiranSection, "### 2. LKPD", "### 3. Evaluasi Mandiri");
+    json.evaluasi_mandiri = getContentBetween(lampiranSection, "### 3. Evaluasi Mandiri", "### 4. Materi Ajar");
+    json.materi_ajar = lampiranSection.substring(lampiranSection.indexOf("### 4. Materi Ajar") + "### 4. Materi Ajar".length).trim();
 
     return json;
 }
