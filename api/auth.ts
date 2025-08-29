@@ -10,6 +10,7 @@ const corsHandler = cors();
 
 // --- Logic from login.ts ---
 async function handleLogin(req: VercelRequest, res: VercelResponse) {
+    // Inner try-catch for specific logic errors
     try {
         const JWT_SECRET = process.env.JWT_SECRET;
         if (!JWT_SECRET) {
@@ -150,6 +151,7 @@ async function handleForgotPassword(req: VercelRequest, res: VercelResponse) {
                 console.error("Error during cleanup of reset token:", cleanupError);
             }
         }
+        // Don't leak specific error details to the user
         res.status(500).json({ message: 'Gagal mengirim email. Hubungi admin.', error: error.message });
     }
 }
@@ -189,29 +191,43 @@ async function handleResetPassword(req: VercelRequest, res: VercelResponse) {
     }
 }
 
+
 // --- Main Handler ---
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    await new Promise((resolve) => corsHandler(req, res, resolve));
-    
-    const { action } = req.query;
+    // This top-level try-catch is the final safety net.
+    try {
+        await new Promise((resolve, reject) => {
+            corsHandler(req, res, (err) => {
+                if (err) return reject(err);
+                resolve(undefined);
+            });
+        });
+        
+        const { action } = req.query;
 
-    if (req.method === 'POST' && action === 'login') {
-        await handleLogin(req, res);
-        return;
-    }
-    if (req.method === 'POST' && action === 'register') {
-        await handleRegister(req, res);
-        return;
-    }
-    if (req.method === 'POST' && action === 'forgot-password') {
-        await handleForgotPassword(req, res);
-        return;
-    }
-    if (req.method === 'PUT' && action === 'reset-password') {
-        await handleResetPassword(req, res);
-        return;
-    }
+        if (req.method === 'POST' && action === 'login') {
+            await handleLogin(req, res);
+            return;
+        }
+        if (req.method === 'POST' && action === 'register') {
+            await handleRegister(req, res);
+            return;
+        }
+        if (req.method === 'POST' && action === 'forgot-password') {
+            await handleForgotPassword(req, res);
+            return;
+        }
+        if (req.method === 'PUT' && action === 'reset-password') {
+            await handleResetPassword(req, res);
+            return;
+        }
 
-    res.setHeader('Allow', ['POST', 'PUT']);
-    res.status(404).json({ message: `Auth action '${action}' not found for method ${req.method}` });
+        res.setHeader('Allow', ['POST', 'PUT']);
+        res.status(404).json({ message: `Auth action '${action}' not found for method ${req.method}` });
+    } catch (error: any) {
+        console.error(`[FATAL API ERROR: /api/auth]`, error);
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Terjadi kesalahan fatal pada server.", error: error.message });
+        }
+    }
 }

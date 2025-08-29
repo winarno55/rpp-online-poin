@@ -49,15 +49,15 @@ async function handleAddPoints(req: AuthRequest, res: VercelResponse) {
     }
 }
 
-// --- Main Handler ---
+// --- Main Handler Logic ---
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
-    const { action } = req.query;
-
     // Middleware check
     let authorized = false;
-    await new Promise<void>((resolve) => {
-        protect(req, res, () => {
-            admin(req, res, () => {
+    await new Promise<void>((resolve, reject) => {
+        protect(req, res, (err?: any) => {
+            if (err) return reject(err);
+            admin(req, res, (errAdmin?: any) => {
+                if (errAdmin) return reject(errAdmin);
                 authorized = true;
                 resolve();
             });
@@ -65,9 +65,11 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     });
 
     if (!authorized) {
-        // Response has already been sent by protect/admin middleware
+        // Response has already been sent by protect/admin middleware if it failed
         return;
     }
+
+    const { action } = req.query;
 
     if (req.method === 'GET' && action === 'users') {
         await handleGetUsers(req, res);
@@ -85,6 +87,20 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    await new Promise((resolve) => corsHandler(req, res, resolve));
-    await apiHandler(req as AuthRequest, res);
+    // This top-level try-catch is the final safety net.
+    try {
+        await new Promise((resolve, reject) => {
+            corsHandler(req, res, (err) => {
+                if (err) return reject(err);
+                resolve(undefined);
+            });
+        });
+        await apiHandler(req as AuthRequest, res);
+    } catch (error: any) {
+        console.error(`[FATAL API ERROR: /api/admin]`, error);
+        // If the middleware (protect/admin) sends a response, headers will be sent.
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Terjadi kesalahan fatal pada server.", error: error.message });
+        }
+    }
 }

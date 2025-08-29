@@ -4,11 +4,12 @@ import fs from 'fs';
 import cors from 'cors';
 // Fix for "Property 'cwd' does not exist on type 'Process'".
 // Explicitly import the 'process' module to ensure TypeScript has the correct type definitions.
-import process from 'process';
+import * as process from 'process';
 
 const corsHandler = cors();
 
 const handleRequest = async (req: VercelRequest, res: VercelResponse) => {
+    // This inner try-catch handles file system errors specifically.
     try {
         if (req.method !== 'GET') {
             res.setHeader('Allow', ['GET']);
@@ -31,11 +32,27 @@ const handleRequest = async (req: VercelRequest, res: VercelResponse) => {
 
     } catch (error: any) {
         console.error('Error serving template.docx:', error);
-        res.status(500).json({ message: 'Gagal menyajikan file template.', error: error.message });
+        // Ensure a response is sent even if headers are already partially set.
+        if (!res.headersSent) {
+            res.status(500).json({ message: 'Gagal menyajikan file template.', error: error.message });
+        }
     }
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    await new Promise((resolve) => corsHandler(req, res, resolve));
-    await handleRequest(req, res);
+    // This top-level try-catch is the final safety net.
+    try {
+        await new Promise((resolve, reject) => {
+            corsHandler(req, res, (err) => {
+                if (err) return reject(err);
+                resolve(undefined);
+            });
+        });
+        await handleRequest(req, res);
+    } catch (error: any) {
+        console.error(`[FATAL API ERROR: /api/template]`, error);
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Terjadi kesalahan fatal pada server.", error: error.message });
+        }
+    }
 }

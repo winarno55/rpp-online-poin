@@ -12,6 +12,7 @@ type AuthRequest = VercelRequest & {
 
 // --- Logic for getting pricing config ---
 async function handleGetConfig(req: VercelRequest, res: VercelResponse) {
+    // Inner try-catch for specific logic errors
     try {
         await dbConnect();
         let config = await PricingConfig.findOne().exec();
@@ -42,20 +43,23 @@ async function handleGetConfig(req: VercelRequest, res: VercelResponse) {
 
 // --- Logic for updating pricing config (admin only) ---
 async function handleUpdateConfig(req: AuthRequest, res: VercelResponse) {
+    // Inner try-catch for specific logic errors
     try {
         // Middleware-style protection for admin
         let authorized = false;
-        await new Promise<void>((resolve) => {
-            protect(req, res, () => {
-                admin(req, res, () => {
-                    authorized = true;
-                    resolve();
+        await new Promise<void>((resolve, reject) => {
+            protect(req, res, (err?: any) => {
+                if(err) return reject(err);
+                admin(req, res, (errAdmin?: any) => {
+                     if(errAdmin) return reject(errAdmin);
+                     authorized = true;
+                     resolve();
                 });
             });
         });
 
         if (!authorized) {
-            // Response has already been sent by protect/admin middleware
+            // Response has already been sent by protect/admin middleware if it failed.
             return;
         }
 
@@ -86,17 +90,30 @@ async function handleUpdateConfig(req: AuthRequest, res: VercelResponse) {
 
 // --- Main Handler ---
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    await new Promise((resolve) => corsHandler(req, res, resolve));
+    // This top-level try-catch is the final safety net.
+    try {
+        await new Promise((resolve, reject) => {
+            corsHandler(req, res, (err) => {
+                if (err) return reject(err);
+                resolve(undefined);
+            });
+        });
     
-    if (req.method === 'GET') {
-        await handleGetConfig(req, res);
-        return;
+        if (req.method === 'GET') {
+            await handleGetConfig(req, res);
+            return;
+        }
+        if (req.method === 'POST') {
+            await handleUpdateConfig(req as AuthRequest, res);
+            return;
+        }
+        
+        res.setHeader('Allow', ['GET', 'POST']);
+        res.status(405).json({ message: `Method ${req.method} Not Allowed on /api/pricing` });
+    } catch (error: any) {
+        console.error(`[FATAL API ERROR: /api/pricing]`, error);
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Terjadi kesalahan fatal pada server.", error: error.message });
+        }
     }
-    if (req.method === 'POST') {
-        await handleUpdateConfig(req as AuthRequest, res);
-        return;
-    }
-    
-    res.setHeader('Allow', ['GET', 'POST']);
-    res.status(405).json({ message: `Method ${req.method} Not Allowed on /api/pricing` });
 }

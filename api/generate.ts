@@ -12,6 +12,8 @@ const corsHandler = cors();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 if (!GEMINI_API_KEY) {
+    // Throwing an error at the module level is appropriate here because the function cannot operate at all without it.
+    // This will cause a cold start failure, which is desirable.
     throw new Error('Please define the GEMINI_API_KEY environment variable');
 }
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -24,24 +26,27 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     let userToRefund: IUser | null = null;
     let costToRefund = 0;
 
+    // This inner try-catch handles logic-specific errors and point refunds.
     try {
         // Middleware-style protection
         let authenticated = false;
-        await new Promise<void>((resolve) => {
-            protect(req, res, () => {
+        await new Promise<void>((resolve, reject) => {
+            protect(req, res, (err?: any) => {
+                if(err) return reject(err);
                 authenticated = true;
                 resolve();
             });
         });
 
         if (!authenticated) {
-            // Response already sent by 'protect'
+            // Response already sent by 'protect' if it failed.
             return;
         }
 
         await dbConnect();
 
         if (!req.user) {
+            // This case should theoretically be caught by `protect`, but it's here as a safeguard.
             return res.status(401).json({ message: 'Not authorized' });
         }
         if (req.user.role === 'admin') {
@@ -102,14 +107,17 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         res.end(); // End the stream when Gemini is done
 
     } catch (error: any) {
-        console.error('Error in /api/generate:', error);
+        console.error('Error in /api/generate logic:', error);
 
         // Refund points if they were deducted
         if (userToRefund && costToRefund > 0) {
             try {
-                userToRefund.points += costToRefund;
-                await userToRefund.save();
-                console.log(`Successfully refunded ${costToRefund} points to ${userToRefund.email}`);
+                const userForRefund = await User.findById(userToRefund._id);
+                if (userForRefund) {
+                    userForRefund.points += costToRefund;
+                    await userForRefund.save();
+                    console.log(`Successfully refunded ${costToRefund} points to ${userForRefund.email}`);
+                }
             } catch (refundError) {
                 console.error('CRITICAL: Failed to refund points after an error:', refundError);
             }
@@ -123,13 +131,28 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                  userMessage = `Terjadi kesalahan: ${error.message}. Poin Anda telah dikembalikan.`
             }
             res.status(500).json({ message: userMessage });
-        } else {
+        } else if (!res.writableEnded) {
              res.end();
         }
     }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    await new Promise((resolve) => corsHandler(req, res, resolve));
-    await apiHandler(req as AuthRequest, res);
+    // This top-level try-catch is the final safety net.
+    try {
+        await new Promise((resolve, reject) => {
+            corsHandler(req, res, (err) => {
+                if (err) return reject(err);
+                resolve(undefined);
+            });
+        });
+        await apiHandler(req as AuthRequest, res);
+    } catch (error: any) {
+        console.error(`[FATAL API ERROR: /api/generate]`, error);
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Terjadi kesalahan fatal pada server.", error: error.message });
+        } else if (!res.writableEnded) {
+            res.end();
+        }
+    }
 }

@@ -23,18 +23,20 @@ const SUGGESTION_COST = 5;
 async function handleGetObjectives(req: AuthRequest, res: VercelResponse) {
     let userToRefund: IUser | null = null;
     
+    // Inner try-catch for specific logic errors and point refunds
     try {
         // Middleware-style protection
         let authenticated = false;
-        await new Promise<void>((resolve) => {
-            protect(req, res, () => {
+        await new Promise<void>((resolve, reject) => {
+            protect(req, res, (err?:any) => {
+                if (err) return reject(err);
                 authenticated = true;
                 resolve();
             });
         });
 
         if (!authenticated) {
-            // Response already sent by 'protect'
+            // Response already sent by 'protect' if it failed
             return;
         }
 
@@ -86,7 +88,8 @@ async function handleGetObjectives(req: AuthRequest, res: VercelResponse) {
                                 type: Type.STRING
                             }
                         }
-                    }
+                    },
+                    required: ["suggestions"]
                 }
             }
         });
@@ -100,13 +103,17 @@ async function handleGetObjectives(req: AuthRequest, res: VercelResponse) {
         res.status(200).json({ ...jsonResponse, newPoints: user.points });
 
     } catch (error: any) {
-        console.error('Error in /api/suggest:', error);
+        console.error('Error in /api/suggest logic:', error);
         
         if (userToRefund) {
             try {
-                userToRefund.points += SUGGESTION_COST;
-                await userToRefund.save();
-                console.log(`Successfully refunded ${SUGGESTION_COST} points to ${userToRefund.email}`);
+                // Refetch the user to avoid race conditions
+                const userForRefund = await User.findById(userToRefund._id);
+                if (userForRefund) {
+                    userForRefund.points += SUGGESTION_COST;
+                    await userForRefund.save();
+                    console.log(`Successfully refunded ${SUGGESTION_COST} points to ${userForRefund.email}`);
+                }
             } catch (refundError) {
                 console.error('CRITICAL: Failed to refund points after an error in suggest API:', refundError);
             }
@@ -116,11 +123,13 @@ async function handleGetObjectives(req: AuthRequest, res: VercelResponse) {
         if (error.message && error.message.toLowerCase().includes('safety')) {
             userMessage = `Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah input materi Anda. Poin Anda telah dikembalikan.`;
         }
-        res.status(500).json({ message: userMessage, error: error.message });
+        if (!res.headersSent) {
+            res.status(500).json({ message: userMessage, error: error.message });
+        }
     }
 }
 
-// --- Main Handler ---
+// --- Main Handler Logic ---
 async function apiHandler(req: AuthRequest, res: VercelResponse) {
     const { action } = req.query;
 
@@ -134,6 +143,19 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    await new Promise((resolve) => corsHandler(req, res, resolve));
-    await apiHandler(req as AuthRequest, res);
+    // This top-level try-catch is the final safety net.
+    try {
+        await new Promise((resolve, reject) => {
+            corsHandler(req, res, (err) => {
+                if (err) return reject(err);
+                resolve(undefined);
+            });
+        });
+        await apiHandler(req as AuthRequest, res);
+    } catch (error: any) {
+        console.error(`[FATAL API ERROR: /api/suggest]`, error);
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Terjadi kesalahan fatal pada server.", error: error.message });
+        }
+    }
 }
