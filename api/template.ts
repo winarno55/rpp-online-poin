@@ -1,6 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import path from 'path';
 import fs from 'fs';
+// Fix: Import the 'process' module to explicitly provide type definitions for process.cwd().
+// This resolves the error "Property 'cwd' does not exist on type 'Process'".
+import process from 'process';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -14,7 +17,6 @@ const handleRequest = async (req: VercelRequest, res: VercelResponse) => {
     try {
         // vercel.json is now configured to include 'public/template.docx' with this function,
         // so process.cwd() will point to the correct directory in the function's runtime environment.
-        // Fix for line 19: Use process.cwd(), which is the standard way to get the current working directory in a Node.js environment.
         const filePath = path.join(process.cwd(), 'public', 'template.docx');
 
         if (!fs.existsSync(filePath)) {
@@ -34,7 +36,7 @@ const handleRequest = async (req: VercelRequest, res: VercelResponse) => {
 };
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, () => {
-        handleRequest(req, res);
+    corsHandler(req, res, async () => {
+        await handleRequest(req, res);
     });
 }

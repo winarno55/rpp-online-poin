@@ -191,19 +191,23 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         const { action } = req.query;
 
         if (req.method === 'POST' && action === 'login') {
-            return await handleLogin(req, res);
+            await handleLogin(req, res);
+            return;
         }
         if (req.method === 'POST' && action === 'register') {
-            return await handleRegister(req, res);
+            await handleRegister(req, res);
+            return;
         }
         if (req.method === 'POST' && action === 'forgot-password') {
-            return await handleForgotPassword(req, res);
+            await handleForgotPassword(req, res);
+            return;
         }
         if (req.method === 'PUT' && action === 'reset-password') {
-            return await handleResetPassword(req, res);
+            await handleResetPassword(req, res);
+            return;
         }
 
         res.setHeader('Allow', ['POST', 'PUT']);
-        return res.status(404).json({ message: `Auth action '${action}' not found for method ${req.method}` });
+        res.status(404).json({ message: `Auth action '${action}' not found for method ${req.method}` });
     });
 }

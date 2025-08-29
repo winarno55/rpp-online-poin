@@ -69,22 +69,24 @@ async function handleUpdateConfig(req: AuthRequest, res: VercelResponse) {
 
 // --- Main Handler ---
 export default function handler(req: VercelRequest, res: VercelResponse) {
-    corsHandler(req, res, () => {
+    corsHandler(req, res, async () => {
         if (req.method === 'GET') {
-            return handleGetConfig(req, res);
+            await handleGetConfig(req, res);
+            return;
         }
         if (req.method === 'POST') {
             // Protect and admin-check the POST route
-            return protect(req as AuthRequest, res, () => {
+            protect(req as AuthRequest, res, () => {
                 if (res.headersSent) return;
-                admin(req as AuthRequest, res, () => {
+                admin(req as AuthRequest, res, async () => {
                     if (res.headersSent) return;
-                    handleUpdateConfig(req as AuthRequest, res);
+                    await handleUpdateConfig(req as AuthRequest, res);
                 });
             });
+            return;
         }
         
         res.setHeader('Allow', ['GET', 'POST']);
-        return res.status(405).json({ message: `Method ${req.method} Not Allowed on /api/pricing` });
+        res.status(405).json({ message: `Method ${req.method} Not Allowed on /api/pricing` });
     });
 }

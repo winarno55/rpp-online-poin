@@ -116,9 +116,9 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 // The wrapper code remains the same.
 export default function (req: VercelRequest, res: VercelResponse) {
     corsHandler(req, res, () => {
-        protect(req as AuthRequest, res, () => {
+        protect(req as AuthRequest, res, async () => {
             if (res.headersSent) return;
-            apiHandler(req as AuthRequest, res);
+            await apiHandler(req as AuthRequest, res);
         });
     });
 };

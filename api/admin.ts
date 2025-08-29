@@ -54,24 +54,26 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     const { action } = req.query;
 
     if (req.method === 'GET' && action === 'users') {
-        return await handleGetUsers(req, res);
+        await handleGetUsers(req, res);
+        return;
     }
 
     if (req.method === 'POST' && action === 'add-points') {
-        return await handleAddPoints(req, res);
+        await handleAddPoints(req, res);
+        return;
     }
 
     res.setHeader('Allow', ['GET', 'POST']);
-    return res.status(404).json({ message: `Admin action '${action}' not found for method ${req.method}` });
+    res.status(404).json({ message: `Admin action '${action}' not found for method ${req.method}` });
 }
 
 export default function (req: VercelRequest, res: VercelResponse) {
     corsHandler(req, res, () => {
         protect(req as AuthRequest, res, () => {
             if (res.headersSent) return;
-            admin(req as AuthRequest, res, () => {
+            admin(req as AuthRequest, res, async () => {
                 if (res.headersSent) return;
-                apiHandler(req as AuthRequest, res);
+                await apiHandler(req as AuthRequest, res);
             });
         });
     });

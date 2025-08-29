@@ -3,6 +3,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { protect } from './_lib/auth.js';
 import User, { IUser } from './_lib/models/User.js';
 import cors from 'cors';
+import dbConnect from './_lib/db.js';
 
 const corsHandler = cors();
 
@@ -30,6 +31,7 @@ async function handleGetObjectives(req: AuthRequest, res: VercelResponse) {
         return res.status(400).json({ message: 'Mata Pelajaran, Kelas/Fase, dan Materi diperlukan untuk mendapatkan saran.' });
     }
 
+    await dbConnect(); // Ensure DB is connected before user operations
     const user = await User.findById(req.user._id);
     if (!user) {
         return res.status(401).json({ message: 'User not found in database.' });
@@ -98,18 +100,26 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     const { action } = req.query;
 
     if (req.method === 'POST' && action === 'objectives') {
-        return await handleGetObjectives(req, res);
+        try {
+            await handleGetObjectives(req, res);
+        } catch (error: any) {
+            console.error("General error in suggest handler:", error);
+            if (!res.headersSent) {
+                res.status(500).json({ message: 'Terjadi kesalahan internal pada server.', error: error.message });
+            }
+        }
+        return;
     }
 
     res.setHeader('Allow', ['POST']);
-    return res.status(404).json({ message: `Suggest action '${action}' not found for method ${req.method}` });
+    res.status(404).json({ message: `Suggest action '${action}' not found for method ${req.method}` });
 }
 
 export default function (req: VercelRequest, res: VercelResponse) {
     corsHandler(req, res, () => {
-        protect(req as AuthRequest, res, () => {
+        protect(req as AuthRequest, res, async () => {
             if (res.headersSent) return;
-            apiHandler(req as AuthRequest, res);
+            await apiHandler(req as AuthRequest, res);
         });
     });
 }
