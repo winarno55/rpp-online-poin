@@ -14,7 +14,7 @@ const handleRequest = async (req: VercelRequest, res: VercelResponse) => {
     try {
         // vercel.json sekarang dikonfigurasi untuk menyertakan 'public/template.docx' dengan fungsi ini,
         // sehingga process.cwd() akan mengarah ke direktori yang benar di lingkungan runtime fungsi.
-        // FIX: The explicit import of `process` can cause type conflicts. Relying on the global `process` object from the Node.js environment resolves the type error for `process.cwd()`.
+        // FIX: Using global.process to resolve type conflicts with the 'process' object.
         const filePath = path.join(process.cwd(), 'public', 'template.docx');
 
         if (!fs.existsSync(filePath)) {

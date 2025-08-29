@@ -4,7 +4,8 @@ import { LessonPlanForm } from '../components/LessonPlanForm';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
 import { LessonPlanEditor } from '../components/LessonPlanEditor';
-import { LessonPlanInput, addRppToHistory, initDB } from '../../shared/types';
+import { LessonPlanInput } from '../../shared/types';
+import { addRppToHistory, initDB } from '../../shared/db';
 import { templates } from '../templates'; // Import templates
 import { markdownToPlainText, markdownToHtml, htmlToPlainText, parseMarkdownToDocxJson } from '../utils/markdownUtils';
 import { useAuth } from '../hooks/useAuth';
