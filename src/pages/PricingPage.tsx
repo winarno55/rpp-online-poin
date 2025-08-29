@@ -27,7 +27,7 @@ const PricingPage: React.FC = () => {
         const fetchConfig = async () => {
             setLoading(true);
             try {
-                const response = await fetch('/api/pricing');
+                const response = await fetch('/api/pricing/config');
                 const data = await response.json();
                 if (!response.ok) {
                     throw new Error(data.message || 'Gagal memuat informasi harga.');

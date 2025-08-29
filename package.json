@@ -4,21 +4,22 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "npx esbuild src/index.tsx --bundle --outfile=public/bundle.js --format=esm --jsx=automatic --loader:.ts=tsx --resolve-extensions=.tsx,.ts,.js,.jsx --external:pizzip --external:docxtemplater --external:file-saver --external:docxtemplater-html-module",
+    "build": "npx esbuild src/index.tsx --bundle --outfile=bundle.js --format=esm --jsx=automatic --loader:.ts=tsx --resolve-extensions=.tsx,.ts,.js,.jsx --external:react --external:react-dom/client --external:react-router-dom --external:pizzip --external:docxtemplater --external:file-saver --external:docxtemplater-html-module",
     "dev": "vercel dev"
   },
   "dependencies": {
     "@google/genai": "^1.6.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "docxtemplater-html-module": "^3.47.2",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.2",
     "nodemailer": "^6.9.7",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-router-dom": "6.24.1"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^6.20.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -27,8 +28,9 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.10.4",
     "@types/nodemailer": "^6.4.14",
-    "@types/react": "18.2.45",
-    "@types/react-dom": "18.2.17",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.17",
+    "@types/react-router-dom": "^5.3.3",
     "esbuild": "^0.23.0",
     "typescript": "^5.3.3",
     "vercel": "^32.6.1"

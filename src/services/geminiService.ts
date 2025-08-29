@@ -1,5 +1,7 @@
-import { LessonPlanInput } from './types.js';
+import { LessonPlanInput } from '../types';
 
+// Helper function to create a section for the prompt only if the data exists.
+// It also provides a clear "not filled" message for the AI to interpret.
 const createOptionalSection = (label: string, data: string | undefined | null | string[]) => {
   if (Array.isArray(data) && data.length > 0) {
     return `${label}: ${data.join(', ')}`;

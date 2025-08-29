@@ -53,7 +53,7 @@ const AdminPage: React.FC = () => {
         setError(null);
         try {
             // Fetch users
-            const usersResponse = await fetch('/api/admin?action=users', {
+            const usersResponse = await fetch('/api/admin/users', {
                 headers: { 'Authorization': `Bearer ${authData.token}` },
             });
             const usersData = await usersResponse.json();
@@ -61,7 +61,7 @@ const AdminPage: React.FC = () => {
             setUsers(usersData);
 
             // Fetch pricing config
-            const configResponse = await fetch('/api/pricing'); // This is a public endpoint
+            const configResponse = await fetch('/api/pricing/config'); // This is a public endpoint
             const configData: PricingConfig = await configResponse.json();
             if (!configResponse.ok) throw new Error((configData as any).message || 'Gagal memuat konfigurasi harga.');
             
@@ -102,7 +102,7 @@ const AdminPage: React.FC = () => {
         }
 
         try {
-            const response = await fetch('/api/admin?action=add-points', {
+            const response = await fetch('/api/admin/add-points', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -155,7 +155,7 @@ const AdminPage: React.FC = () => {
         setIsSavingConfig(true);
         setConfigMessage(null);
         try {
-            const response = await fetch('/api/pricing', {
+            const response = await fetch('/api/admin/pricing', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

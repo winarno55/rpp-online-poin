@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { RppHistoryItem } from '../../shared/types';
-import { initDB, getRppById } from '../../shared/db';
+import { initDB, getRppById, RppHistoryItem } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
 import { LessonPlanEditor } from '../components/LessonPlanEditor'; // Import editor

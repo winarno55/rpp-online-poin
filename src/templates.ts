@@ -1,5 +1,5 @@
-import { LessonPlanTemplate } from '../shared/types';
-import { KELAS_FASE_OPTIONS, PRAKTIK_PEDAGOGIS_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_LAINNYA } from '../shared/constants';
+import { LessonPlanTemplate } from './types';
+import { KELAS_FASE_OPTIONS, PRAKTIK_PEDAGOGIS_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_LAINNYA } from './constants';
 
 export const templates: LessonPlanTemplate[] = [
   {

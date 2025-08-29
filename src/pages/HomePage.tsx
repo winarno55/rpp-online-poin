@@ -4,8 +4,7 @@ import { LessonPlanForm } from '../components/LessonPlanForm';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { LessonPlanDisplay } from '../components/LessonPlanDisplay';
 import { LessonPlanEditor } from '../components/LessonPlanEditor';
-import { LessonPlanInput } from '../../shared/types';
-import { addRppToHistory, initDB } from '../../shared/db';
+import { LessonPlanInput, addRppToHistory, initDB } from '../types';
 import { templates } from '../templates'; // Import templates
 import { markdownToPlainText, markdownToHtml, htmlToPlainText, parseMarkdownToDocxJson } from '../utils/markdownUtils';
 import { useAuth } from '../hooks/useAuth';
@@ -45,7 +44,7 @@ const HomePage: React.FC = () => {
 
     const fetchPricingConfig = async () => {
         try {
-            const response = await fetch('/api/pricing');
+            const response = await fetch('/api/pricing/config');
             const data = await response.json();
             if (!response.ok) throw new Error('Gagal memuat konfigurasi biaya.');
             setPricingConfig(data);
@@ -339,7 +338,7 @@ const HomePage: React.FC = () => {
                                 ) : (
                                     <>
                                         <button onClick={handleSave} className={`${editButtonBaseClass} bg-green-500 hover:bg-green-600 text-white`}>
-                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                                             Simpan Perubahan
                                         </button>
                                         <button onClick={handleCancel} className={`${editButtonBaseClass} bg-gray-500 hover:bg-gray-600 text-white`}>
@@ -351,24 +350,25 @@ const HomePage: React.FC = () => {
                             </div>
                         </>
                     )}
-                  </div>
-                  <div id="rpp-paper-preview" className="bg-white rounded-md shadow-lg p-8 md:p-12">
-                    {isEditing ? (
-                        <LessonPlanEditor html={displayHtml} onChange={setDisplayHtml} />
-                    ) : (
-                        <LessonPlanDisplay htmlContent={displayHtml} />
+                    {isLoading && (
+                        <p className="text-slate-600 animate-pulse">AI sedang menulis, mohon tunggu...</p>
                     )}
+                  </div>
+                  <div id="rpp-paper-preview" className="bg-white rounded-md shadow-lg mx-auto p-8 md:p-12" style={{maxWidth: '8.5in'}}>
+                      {isEditing ? (
+                        <LessonPlanEditor html={displayHtml} onChange={setDisplayHtml} />
+                      ) : (
+                        <LessonPlanDisplay htmlContent={displayHtml} />
+                      )}
                   </div>
                 </div>
             </div>
           )}
-          {!displayHtml && !isLoading && !error && (
-            <div className="flex flex-col items-center justify-center h-full p-4">
-                <div className="text-center text-slate-600 bg-slate-100 p-8 rounded-xl border-2 border-dashed border-slate-300 w-full max-w-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-16 w-16 text-slate-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                    <p className="font-semibold text-xl text-slate-700">Modul Ajar Anda Akan Muncul di Sini</p>
-                    <p className="text-slate-500 mt-1">Lengkapi formulir di sebelah kiri dan klik "Buat Modul Ajar" untuk memulai.</p>
-                </div>
+          {!isLoading && !error && displayHtml === null && (
+            <div className="flex-grow flex flex-col items-center justify-center h-full text-slate-500 text-center no-print p-4">
+               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-24 h-24 mb-4 opacity-50"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>
+              <p className="text-xl text-slate-600">Modul Ajar akan dihasilkan di sini.</p>
+              <p className="text-sm text-slate-500">Isi formulir di samping dan klik "Buat Modul Ajar" untuk memulai.</p>
             </div>
           )}
         </div>

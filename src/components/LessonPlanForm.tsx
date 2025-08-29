@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { LessonPlanInput } from '../../shared/types';
-import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_FASE_OPTIONS, PRAKTIK_PEDAGOGIS_LAINNYA } from '../../shared/constants';
+import { LessonPlanInput } from '../types';
+import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_FASE_OPTIONS, PRAKTIK_PEDAGOGIS_LAINNYA } from '../constants';
 
 interface SessionCost {
   sessions: number;
@@ -157,7 +157,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     setSelectedSuggestions([]);
 
     try {
-        const response = await fetch('/api/suggest?action=objectives', {
+        const response = await fetch('/api/suggest/objectives', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

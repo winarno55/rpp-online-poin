@@ -9,15 +9,30 @@ function escapeHtml(text: string): string {
 
 // Helper to convert inline markdown (bold, italic) to HTML spans
 function parseInlineMarkdownToHtmlSpans(text: string): string {
-    let html = escapeHtml(text); // Escape HTML first to prevent injection
+    let html = escapeHtml(text); // Escape HTML first
 
-    // Process bold first to avoid conflicts with italic.
-    // The non-greedy `.*?` ensures it matches the shortest possible string.
-    // This simplified regex is more robust for this use case than the previous complex version with lookarounds.
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Regex for bold and italic:
+    // \*\*(.*?)\*\* matches **bold text** (non-greedy)
+    // \*(.*?)\* matches *italic text* (non-greedy)
+    // Using lookarounds to avoid matching mid-word asterisks or asterisks adjacent to punctuation if they are part of it.
+    // (?<!\w) means "not preceded by a word character"
+    // (?!\s) means "not followed by whitespace" (for opening)
+    // (?<!\s) means "not preceded by whitespace" (for closing)
+    // (?!\w) means "not followed by a word character"
+    html = html.replace(/(?<!\w)\*\*(?!\s)(.+?)(?<!\s)\*\*(?!\w)/g, '<strong>$1</strong>');
+    html = html.replace(/(?<!\w)\*(?!\s)(.+?)(?<!\s)\*(?!\w)/g, '<em>$1</em>');
     
-    // Process italic.
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    // Simpler fallbacks if the above are too restrictive or for more common markdown variations
+    // Ensure these don't double-wrap by checking if <strong> or <em> is already there (unlikely due to escaping)
+    html = html.replace(/\*\*(.*?)\*\*/g, (match, p1) => {
+        // A basic check to avoid double-encoding if somehow already processed (though escapeHtml should prevent this)
+        if (p1.includes('<strong>') || p1.includes('&lt;strong&gt;')) return match;
+        return `<strong>${p1}</strong>`;
+    });
+    html = html.replace(/\*(.*?)\*/g, (match, p1) => {
+        if (p1.includes('<em>') || p1.includes('&lt;em&gt;')) return match;
+        return `<em>${p1}</em>`;
+    });
     
     return html;
 }

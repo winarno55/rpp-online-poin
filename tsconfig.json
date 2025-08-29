@@ -16,8 +16,8 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
-    "noEmit": false
+    "noEmit": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "api/**/*.ts", "shared/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "api/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

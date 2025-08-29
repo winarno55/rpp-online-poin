@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { RppHistoryItem } from '../../shared/types';
-import { initDB, getAllRpps, deleteRppById } from '../../shared/db';
+import { initDB, getAllRpps, deleteRppById, RppHistoryItem } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 
 const HistoryPage: React.FC = () => {

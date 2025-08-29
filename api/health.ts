@@ -1,28 +1,42 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import dbConnect from './_lib/db.js';
 import mongoose from 'mongoose';
-import { createApiHandler } from './_lib/handler.js';
+import cors from 'cors';
 
-const healthCheckHandler = async (req: VercelRequest, res: VercelResponse) => {
+const corsHandler = cors();
+
+export default function handler(req: VercelRequest, res: VercelResponse) {
+  corsHandler(req, res, async () => {
     if (req.method !== 'GET') {
-        res.setHeader('Allow', ['GET']);
-        res.status(405).json({ message: 'Method Not Allowed' });
-        return;
+      res.setHeader('Allow', ['GET']);
+      return res.status(405).json({ message: 'Method Not Allowed' });
     }
 
-    // `dbConnect` akan melempar error jika gagal, yang akan ditangkap oleh `createApiHandler`
-    await dbConnect();
-    
-    // mongoose.connection.readyState: 0=disconnected, 1=connected, 2=connecting, 3=disconnecting
-    const dbState = mongoose.connection.readyState;
-    const dbStatus = dbState === 1 ? 'connected' : 'disconnected';
-    
-    if (dbState === 1) {
-        res.status(200).json({ status: 'ok', db: dbStatus });
-    } else {
-        // Jika tidak terhubung, kembalikan status error service unavailable
-        res.status(503).json({ status: 'error', db: dbStatus, message: 'Koneksi database tidak terbentuk.' });
-    }
-};
+    try {
+      await dbConnect();
+      
+      // mongoose.connection.readyState
+      // 0 = disconnected
+      // 1 = connected
+      // 2 = connecting
+      // 3 = disconnecting
+      const dbState = mongoose.connection.readyState;
+      const dbStatus = dbState === 1 ? 'connected' : 'disconnected';
+      
+      if (dbState === 1) {
+        return res.status(200).json({ status: 'ok', db: dbStatus });
+      } else {
+        // If not connected, return a server error status
+        return res.status(503).json({ status: 'error', db: dbStatus, message: 'Database connection is not established.' });
+      }
 
-export default createApiHandler(healthCheckHandler);
+    } catch (error: any) {
+      console.error("Health Check Error:", error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to connect to the database.',
+        error: error.message
+      });
+    }
+  });
+}
