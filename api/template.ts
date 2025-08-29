@@ -2,8 +2,6 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import path from 'path';
 import fs from 'fs';
 import cors from 'cors';
-// Fix: Import `process` to ensure correct type definitions for `process.cwd()` are available.
-import process from 'process';
 
 const corsHandler = cors();
 
@@ -16,6 +14,7 @@ const handleRequest = async (req: VercelRequest, res: VercelResponse) => {
     try {
         // vercel.json sekarang dikonfigurasi untuk menyertakan 'public/template.docx' dengan fungsi ini,
         // sehingga process.cwd() akan mengarah ke direktori yang benar di lingkungan runtime fungsi.
+        // FIX: The explicit import of `process` can cause type conflicts. Relying on the global `process` object from the Node.js environment resolves the type error for `process.cwd()`.
         const filePath = path.join(process.cwd(), 'public', 'template.docx');
 
         if (!fs.existsSync(filePath)) {
