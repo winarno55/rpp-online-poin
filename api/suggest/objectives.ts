@@ -1,16 +1,12 @@
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI, Type } from '@google/genai';
 import { protect } from '../_lib/auth.js';
 import User, { IUser } from '../_lib/models/User.js';
+import { getAllGeminiApiKeys } from '../_lib/geminiKeyManager.js';
 import cors from 'cors';
 
 const corsHandler = cors();
-
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-if (!GEMINI_API_KEY) {
-    throw new Error('Please define the GEMINI_API_KEY environment variable');
-}
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 type AuthRequest = VercelRequest & {
   user?: IUser;
@@ -43,6 +39,12 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     await user.save();
 
     try {
+        // RETRY LOGIC
+        const apiKeys = getAllGeminiApiKeys();
+        let finalResponse = null;
+        let lastError = null;
+        let usedKeyIndex = 0;
+
         const prompt = `
             Anda adalah seorang ahli dalam desain pembelajaran. Berdasarkan informasi berikut, berikan 3 contoh Tujuan Pembelajaran yang jelas, terukur, dan relevan untuk RPP (Rencana Pelaksanaan Pembelajaran).
             - Mata Pelajaran: ${mataPelajaran}
@@ -51,28 +53,51 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 
             Setiap tujuan pembelajaran harus dirumuskan sebagai kalimat lengkap yang dimulai dengan "Peserta didik dapat..." atau "Melalui kegiatan..., peserta didik mampu...". Buatlah 3 variasi yang berbeda, mungkin dengan fokus pada ranah kognitif, afektif, atau psikomotor yang berbeda. Jangan berikan nomor atau bullet point, hanya hasilkan JSON.
         `;
-        
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        suggestions: {
-                            type: Type.ARRAY,
-                            description: "Daftar 3 saran tujuan pembelajaran dalam format string.",
-                            items: {
-                                type: Type.STRING
+
+        for (const apiKey of apiKeys) {
+            try {
+                const ai = new GoogleGenAI({ apiKey });
+                const response = await ai.models.generateContent({
+                    model: 'gemini-2.5-flash',
+                    contents: prompt,
+                    config: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: Type.OBJECT,
+                            properties: {
+                                suggestions: {
+                                    type: Type.ARRAY,
+                                    description: "Daftar 3 saran tujuan pembelajaran dalam format string.",
+                                    items: {
+                                        type: Type.STRING
+                                    }
+                                }
                             }
                         }
                     }
+                });
+                
+                finalResponse = response;
+                break; // Success
+
+            } catch (error: any) {
+                lastError = error;
+                usedKeyIndex++;
+                const errorMessage = error.message ? error.message.toLowerCase() : '';
+                const isRetryable = errorMessage.includes('429') || errorMessage.includes('503') || errorMessage.includes('quota');
+                
+                if (isRetryable && usedKeyIndex < apiKeys.length) {
+                    console.warn(`Gemini Suggestion API Error (Key ${usedKeyIndex}): ${error.message}. Retrying...`);
+                    continue;
+                } else {
+                    throw error;
                 }
             }
-        });
+        }
+
+        if (!finalResponse) throw lastError;
         
-        const jsonText = response.text;
+        const jsonText = finalResponse.text;
         if (!jsonText) {
             throw new Error("Respons dari AI tidak berisi teks yang valid.");
         }

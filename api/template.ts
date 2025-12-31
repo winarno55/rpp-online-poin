@@ -2,8 +2,6 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import path from 'path';
 import fs from 'fs';
 import cors from 'cors';
-// FIX: Import 'process' to provide correct type definitions for 'process.cwd()' and resolve build error.
-import process from 'process';
 
 const corsHandler = cors();
 
@@ -14,7 +12,7 @@ const handleRequest = async (req: VercelRequest, res: VercelResponse) => {
     }
 
     try {
-        const filePath = path.join(process.cwd(), 'public', 'template.docx');
+        const filePath = path.join((process as any).cwd(), 'public', 'template.docx');
 
         if (!fs.existsSync(filePath)) {
             console.error('Template file not found at:', filePath);
