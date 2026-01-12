@@ -267,6 +267,7 @@ const AdminPage: React.FC = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 transition-colors placeholder-slate-400 text-slate-100"
                     />
+                    <p className="text-xs text-slate-400 mt-2">Klik ikon pensil di kolom Poin untuk mengoreksi (overwrite) jumlah poin jika salah input.</p>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -307,7 +308,7 @@ const AdminPage: React.FC = () => {
                                         ) : (
                                             <div className="flex items-center justify-center gap-2 group">
                                                 <span className="font-bold text-emerald-400 text-lg">{user.points}</span>
-                                                <button onClick={() => startEditing(user)} className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-sky-400 transition-opacity" title="Edit Poin Manual">
+                                                <button onClick={() => startEditing(user)} className="text-sky-500 hover:text-sky-400 transition-colors" title="Edit Poin Manual">
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
                                                     </svg>
