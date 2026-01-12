@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -35,7 +36,14 @@ interface PricingConfig {
 const AdminPage: React.FC = () => {
     const { authData } = useAuth();
     const [users, setUsers] = useState<FetchedUser[]>([]);
+    
+    // State untuk fitur Add Points (Top Up)
     const [pointsToAdd, setPointsToAdd] = useState<{ [key: string]: string }>({});
+    
+    // State untuk fitur Edit Points (Set Points)
+    const [editingUserId, setEditingUserId] = useState<string | null>(null);
+    const [editPointValue, setEditPointValue] = useState<string>('');
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [messages, setMessages] = useState<{ [key: string]: { type: 'success' | 'error', text: string } }>({});
@@ -93,6 +101,7 @@ const AdminPage: React.FC = () => {
         setPointsToAdd(prev => ({ ...prev, [userId]: value }));
     };
 
+    // --- HANDLERS UNTUK ADD POINTS (TOP UP) ---
     const handleAddPoints = async (userEmail: string, userId: string) => {
         if (!authData.token) return;
         const points = Number(pointsToAdd[userId]);
@@ -127,7 +136,58 @@ const AdminPage: React.FC = () => {
         }
     };
 
-    // Handler untuk pricing config
+    // --- HANDLERS UNTUK EDIT POINTS (OVERWRITE/SET) ---
+    const startEditing = (user: FetchedUser) => {
+        setEditingUserId(user._id);
+        setEditPointValue(user.points.toString());
+    };
+
+    const cancelEditing = () => {
+        setEditingUserId(null);
+        setEditPointValue('');
+    };
+
+    const saveEditedPoints = async (userId: string) => {
+        if (!authData.token) return;
+        const newPoints = Number(editPointValue);
+        
+        if (isNaN(newPoints) || newPoints < 0) {
+            setMessages(prev => ({ ...prev, [userId]: { type: 'error', text: 'Poin harus angka 0 atau lebih.' } }));
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/admin/update-points', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authData.token}`,
+                },
+                body: JSON.stringify({ userId, points: newPoints }),
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) throw new Error(result.message || 'Gagal mengupdate poin.');
+            
+            setMessages(prev => ({ ...prev, [userId]: { type: 'success', text: 'Poin berhasil diubah.' } }));
+            setEditingUserId(null); // Keluar dari mode edit
+            setTimeout(() => {
+                 setMessages(prev => {
+                    const newMessages = { ...prev };
+                    delete newMessages[userId];
+                    return newMessages;
+                });
+            }, 3000);
+            
+            await fetchAllData(); // Refresh data
+
+        } catch (err) {
+             setMessages(prev => ({ ...prev, [userId]: { type: 'error', text: err instanceof Error ? err.message : 'Terjadi kesalahan' } }));
+        }
+    };
+
+    // --- HANDLERS UNTUK PRICING CONFIG ---
     const handleConfigChange = (type: 'pointPackages' | 'paymentMethods' | 'sessionCosts', index: number, field: string, value: string | number) => {
         const newConfig = { ...pricingConfig };
         (newConfig[type][index] as any)[field] = value;
@@ -214,16 +274,47 @@ const AdminPage: React.FC = () => {
                         <thead className="bg-slate-900/50 text-xs text-sky-300 uppercase">
                             <tr>
                                 <th className="p-3">Email</th>
-                                <th className="p-3 text-center">Poin</th>
+                                <th className="p-3 text-center">Poin (Total)</th>
                                 <th className="p-3 text-center">Tgl. Daftar</th>
-                                <th className="p-3">Tambah Poin</th>
+                                <th className="p-3">Tambah (Top Up)</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredUsers.length > 0 ? filteredUsers.map(user => (
                                 <tr key={user._id} className="border-b border-slate-700 hover:bg-slate-700/50">
                                     <td className="p-3 font-medium text-white">{user.email}</td>
-                                    <td className="p-3 text-center font-bold text-emerald-400 text-lg">{user.points}</td>
+                                    <td className="p-3 text-center">
+                                        {editingUserId === user._id ? (
+                                            <div className="flex items-center justify-center gap-2">
+                                                <input 
+                                                    type="number" 
+                                                    value={editPointValue} 
+                                                    onChange={(e) => setEditPointValue(e.target.value)}
+                                                    className="w-20 p-1 bg-slate-600 border border-sky-500 rounded text-center text-white"
+                                                    min="0"
+                                                />
+                                                <button onClick={() => saveEditedPoints(user._id)} title="Simpan" className="text-green-400 hover:text-green-300">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                                    </svg>
+                                                </button>
+                                                <button onClick={cancelEditing} title="Batal" className="text-red-400 hover:text-red-300">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-center gap-2 group">
+                                                <span className="font-bold text-emerald-400 text-lg">{user.points}</span>
+                                                <button onClick={() => startEditing(user)} className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-sky-400 transition-opacity" title="Edit Poin Manual">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </td>
                                     <td className="p-3 text-center text-sm">{new Date(user.createdAt).toLocaleDateString('id-ID')}</td>
                                     <td className="p-3">
                                         <div className="flex items-center gap-2">
