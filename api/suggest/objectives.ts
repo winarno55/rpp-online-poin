@@ -8,6 +8,15 @@ import cors from 'cors';
 
 const corsHandler = cors();
 
+// DAFTAR MODEL PRIORITAS (Strategi "WATERFALL")
+const MODELS_TO_TRY = [
+    'gemini-3-pro-preview',      // 1. Gen 3 Pro
+    'gemini-3-flash-preview',    // 2. Gen 3 Flash
+    'gemini-2.5-pro-preview',    // 3. Gen 2.5 Pro
+    'gemini-2.0-pro-exp-02-05',  // 4. Gen 2 Pro
+    'gemini-2.0-flash-exp'       // 5. Gen 2 Flash
+];
+
 type AuthRequest = VercelRequest & {
   user?: IUser;
 };
@@ -39,12 +48,10 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     await user.save();
 
     try {
-        // RETRY LOGIC
         const apiKeys = getAllGeminiApiKeys();
         let finalResponse = null;
         let lastError = null;
-        let usedKeyIndex = 0;
-
+        
         const prompt = `
             Anda adalah seorang ahli dalam desain pembelajaran. Berdasarkan informasi berikut, berikan 3 contoh Tujuan Pembelajaran yang jelas, terukur, dan relevan untuk RPP (Rencana Pelaksanaan Pembelajaran).
             - Mata Pelajaran: ${mataPelajaran}
@@ -54,46 +61,51 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             Setiap tujuan pembelajaran harus dirumuskan sebagai kalimat lengkap yang dimulai dengan "Peserta didik dapat..." atau "Melalui kegiatan..., peserta didik mampu...". Buatlah 3 variasi yang berbeda, mungkin dengan fokus pada ranah kognitif, afektif, atau psikomotor yang berbeda. Jangan berikan nomor atau bullet point, hanya hasilkan JSON.
         `;
 
-        for (const apiKey of apiKeys) {
-            try {
-                const ai = new GoogleGenAI({ apiKey });
-                // Menggunakan model terbaru gemini-3-flash-preview
-                const response = await ai.models.generateContent({
-                    model: 'gemini-3-flash-preview',
-                    contents: prompt,
-                    config: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            type: Type.OBJECT,
-                            properties: {
-                                suggestions: {
-                                    type: Type.ARRAY,
-                                    description: "Daftar 3 saran tujuan pembelajaran dalam format string.",
-                                    items: {
-                                        type: Type.STRING
+        // LOGIKA FALLBACK BERTINGKAT
+        modelLoop: for (const modelName of MODELS_TO_TRY) {
+            for (let i = 0; i < apiKeys.length; i++) {
+                const apiKey = apiKeys[i];
+                try {
+                    const ai = new GoogleGenAI({ apiKey });
+                    
+                    const response = await ai.models.generateContent({
+                        model: modelName,
+                        contents: prompt,
+                        config: {
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    suggestions: {
+                                        type: Type.ARRAY,
+                                        description: "Daftar 3 saran tujuan pembelajaran dalam format string.",
+                                        items: {
+                                            type: Type.STRING
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                });
-                
-                finalResponse = response;
-                break; // Success
+                    });
+                    
+                    finalResponse = response;
+                    break modelLoop; // Berhasil, keluar dari semua loop
 
-            } catch (error: any) {
-                lastError = error;
-                usedKeyIndex++;
-                const errorMessage = error.message ? error.message.toLowerCase() : '';
-                const isRetryable = errorMessage.includes('429') || errorMessage.includes('503') || errorMessage.includes('quota');
-                
-                if (isRetryable && usedKeyIndex < apiKeys.length) {
-                    console.warn(`Gemini Suggestion API Error (Key ${usedKeyIndex}): ${error.message}. Retrying...`);
-                    continue;
-                } else {
-                    throw error;
+                } catch (error: any) {
+                    lastError = error;
+                    const errorMessage = error.message ? error.message.toLowerCase() : '';
+                    const isRetryable = errorMessage.includes('429') || errorMessage.includes('503') || errorMessage.includes('quota') || errorMessage.includes('resource exhausted');
+                    
+                    if (isRetryable) {
+                         console.warn(`[${modelName}] Key ${i + 1} Failed for Suggestion: ${error.message}. Retrying...`);
+                        continue;
+                    } else {
+                        // Error lain, coba key berikutnya
+                        continue;
+                    }
                 }
             }
+            console.warn(`All keys failed for Suggestion on model ${modelName}. Switching model...`);
         }
 
         if (!finalResponse) throw lastError;

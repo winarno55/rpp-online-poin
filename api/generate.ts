@@ -12,6 +12,17 @@ import cors from 'cors';
 
 const corsHandler = cors();
 
+// DAFTAR MODEL PRIORITAS (STRATEGI "WATERFALL")
+// Konsep: Coba Pro -> Flash di setiap Generasi (3 -> 2.5 -> 2).
+// Ini menyeimbangkan Kualitas Tertinggi dengan Ketersediaan.
+const MODELS_TO_TRY = [
+    'gemini-3-pro-preview',      // 1. Gen 3 Pro (Kualitas Tertinggi)
+    'gemini-3-flash-preview',    // 2. Gen 3 Flash (Kecepatan Tertinggi)
+    'gemini-2.5-pro-preview',    // 3. Gen 2.5 Pro (Penalaran Kuat)
+    'gemini-2.0-pro-exp-02-05',  // 4. Gen 2.0 Pro (Kualitas Stabil)
+    'gemini-2.0-flash-exp'       // 5. Gen 2.0 Flash (Cadangan Terakhir)
+];
+
 type AuthRequest = VercelRequest & {
   user?: IUser;
 };
@@ -55,52 +66,57 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         await user.save();
         
         try {
-            // RETRY LOGIC / FALLBACK SYSTEM
-            // 1. Get all available keys (shuffled)
             const apiKeys = getAllGeminiApiKeys();
             let responseStream = null;
             let lastError = null;
-            let usedKeyIndex = 0;
+            let successModel = '';
 
             const prompt = generateLessonPlanPrompt(lessonPlanData);
 
-            // 2. Loop through keys until one works or all fail
-            for (const apiKey of apiKeys) {
-                try {
-                    // Initialize AI instance with current key
-                    const ai = new GoogleGenAI({ apiKey });
+            // LOGIKA FALLBACK BERTINGKAT
+            // Loop Luar: Iterasi Model sesuai urutan Waterfall
+            modelLoop: for (const modelName of MODELS_TO_TRY) {
+                // Loop Dalam: Iterasi Semua API Key untuk model tersebut
+                for (let i = 0; i < apiKeys.length; i++) {
+                    const apiKey = apiKeys[i];
                     
-                    // Attempt to connect/stream
-                    // Menggunakan model terbaru gemini-3-flash-preview
-                    const stream = await ai.models.generateContentStream({
-                        model: 'gemini-3-flash-preview',
-                        contents: prompt,
-                    });
-                    
-                    responseStream = stream;
-                    // If successful, break the loop
-                    break; 
+                    try {
+                        const ai = new GoogleGenAI({ apiKey });
+                        
+                        // Coba connect dengan model saat ini
+                        const stream = await ai.models.generateContentStream({
+                            model: modelName,
+                            contents: prompt,
+                        });
+                        
+                        responseStream = stream;
+                        successModel = modelName;
+                        
+                        // Jika berhasil, keluar dari KEDUA loop (break label)
+                        break modelLoop; 
 
-                } catch (error: any) {
-                    lastError = error;
-                    usedKeyIndex++;
-                    
-                    // Check if error is related to Rate Limit (429) or Server Error (503)
-                    const errorMessage = error.message ? error.message.toLowerCase() : '';
-                    const isRetryable = errorMessage.includes('429') || errorMessage.includes('503') || errorMessage.includes('quota');
-                    
-                    if (isRetryable && usedKeyIndex < apiKeys.length) {
-                        console.warn(`Gemini API Error (Key ${usedKeyIndex}): ${error.message}. Retrying with next key...`);
-                        continue; // Try next key
-                    } else {
-                        // If it's a safety error or we ran out of keys, throw to the outer catch
-                        throw error;
+                    } catch (error: any) {
+                        lastError = error;
+                        
+                        const errorMessage = error.message ? error.message.toLowerCase() : '';
+                        // Cek error quota (429) atau server overload (503)
+                        const isRetryable = errorMessage.includes('429') || errorMessage.includes('503') || errorMessage.includes('quota') || errorMessage.includes('resource exhausted');
+                        
+                        if (isRetryable) {
+                            console.warn(`[${modelName}] Key ${i + 1} Failed: ${error.message}. Trying next key...`);
+                            continue; // Lanjut ke key berikutnya di model yang sama
+                        } else {
+                            // Jika error fatal (misal API key invalid format), mungkin tetap lanjut coba key lain
+                            console.warn(`[${modelName}] Key ${i + 1} Fatal/Unknown Error: ${error.message}. Trying next key...`);
+                            continue;
+                        }
                     }
                 }
+                console.warn(`All keys failed for model ${modelName}. Switching to next model...`);
             }
 
             if (!responseStream) {
-                throw lastError || new Error("Gagal terhubung ke semua server AI.");
+                throw lastError || new Error("Gagal terhubung ke semua server AI dengan semua API Key yang tersedia.");
             }
 
             // Set headers for streaming only after successful connection
@@ -108,6 +124,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                 'Content-Type': 'text/plain; charset=utf-8',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive',
+                'X-Model-Used': successModel // Opsional: memberitahu frontend model mana yang akhirnya dipakai
             });
             
             for await (const chunk of responseStream) {
@@ -116,15 +133,13 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                 }
             }
             
-            res.end(); // End the stream when Gemini is done
+            res.end();
 
         } catch (aiError: any) {
-            console.error('All Gemini Keys Failed:', aiError);
+            console.error('All Gemini Models & Keys Failed:', aiError);
             
-            // If an AI error occurs, we have already deducted points.
-            // We should not write to a response that's already started streaming.
             if (!res.headersSent) {
-                 // Refund points if generation fails before starting
+                 // Refund points
                 user.points += dynamicCost;
                 await user.save();
               
@@ -133,12 +148,11 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                     if (aiError.message.toLowerCase().includes('safety')) {
                         userMessage = 'Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah materi atau tujuan pembelajaran Anda. Poin Anda telah dikembalikan.';
                     } else if (aiError.message.includes('429') || aiError.message.toLowerCase().includes('quota')) {
-                         userMessage = 'Server sedang sangat sibuk (Semua API Key limit). Silakan coba beberapa saat lagi. Poin Anda telah dikembalikan.';
+                         userMessage = 'Server sedang sangat sibuk (Semua kuota API habis). Silakan coba beberapa saat lagi. Poin Anda telah dikembalikan.';
                     }
                 }
                 res.status(424).json({ message: userMessage, error: aiError.message });
             } else {
-                // If stream has started, we just end it. The client will see a truncated response.
                 res.end();
             }
         }
@@ -151,7 +165,6 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     }
 }
 
-// The wrapper code remains the same.
 export default function (req: VercelRequest, res: VercelResponse) {
     corsHandler(req, res, () => {
         protect(req as AuthRequest, res, () => {
