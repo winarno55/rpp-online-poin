@@ -1,3 +1,4 @@
+
 // Helper to escape HTML special characters
 function escapeHtml(text: string): string {
     return text.replace(/&/g, '&amp;')
@@ -12,20 +13,11 @@ function parseInlineMarkdownToHtmlSpans(text: string): string {
     let html = escapeHtml(text); // Escape HTML first
 
     // Regex for bold and italic:
-    // \*\*(.*?)\*\* matches **bold text** (non-greedy)
-    // \*(.*?)\* matches *italic text* (non-greedy)
-    // Using lookarounds to avoid matching mid-word asterisks or asterisks adjacent to punctuation if they are part of it.
-    // (?<!\w) means "not preceded by a word character"
-    // (?!\s) means "not followed by whitespace" (for opening)
-    // (?<!\s) means "not preceded by whitespace" (for closing)
-    // (?!\w) means "not followed by a word character"
     html = html.replace(/(?<!\w)\*\*(?!\s)(.+?)(?<!\s)\*\*(?!\w)/g, '<strong>$1</strong>');
     html = html.replace(/(?<!\w)\*(?!\s)(.+?)(?<!\s)\*(?!\w)/g, '<em>$1</em>');
     
-    // Simpler fallbacks if the above are too restrictive or for more common markdown variations
-    // Ensure these don't double-wrap by checking if <strong> or <em> is already there (unlikely due to escaping)
+    // Simpler fallbacks
     html = html.replace(/\*\*(.*?)\*\*/g, (match, p1) => {
-        // A basic check to avoid double-encoding if somehow already processed (though escapeHtml should prevent this)
         if (p1.includes('<strong>') || p1.includes('&lt;strong&gt;')) return match;
         return `<strong>${p1}</strong>`;
     });
@@ -49,7 +41,6 @@ function parseSingleMarkdownTableToHtml(tableMarkdown: string): string {
     let hasHeader = false;
     if (headerLine) {
         const headerCellsContent = headerLine.split('|').slice(1, -1).map(s => s.trim());
-        // Check if next line is a separator, or if this is the only line and has content
         const isNextLineSeparator = lines.length > 0 && lines[0].match(/^\|\s*:?---+\s*:?(\s*\|\s*:?---+\s*:?)*\s*\|$/);
         
         if (isNextLineSeparator || (headerCellsContent.some(c => c.length > 0) && lines.length === 0) ) {
@@ -60,34 +51,27 @@ function parseSingleMarkdownTableToHtml(tableMarkdown: string): string {
             html += '</tr>\n</thead>\n';
             hasHeader = true;
         } else {
-            // Not a header, put it back to be processed as a body row
             lines.unshift(headerLine);
         }
     }
     
-    // Remove separator line if present
     if (lines.length > 0 && lines[0].match(/^\|\s*:?---+\s*:?(\s*\|\s*:?---+\s*:?)*\s*\|$/)) {
         lines.shift(); 
-        if (!hasHeader && lines.length === 0) return `<p>${parseInlineMarkdownToHtmlSpans(tableMarkdown)}</p>`; // Separator without header or body
+        if (!hasHeader && lines.length === 0) return `<p>${parseInlineMarkdownToHtmlSpans(tableMarkdown)}</p>`;
     } else if (hasHeader && lines.length === 0) {
-        // Header only table
         html += '<tbody></tbody>\n</table>\n';
         return html;
-    } else if (!hasHeader && lines.length > 0) {
-        // No clear header and no separator, likely not a well-formed markdown table according to common conventions.
-        // Or, it's a table without a formal header row. Treat all as body.
-    } else if (!hasHeader && lines.length === 0 && !headerLine) { // Empty input
+    } else if (!hasHeader && lines.length === 0 && !headerLine) {
         return '';
-    } else if (!hasHeader && lines.length === 0 && headerLine && !headerLine.split('|').slice(1,-1).join("").trim()){ // only | | |
+    } else if (!hasHeader && lines.length === 0 && headerLine && !headerLine.split('|').slice(1,-1).join("").trim()){
         return '';
     }
-
 
     html += '<tbody>\n';
     let rowCount = 0;
     lines.forEach(line => {
         const bodyCellsContent = line.split('|').slice(1, -1);
-        if (bodyCellsContent.join("").trim() === "") return; // Skip empty rows like | | |
+        if (bodyCellsContent.join("").trim() === "") return;
 
         html += '<tr>\n';
         bodyCellsContent.forEach(cell => {
@@ -99,7 +83,6 @@ function parseSingleMarkdownTableToHtml(tableMarkdown: string): string {
 
     html += '</tbody>\n</table>\n';
     
-    // If no header was formally identified AND no body rows were actually produced, it's not a table.
     if (!hasHeader && rowCount === 0) {
        return tableMarkdown.split('\n').map(line => `<p>${parseInlineMarkdownToHtmlSpans(line)}</p>`).join('\n');
     }
@@ -107,7 +90,6 @@ function parseSingleMarkdownTableToHtml(tableMarkdown: string): string {
 }
 
 export function cleanMarkdownContent(markdown: string): string {
-    // First, let's strip any markdown code fences surrounding the whole content.
     let content = markdown.trim();
     const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
     const match = content.match(fenceRegex);
@@ -123,7 +105,7 @@ export function cleanMarkdownContent(markdown: string): string {
     const unwantedPreamblePhrases = [
         "Tentu, sebagai ahli", 
         "Tentu, berikut adalah", 
-        "Tentu, Bapak/Ibu Guru", // Catches variations including the user's example
+        "Tentu, Bapak/Ibu Guru",
         "Berikut adalah drafnya:",
         "Berikut adalah rancangan RPP/Modul Ajar",
         "Berikut rancangan Modul Ajar",
@@ -199,7 +181,7 @@ export function cleanMarkdownContent(markdown: string): string {
 // Main function to convert Markdown text to an HTML string
 export function markdownToHtml(markdown: string): string {
     const cleanedMarkdown = cleanMarkdownContent(markdown);
-    if (cleanedMarkdown.startsWith("<p>")) { // If cleaning returned an error message
+    if (cleanedMarkdown.startsWith("<p>")) {
         return cleanedMarkdown;
     }
 
@@ -259,7 +241,7 @@ export function markdownToHtml(markdown: string): string {
             const indentSpace = listItemMatch[1].length;
             const marker = listItemMatch[2];
             const content = listItemMatch[3].trim();
-            const currentLevel = Math.max(0, Math.floor(indentSpace / 2)); // Ensure non-negative level
+            const currentLevel = Math.max(0, Math.floor(indentSpace / 2));
 
             const newListType = marker.match(/\d+\./) ? 'ol' : 'ul';
 
@@ -296,81 +278,51 @@ export function markdownToHtml(markdown: string): string {
 // Function to convert Markdown to Plain Text
 export function markdownToPlainText(rawMarkdown: string): string {
     const cleanedMarkdown = cleanMarkdownContent(rawMarkdown);
-    if (cleanedMarkdown.startsWith("<p>Tidak ada konten")) { // Error from cleanMarkdownContent
-        return cleanedMarkdown.replace(/<p>/g, '').replace(/<\/p>/g, ''); // Return plain error message
+    if (cleanedMarkdown.startsWith("<p>Tidak ada konten")) {
+        return cleanedMarkdown.replace(/<p>/g, '').replace(/<\/p>/g, '');
     }
 
     let text = cleanedMarkdown;
-
-    // Remove HTML tags that might be generated by error messages or simple structures
     text = text.replace(/<[^>]+>/g, ''); 
 
-    // Process tables: remove separator lines and convert cell separators to spaces
     const lines = text.split('\n');
     const processedLines = lines.map(line => {
         const trimmedLine = line.trim();
-        // Check for table separator line (e.g., |---|---| or |:---|:---|)
         if (trimmedLine.startsWith('|') && trimmedLine.endsWith('|') && trimmedLine.match(/^\|\s*[:\-\s|]+\s*\|$/)) {
-            return ''; // Remove separator line
+            return '';
         }
-        // For other table lines, remove leading/trailing pipes and replace inner pipes with spaces
         if (trimmedLine.startsWith('|') && trimmedLine.endsWith('|')) {
             return trimmedLine.slice(1, -1).replace(/\|/g, '  ').trim();
         }
         return line;
-    }).filter(line => line !== null); // Remove null lines if any intermediate step produced them
+    }).filter(line => line !== null);
 
     text = processedLines.join('\n');
-
-    // Headings: remove '#'
     text = text.replace(/^#{1,6}\s+/gm, '');
-
-    // Bold and Italic: remove '**' and '*'
     text = text.replace(/\*\*(.*?)\*\*/g, '$1');
     text = text.replace(/\*(.*?)\*/g, '$1');
-    
-    // Strikethrough (if used)
     text = text.replace(/~~(.*?)~~/g, '$1');
-
-    // Blockquotes: remove '>'
     text = text.replace(/^>\s+/gm, '');
-
-    // List items: remove '  *', '- ', '1. ' etc.
     text = text.replace(/^\s*([\*\-\+]|\d+\.)\s+/gm, '');
-
-    // Horizontal rules
     text = text.replace(/^\s*(\*\*\*|---|___)\s*$/gm, '');
-    
-    // Links: extract text part [text](url) -> text
     text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
-    // Images: extract alt text ![alt](url) -> alt
     text = text.replace(/!\[([^\]]*)\]\([^\)]+\)/g, '$1');
-
-    // Remove potential markdown code blocks (```) or inline code (`)
     text = text.replace(/```[\s\S]*?```/g, '');
     text = text.replace(/`([^`]+)`/g, '$1');
-
-    // Normalize multiple newlines to a maximum of two (one blank line)
     text = text.replace(/\n{3,}/g, '\n\n');
-
-    // Trim leading/trailing whitespace from the whole text
     text = text.trim();
 
     return text;
 }
 
 export function htmlToPlainText(html: string): string {
-    // Create a temporary DOM element to parse the HTML string
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
     
-    // Replace <br> tags with newlines for better formatting
     tempDiv.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
-    // Handle paragraphs and list items by adding a newline after them
     tempDiv.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6').forEach(el => {
         el.appendChild(document.createTextNode('\n'));
     });
-    // For tables, add tabs between cells and newlines between rows
     tempDiv.querySelectorAll('tr').forEach(tr => {
         tr.querySelectorAll('td, th').forEach(cell => {
              cell.appendChild(document.createTextNode('\t'));
@@ -378,12 +330,9 @@ export function htmlToPlainText(html: string): string {
         tr.appendChild(document.createTextNode('\n'));
     });
 
-    // Use textContent to get the plain text, which automatically decodes HTML entities
     let text = tempDiv.textContent || '';
-    
-    // Clean up extra whitespace
-    text = text.replace(/[ \t]{2,}/g, ' '); // Replace multiple spaces/tabs with a single space
-    text = text.replace(/\n{3,}/g, '\n\n'); // Replace multiple newlines with double newlines
+    text = text.replace(/[ \t]{2,}/g, ' ');
+    text = text.replace(/\n{3,}/g, '\n\n');
     
     return text.trim();
 }
@@ -392,6 +341,23 @@ export function htmlToPlainText(html: string): string {
 
 export interface DocxJson {
   [key: string]: any;
+}
+
+// Helper to remove markdown symbols for clean Word document output
+function cleanTextForDocx(text: string): string {
+    if (!text) return "";
+    let clean = text;
+    
+    // Remove bold/italic markers (**text**, *text*, __text__)
+    // Keeps the content inside
+    clean = clean.replace(/\*\*(.*?)\*\*/g, '$1');
+    clean = clean.replace(/\*(.*?)\*/g, '$1');
+    clean = clean.replace(/__(.*?)__/g, '$1');
+    
+    // Remove headers (# Title -> Title)
+    clean = clean.replace(/^#{1,6}\s+/gm, '');
+    
+    return clean.trim();
 }
 
 // Helper to get content between two headings/sections
@@ -405,7 +371,8 @@ const getContentBetween = (text: string, start: string, end: string): string => 
 
 // Helper to extract a single value from a line
 const extractValue = (text: string, key: string): string => {
-    const regex = new RegExp(`- \\*\\*${key}:\\*\\*\\s*(.*)`, 'i');
+    // Looks for "- **Key:** Value" or "- Key: Value"
+    const regex = new RegExp(`- (?:\\*\\*)?${key}:(?:\\*\\*)?\\s*(.*)`, 'i');
     const match = text.match(regex);
     return match ? match[1].trim() : '';
 };
@@ -416,40 +383,53 @@ export function parseMarkdownToDocxJson(markdown: string): DocxJson {
 
     // 1. Extract Title
     const titleMatch = markdown.match(/^# \*\*MODUL AJAR: (.*)\*\*/);
-    json.judul_modul = titleMatch ? titleMatch[1].trim() : "Tanpa Judul";
+    json.judul_modul = titleMatch ? cleanTextForDocx(titleMatch[1].trim()) : "Tanpa Judul";
 
     // 2. Extract Identitas section
     const identitasSection = getContentBetween(markdown, "## Identitas", "## IDENTIFIKASI");
-    json.mata_pelajaran = extractValue(identitasSection, "Mata Pelajaran");
-    json.kelas_fase = extractValue(identitasSection, "Kelas/Fase");
-    json.materi = extractValue(identitasSection, "Materi");
-    json.alokasi_waktu = extractValue(identitasSection, "Alokasi Waktu");
-    json.peserta_didik = extractValue(identitasSection, "Peserta Didik");
+    json.mata_pelajaran = cleanTextForDocx(extractValue(identitasSection, "Mata Pelajaran"));
+    json.kelas_fase = cleanTextForDocx(extractValue(identitasSection, "Kelas/Fase"));
+    json.materi = cleanTextForDocx(extractValue(identitasSection, "Materi"));
+    json.alokasi_waktu = cleanTextForDocx(extractValue(identitasSection, "Alokasi Waktu"));
+    json.peserta_didik = cleanTextForDocx(extractValue(identitasSection, "Peserta Didik"));
     json.show_peserta_didik = !!json.peserta_didik;
 
     // 3. Extract IDENTIFIKASI section
-    const identifikasiSection = getContentBetween(markdown, "## IDENTIFIKASI", "## Pengalaman Belajar");
-    json.capaian_pembelajaran = extractValue(identifikasiSection, "Capaian Pembelajaran");
+    const identifikasiSection = getContentBetween(markdown, "## IDENTIFIKASI", "### Langkah-Langkah Pembelajaran"); // Update end marker to match standard prompt structure better
+    json.capaian_pembelajaran = cleanTextForDocx(extractValue(identifikasiSection, "Capaian Pembelajaran"));
     json.show_capaian_pembelajaran = !!json.capaian_pembelajaran;
-    json.dimensi_profil_lulusan = extractValue(identifikasiSection, "Dimensi Profil Lulusan");
+    json.dimensi_profil_lulusan = cleanTextForDocx(extractValue(identifikasiSection, "Dimensi Profil Lulusan"));
     json.show_dimensi_profil_lulusan = !!json.dimensi_profil_lulusan;
-    json.lintas_disiplin_ilmu = extractValue(identifikasiSection, "Lintas Disiplin Ilmu");
+    json.lintas_disiplin_ilmu = cleanTextForDocx(extractValue(identifikasiSection, "Lintas Disiplin Ilmu"));
     json.show_lintas_disiplin_ilmu = !!json.lintas_disiplin_ilmu;
-    json.tujuan_pembelajaran = getContentBetween(identifikasiSection, "- **Tujuan Pembelajaran:**", "- **Praktik Pedagogis:**").replace(/^- /gm, '').trim();
-    json.praktik_pedagogis = extractValue(identifikasiSection, "Praktik Pedagogis");
+    
+    // Tujuan Pembelajaran often is a list, we want to keep the structure but clean formatting
+    let rawTujuan = getContentBetween(identifikasiSection, "- **Tujuan Pembelajaran:**", "- **Praktik Pedagogis:**").replace(/^- /gm, '').trim();
+    // Sometimes contentBetween catches the start tag, let's ensure it's clean
+    if(rawTujuan.startsWith("[")) rawTujuan = rawTujuan.substring(1);
+    if(rawTujuan.endsWith("]")) rawTujuan = rawTujuan.substring(0, rawTujuan.length-1);
+    
+    json.tujuan_pembelajaran = cleanTextForDocx(rawTujuan);
+    json.praktik_pedagogis = cleanTextForDocx(extractValue(identifikasiSection, "Praktik Pedagogis"));
 
     // 4. Extract Langkah-Langkah Pembelajaran
     const langkahSection = getContentBetween(markdown, "### Langkah-Langkah Pembelajaran", "### Asesmen Pembelajaran");
-    const pertemuanBlocks = langkahSection.split(/---+\s*#### \*\*PERTEMUAN (\d+)\*\*\s*---+/).slice(1);
+    
+    // More robust split regex: allows loose dashes, optional bolds, and spaces
+    const pertemuanBlocks = langkahSection.split(/---+\s*#{1,6}\s*\**PERTEMUAN\s+(\d+)\**\s*---+/i).slice(1);
     
     json.langkah_pembelajaran = [];
     for (let i = 0; i < pertemuanBlocks.length; i += 2) {
         const pertemuanKe = pertemuanBlocks[i];
         const blockContent = pertemuanBlocks[i + 1];
         if (blockContent) {
-            const kegiatan_awal = getContentBetween(blockContent, "**AWAL**", "**INTI**");
-            const kegiatan_inti = getContentBetween(blockContent, "**INTI**", "**PENUTUP**");
-            const kegiatan_penutup = blockContent.substring(blockContent.indexOf("**PENUTUP**") + "**PENUTUP**".length).trim();
+            const kegiatan_awal = cleanTextForDocx(getContentBetween(blockContent, "**AWAL**", "**INTI**"));
+            const kegiatan_inti = cleanTextForDocx(getContentBetween(blockContent, "**INTI**", "**PENUTUP**"));
+            // For Penutup, take everything after PENUTUP marker
+            const penutupMarker = "**PENUTUP**";
+            const penutupIndex = blockContent.indexOf(penutupMarker);
+            const kegiatan_penutup = penutupIndex !== -1 ? cleanTextForDocx(blockContent.substring(penutupIndex + penutupMarker.length).trim()) : "";
+
             json.langkah_pembelajaran.push({
                 pertemuan_ke: pertemuanKe,
                 kegiatan_awal,
@@ -460,14 +440,14 @@ export function parseMarkdownToDocxJson(markdown: string): DocxJson {
     }
     
     // 5. Extract Asesmen
-    json.asesmen_pembelajaran = getContentBetween(markdown, "### Asesmen Pembelajaran", "## LAMPIRAN");
+    json.asesmen_pembelajaran = cleanTextForDocx(getContentBetween(markdown, "### Asesmen Pembelajaran", "## LAMPIRAN"));
 
     // 6. Extract Lampiran sections
     const lampiranSection = markdown.substring(markdown.indexOf("## LAMPIRAN"));
-    json.rubrik_penilaian = getContentBetween(lampiranSection, "### 1. Rubrik Penilaian", "### 2. LKPD");
-    json.lkpd = getContentBetween(lampiranSection, "### 2. LKPD", "### 3. Evaluasi Mandiri");
-    json.evaluasi_mandiri = getContentBetween(lampiranSection, "### 3. Evaluasi Mandiri", "### 4. Materi Ajar");
-    json.materi_ajar = lampiranSection.substring(lampiranSection.indexOf("### 4. Materi Ajar") + "### 4. Materi Ajar".length).trim();
+    json.rubrik_penilaian = cleanTextForDocx(getContentBetween(lampiranSection, "### 1. Rubrik Penilaian", "### 2. LKPD"));
+    json.lkpd = cleanTextForDocx(getContentBetween(lampiranSection, "### 2. LKPD", "### 3. Evaluasi Mandiri"));
+    json.evaluasi_mandiri = cleanTextForDocx(getContentBetween(lampiranSection, "### 3. Evaluasi Mandiri", "### 4. Materi Ajar"));
+    json.materi_ajar = cleanTextForDocx(lampiranSection.substring(lampiranSection.indexOf("### 4. Materi Ajar") + "### 4. Materi Ajar".length).trim());
 
     return json;
 }
