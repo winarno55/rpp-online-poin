@@ -71,9 +71,9 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                     const ai = new GoogleGenAI({ apiKey });
                     
                     // Attempt to connect/stream
-                    // Note: generateContentStream typically throws immediately if 429/quota occurs
+                    // Menggunakan model terbaru gemini-3-flash-preview
                     const stream = await ai.models.generateContentStream({
-                        model: 'gemini-2.5-flash',
+                        model: 'gemini-3-flash-preview',
                         contents: prompt,
                     });
                     

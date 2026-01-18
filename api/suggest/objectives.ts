@@ -57,8 +57,9 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         for (const apiKey of apiKeys) {
             try {
                 const ai = new GoogleGenAI({ apiKey });
+                // Menggunakan model terbaru gemini-3-flash-preview
                 const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
+                    model: 'gemini-3-flash-preview',
                     contents: prompt,
                     config: {
                         responseMimeType: "application/json",
