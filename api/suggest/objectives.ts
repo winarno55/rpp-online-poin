@@ -10,7 +10,7 @@ const corsHandler = cors();
 
 // DAFTAR MODEL PRIORITAS (Strategi "WATERFALL")
 const MODELS_TO_TRY = [
-    'gemini-3-pro-preview',      // 1. Gen 3 Pro
+    'gemini-3.1-pro-preview',    // 1. Gen 3.1 Pro
     'gemini-3-flash-preview',    // 2. Gen 3 Flash
     'gemini-2.5-pro-preview',    // 3. Gen 2.5 Pro
     'gemini-2.0-pro-exp-02-05',  // 4. Gen 2 Pro
