@@ -156,19 +156,19 @@ export const saveToGoogleDocs = async (
   };
 
   const boundary = 'rpp_generator_google_docs_boundary';
-  const delimiter = `\r\n--${boundary}\r\n`;
-  const closeDelim = `\r\n--${boundary}--`;
 
-  const rawBody =
-    `--${boundary}\r\n` +
-    'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-    JSON.stringify(metadata) +
-    delimiter +
-    'Content-Type: text/html; charset=UTF-8\r\n\r\n' +
-    styledHtml +
-    closeDelim;
+  // Constructing multipart/related body using Blobs to handle multibyte characters correctly
+  const parts = [
+    `--${boundary}\r\n`,
+    'Content-Type: application/json; charset=UTF-8\r\n\r\n',
+    JSON.stringify(metadata),
+    `\r\n--${boundary}\r\n`,
+    'Content-Type: text/html; charset=UTF-8\r\n\r\n',
+    styledHtml,
+    `\r\n--${boundary}--`
+  ];
 
-  const body = rawBody.replace(/\r?\n/g, '\r\n');
+  const body = new Blob(parts, { type: 'multipart/related' });
 
   const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
     method: 'POST',
