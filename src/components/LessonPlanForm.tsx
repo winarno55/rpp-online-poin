@@ -286,6 +286,36 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
       <div className="flex-grow overflow-y-auto pr-2">
           {step === 1 && (
             <fieldset className={fieldSetClass}>
+              <div className="bg-slate-100 p-4 rounded-lg mb-6 border border-slate-200">
+                  <h3 className="font-bold text-slate-700 mb-3 text-sm">Identitas Sekolah & Guru</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="md:col-span-2">
+                        <label htmlFor="satuanPendidikan" className={labelClass}>Nama Sekolah</label>
+                        <input type="text" name="satuanPendidikan" id="satuanPendidikan" value={formData.satuanPendidikan} onChange={handleChange} className={inputClass} placeholder="cth: SMP Negeri 1 Jakarta" />
+                      </div>
+                      <div>
+                        <label htmlFor="namaGuru" className={labelClass}>Nama Guru</label>
+                        <input type="text" name="namaGuru" id="namaGuru" value={formData.namaGuru} onChange={handleChange} className={inputClass} placeholder="Nama Guru Lengkap" />
+                      </div>
+                      <div>
+                        <label htmlFor="nipGuru" className={labelClass}>NIP Guru</label>
+                        <input type="text" name="nipGuru" id="nipGuru" value={formData.nipGuru} onChange={handleChange} className={inputClass} placeholder="NIP / NUPTK (opsional)" />
+                      </div>
+                      <div>
+                        <label htmlFor="namaKepalaSekolah" className={labelClass}>Nama Kepala Sekolah</label>
+                        <input type="text" name="namaKepalaSekolah" id="namaKepalaSekolah" value={formData.namaKepalaSekolah} onChange={handleChange} className={inputClass} placeholder="Nama Kepsek" />
+                      </div>
+                      <div>
+                        <label htmlFor="nipKepalaSekolah" className={labelClass}>NIP Kepala Sekolah</label>
+                        <input type="text" name="nipKepalaSekolah" id="nipKepalaSekolah" value={formData.nipKepalaSekolah} onChange={handleChange} className={inputClass} placeholder="NIP (opsional)" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label htmlFor="kotaTanggalTtd" className={labelClass}>Kota & Tanggal Tanda Tangan</label>
+                        <input type="text" name="kotaTanggalTtd" id="kotaTanggalTtd" value={formData.kotaTanggalTtd} onChange={handleChange} className={inputClass} placeholder="cth: Jakarta, 15 Juli 2024" />
+                      </div>
+                  </div>
+              </div>
+
               <div>
                 <label htmlFor="mataPelajaran" className={labelClass}>Mata Pelajaran</label>
                 <input type="text" name="mataPelajaran" id="mataPelajaran" value={formData.mataPelajaran} onChange={handleChange} className={inputClass} placeholder="cth: Bahasa Indonesia, Matematika" />
