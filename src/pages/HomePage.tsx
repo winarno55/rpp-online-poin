@@ -9,6 +9,7 @@ import { LessonPlanInput, addRppToHistory, initDB } from '../types';
 import { templates } from '../templates'; // Import templates
 import { markdownToPlainText, markdownToHtml, htmlToPlainText, parseMarkdownToDocxJson } from '../utils/markdownUtils';
 import { useAuth } from '../hooks/useAuth';
+import { initGoogleAuth, googleSignIn, saveToGoogleDocs } from '../utils/googleDocs';
 
 interface SessionCost {
   sessions: number;
@@ -36,9 +37,28 @@ const HomePage: React.FC = () => {
   const [pricingConfig, setPricingConfig] = useState<PricingConfig | null>(null);
   const [navLinks, setNavLinks] = useState<NavLink[]>([]);
   const [templateData, setTemplateData] = useState<LessonPlanInput | null>(null);
+
+  // Google Workspace Integration states
+  const [googleToken, setGoogleToken] = useState<string | null>(null);
+  const [isSavingToDocs, setIsSavingToDocs] = useState<boolean>(false);
+  const [googleDocUrl, setGoogleDocUrl] = useState<string | null>(null);
   
   // Ref untuk auto-scroll
   const resultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const unsubscribe = initGoogleAuth(
+      (user, token) => {
+        setGoogleToken(token);
+      },
+      () => {
+        setGoogleToken(null);
+      }
+    );
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     initDB().catch(err => {
@@ -243,6 +263,38 @@ const HomePage: React.FC = () => {
     window.print();
   }, [generatedMarkdown]);
 
+  const handleSaveToGoogleDocs = useCallback(async () => {
+    if (!displayHtml || !lessonPlanInput) return;
+    
+    setIsSavingToDocs(true);
+    setGoogleDocUrl(null);
+    setError(null);
+
+    try {
+      let token = googleToken;
+      if (!token) {
+        const result = await googleSignIn();
+        if (result) {
+          token = result.accessToken;
+          setGoogleToken(token);
+        } else {
+          throw new Error("Gagal melakukan autentikasi dengan Google.");
+        }
+      }
+
+      if (token) {
+        const title = `ModulAjar_${lessonPlanInput.mataPelajaran.replace(/\s+/g, '_')}`;
+        const docInfo = await saveToGoogleDocs(displayHtml, title, token);
+        setGoogleDocUrl(docInfo.url);
+      }
+    } catch (e: any) {
+      console.error("Gagal mengekspor ke Google Docs:", e);
+      setError(e instanceof Error ? `Ekspor Gagal: ${e.message}` : "Gagal menyimpan ke Google Docs.");
+    } finally {
+      setIsSavingToDocs(false);
+    }
+  }, [displayHtml, lessonPlanInput, googleToken]);
+
   const handleEdit = () => setIsEditing(true);
   const handleSave = () => setIsEditing(false);
   const handleCancel = () => {
@@ -362,11 +414,35 @@ const HomePage: React.FC = () => {
                                             Digenerate menggunakan {dynamicCost} poin. Sisa poin: <span className="font-bold text-emerald-600">{authData.user?.points}</span>
                                         </p>
                                         
+                                        {googleDocUrl && (
+                                            <div className="mb-6 p-4 bg-emerald-100 text-emerald-800 rounded-lg border border-emerald-300 text-center flex flex-col items-center gap-2">
+                                                <span className="font-semibold text-lg">✓ Modul Ajar berhasil diekspor ke Google Docs!</span>
+                                                <a href={googleDocUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:text-emerald-900 underline text-base transition-colors duration-200">
+                                                    Buka di Google Docs ↗
+                                                </a>
+                                            </div>
+                                        )}
+
                                         <div className="flex flex-wrap gap-3 justify-center mb-6">
                                             <button onClick={handleDownloadDocx} className={`${downloadButtonBaseClass} bg-blue-600 hover:bg-blue-700`}>Unduh DOCX (Template)</button>
                                             <button onClick={handleDownloadDoc} className={`${downloadButtonBaseClass} bg-gray-600 hover:bg-gray-700`}>Unduh DOC (Lama)</button>
                                             <button onClick={handleDownloadTxt} className={`${downloadButtonBaseClass} bg-emerald-500 hover:bg-emerald-600`}>Unduh TXT</button>
                                             <button onClick={handlePrint} className={`${downloadButtonBaseClass} bg-sky-500 hover:bg-sky-600`}>Cetak / PDF</button>
+                                            <button 
+                                                onClick={handleSaveToGoogleDocs} 
+                                                disabled={isSavingToDocs} 
+                                                className={`${downloadButtonBaseClass} bg-orange-600 hover:bg-orange-700 disabled:opacity-50 transition-all duration-300`}
+                                            >
+                                                {isSavingToDocs ? (
+                                                    <>
+                                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Menyimpan...
+                                                    </>
+                                                ) : 'Simpan ke Google Docs'}
+                                            </button>
                                         </div>
 
                                         <div className="flex justify-center border-t border-slate-100 pt-4">
