@@ -22,7 +22,7 @@ const TABS = [
 
 const emptyForm: LessonPlanInput = {
     provinsiKota: "", dinasPendidikan: "", satuanPendidikan: "SMP Negeri 3 Kerinci", alamatSekolah: "Jl. Lempur Tengah",
-    mataPelajaran: "", singkatan: "", kelasFase: "D / VII", tahunPelajaran: "", alokasiWaktu: "", jpPerMinggu: "",
+    mataPelajaran: "", singkatan: "", kelasFase: "Kelas VII", tahunPelajaran: "", alokasiWaktu: "", jpPerMinggu: "",
     durasiPertemuan: "", namaGuru: "", nipGuru: "", namaKepalaSekolah: "", nipKepalaSekolah: "", kotaTanggalTtd: "",
     elemenKode: "", cpUmum: "", cpPerElemen: "", kalenderPendidikan: "", rentangNilaiKktp: "",
     materi: "", jumlahPertemuan: "1 Pertemuan", jamPelajaran: "", pesertaDidik: "", dimensiProfilLulusan: [],

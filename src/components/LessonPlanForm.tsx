@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LessonPlanInput } from '../types';
-import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_FASE_OPTIONS, PRAKTIK_PEDAGOGIS_LAINNYA } from '../constants';
+import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_OPTIONS, PRAKTIK_PEDAGOGIS_LAINNYA } from '../constants';
 
 interface SessionCost {
   sessions: number;
@@ -37,7 +37,7 @@ const emptyForm: LessonPlanInput = {
   kalenderPendidikan: "",
   rentangNilaiKktp: "",
     mataPelajaran: '',
-    kelasFase: KELAS_FASE_OPTIONS[0],
+    kelasFase: KELAS_OPTIONS[0],
     materi: '',
     jumlahPertemuan: JUMLAH_PERTEMUAN_OPTIONS[0],
     jamPelajaran: '',
@@ -265,7 +265,7 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     onSubmit(dataToSubmit);
   };
 
-  const inputClass = "w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-white disabled:opacity-50";
+  const inputClass = "w-full p-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-slate-800 disabled:opacity-50";
   const labelClass = "block mb-2 text-sm font-bold text-slate-800";
   const fieldSetClass = "space-y-4";
   const stepTitles = ['Identitas Dasar', 'Desain Pembelajaran', 'Detail Tambahan (Opsional)'];
@@ -292,9 +292,9 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
                 {errors.mataPelajaran && <p className={errorTextClass}>{errors.mataPelajaran}</p>}
               </div>
               <div>
-                  <label htmlFor="kelasFase" className={labelClass}>Kelas/Fase</label>
+                  <label htmlFor="kelasFase" className={labelClass}>Kelas</label>
                   <select name="kelasFase" id="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass} >
-                      {KELAS_FASE_OPTIONS.map(opt => (
+                      {KELAS_OPTIONS.map(opt => (
                           <option key={opt} value={opt}>{opt}</option>
                       ))}
                   </select>
@@ -367,14 +367,14 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
                 
                 {suggestionError && <p className={`${errorTextClass} mt-2`}>{suggestionError}</p>}
                 {suggestions.length > 0 && !isSuggesting && (
-                    <div className="mt-2 space-y-2 bg-slate-900/50 p-3 rounded-lg">
-                        <p className="text-sm text-slate-300 mb-2">Pilih satu atau lebih saran untuk ditambahkan:</p>
+                    <div className="mt-2 space-y-2 bg-slate-50 p-4 border border-slate-200 rounded-lg">
+                        <p className="text-sm font-semibold text-slate-800 mb-2">Pilih satu atau lebih saran untuk ditambahkan:</p>
                         <div className="space-y-2">
                             {suggestions.map((suggestion, index) => (
-                                <label key={index} className="flex items-start p-2 bg-slate-700 hover:bg-slate-600 rounded-md text-slate-200 text-sm transition-colors cursor-pointer">
+                                <label key={index} className="flex items-start p-3 bg-white border border-slate-200 hover:bg-slate-50 rounded-md text-slate-700 text-sm transition-colors cursor-pointer">
                                     <input
                                         type="checkbox"
-                                        className="h-4 w-4 rounded bg-slate-800 border-slate-500 text-sky-500 focus:ring-sky-600 mt-1 mr-3 flex-shrink-0"
+                                        className="h-4 w-4 rounded bg-white border-slate-300 text-sky-600 focus:ring-sky-500 mt-1 mr-3 flex-shrink-0"
                                         checked={selectedSuggestions.includes(suggestion)}
                                         onChange={() => handleSuggestionSelectionChange(suggestion)}
                                     />

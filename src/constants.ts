@@ -8,20 +8,30 @@ export const JUMLAH_PERTEMUAN_OPTIONS = [
     "5 Kali Pertemuan"
 ] as const;
 
-export const KELAS_FASE_OPTIONS = [
-    "Kelas I / Fase A",
-    "Kelas II / Fase A",
-    "Kelas III / Fase B",
-    "Kelas IV / Fase B",
-    "Kelas V / Fase C",
-    "Kelas VI / Fase C",
-    "Kelas VII / Fase D",
-    "Kelas VIII / Fase D",
-    "Kelas IX / Fase D",
-    "Kelas X / Fase E",
-    "Kelas XI / Fase F",
-    "Kelas XII / Fase F"
+export const KELAS_OPTIONS = [
+    "Kelas I",
+    "Kelas II",
+    "Kelas III",
+    "Kelas IV",
+    "Kelas V",
+    "Kelas VI",
+    "Kelas VII",
+    "Kelas VIII",
+    "Kelas IX",
+    "Kelas X",
+    "Kelas XI",
+    "Kelas XII"
 ] as const;
+
+export const getFaseForKelas = (kelas: string): string => {
+    if (["Kelas I", "Kelas II"].includes(kelas)) return "Fase A";
+    if (["Kelas III", "Kelas IV"].includes(kelas)) return "Fase B";
+    if (["Kelas V", "Kelas VI"].includes(kelas)) return "Fase C";
+    if (["Kelas VII", "Kelas VIII", "Kelas IX"].includes(kelas)) return "Fase D";
+    if (kelas === "Kelas X") return "Fase E";
+    if (["Kelas XI", "Kelas XII"].includes(kelas)) return "Fase F";
+    return "";
+};
 
 export const DIMENSI_PROFIL_LULUSAN = [
     "Keimanan dan Ketakwaan terhadap Tuhan YME",

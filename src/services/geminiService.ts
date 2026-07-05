@@ -1,11 +1,24 @@
 import { LessonPlanInput } from '../types';
 
+const getFase = (k: string) => {
+    if (["Kelas I", "Kelas II"].includes(k)) return "Fase A";
+    if (["Kelas III", "Kelas IV"].includes(k)) return "Fase B";
+    if (["Kelas V", "Kelas VI"].includes(k)) return "Fase C";
+    if (["Kelas VII", "Kelas VIII", "Kelas IX"].includes(k)) return "Fase D";
+    if (k === "Kelas X") return "Fase E";
+    if (["Kelas XI", "Kelas XII"].includes(k)) return "Fase F";
+    return "";
+};
+
 export const generateLessonPlanPrompt = (input: LessonPlanInput): string => {
   const { 
     mataPelajaran, singkatan, kelasFase, tahunPelajaran, alokasiWaktu, jpPerMinggu, durasiPertemuan,
     materi, jumlahPertemuan, tujuanPembelajaran, praktikPedagogis,
     dimensiProfilLulusan
   } = input;
+
+  const fase = getFase(kelasFase);
+  const kelasFaseCombined = `${kelasFase} / ${fase}`;
 
   return `Anda adalah seorang ahli pengembangan kurikulum dan desainer instruksional yang sangat berpengalaman di Indonesia, ahli dalam Kurikulum Merdeka.
   
@@ -47,7 +60,7 @@ C. LAMPIRAN
 
 DATA INPUT:
 Mata Pelajaran: ${mataPelajaran} (${singkatan})
-Fase/Kelas: ${kelasFase}
+Fase/Kelas: ${kelasFaseCombined}
 Tahun Pelajaran: ${tahunPelajaran}
 Materi: ${materi}
 Jumlah Pertemuan: ${jumlahPertemuan} (Total JP: ${input.jamPelajaran})

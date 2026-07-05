@@ -1,6 +1,6 @@
 import React from 'react';
 import { LessonPlanInput } from '../types';
-import { KELAS_FASE_OPTIONS } from '../constants';
+import { KELAS_OPTIONS, getFaseForKelas } from '../constants';
 
 interface Props {
   formData: LessonPlanInput;
@@ -31,9 +31,9 @@ export const IdentityForm: React.FC<Props> = ({ formData, handleChange, onSubmit
           <input type="text" name="singkatan" value={formData.singkatan} onChange={handleChange} className={inputClass} placeholder="Contoh: MAT" />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Fase/Kelas</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Kelas <span className="text-slate-500 font-normal ml-1">({getFaseForKelas(formData.kelasFase)})</span></label>
           <select name="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass}>
-            {KELAS_FASE_OPTIONS.map(opt => (
+            {KELAS_OPTIONS.map(opt => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
           </select>

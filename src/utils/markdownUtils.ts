@@ -184,7 +184,13 @@ export function cleanMarkdownContent(markdown: string): string {
 // Main function to convert Markdown text to an HTML string
 export function markdownToHtml(markdown: string): string {
     const cleanedMarkdown = cleanMarkdownContent(markdown);
-    if (cleanedMarkdown.startsWith("<p>")) {
+    if (cleanedMarkdown.startsWith("<p>Tidak ada konten")) {
+        return cleanedMarkdown;
+    }
+
+    // If the content is already mostly HTML (e.g. from the AI instructed to return raw HTML),
+    // return it directly so we don't break the HTML structure by wrapping lines in <p> tags.
+    if (/<(?:table|h[1-6]|ul|ol|div|p)\b/i.test(cleanedMarkdown)) {
         return cleanedMarkdown;
     }
 

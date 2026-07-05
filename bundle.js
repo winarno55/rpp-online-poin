@@ -922,56 +922,6 @@ var init_types = __esm({
   }
 });
 
-// src/components/IdentityForm.tsx
-import { jsx as jsx14, jsxs as jsxs12 } from "react/jsx-runtime";
-var IdentityForm;
-var init_IdentityForm = __esm({
-  "src/components/IdentityForm.tsx"() {
-    "use strict";
-    IdentityForm = ({ formData, handleChange, onSubmit, isLoading, bundleCost }) => {
-      const inputClass = "w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all";
-      return /* @__PURE__ */ jsxs12("div", { className: "bg-white p-6 rounded-xl shadow-lg border border-slate-100", children: [
-        /* @__PURE__ */ jsx14("h2", { className: "text-2xl font-bold text-slate-800 mb-6 border-b pb-4", children: "Data Identitas & Kurikulum" }),
-        /* @__PURE__ */ jsxs12("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-6 mb-8", children: [
-          /* @__PURE__ */ jsxs12("div", { children: [
-            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Satuan Pendidikan" }),
-            /* @__PURE__ */ jsx14("input", { type: "text", name: "satuanPendidikan", value: formData.satuanPendidikan, onChange: handleChange, className: inputClass })
-          ] }),
-          /* @__PURE__ */ jsxs12("div", { children: [
-            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Mata Pelajaran" }),
-            /* @__PURE__ */ jsx14("input", { type: "text", name: "mataPelajaran", value: formData.mataPelajaran, onChange: handleChange, className: inputClass, placeholder: "Contoh: Matematika" })
-          ] }),
-          /* @__PURE__ */ jsxs12("div", { children: [
-            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Singkatan Mapel" }),
-            /* @__PURE__ */ jsx14("input", { type: "text", name: "singkatan", value: formData.singkatan, onChange: handleChange, className: inputClass, placeholder: "Contoh: MAT" })
-          ] }),
-          /* @__PURE__ */ jsxs12("div", { children: [
-            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Fase/Kelas" }),
-            /* @__PURE__ */ jsx14("input", { type: "text", name: "kelasFase", value: formData.kelasFase, onChange: handleChange, className: inputClass, placeholder: "Contoh: D / VII" })
-          ] }),
-          /* @__PURE__ */ jsxs12("div", { children: [
-            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Alokasi Waktu" }),
-            /* @__PURE__ */ jsx14("input", { type: "text", name: "alokasiWaktu", value: formData.alokasiWaktu, onChange: handleChange, className: inputClass })
-          ] }),
-          /* @__PURE__ */ jsxs12("div", { children: [
-            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "CP Umum" }),
-            /* @__PURE__ */ jsx14("textarea", { name: "cpUmum", value: formData.cpUmum, onChange: handleChange, className: inputClass, rows: 3 })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsx14("div", { className: "flex justify-end", children: /* @__PURE__ */ jsx14(
-          "button",
-          {
-            onClick: onSubmit,
-            disabled: isLoading,
-            className: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center gap-2",
-            children: isLoading ? "Sedang Memproses..." : `Generate Dokumen 1-6 (${bundleCost} Poin)`
-          }
-        ) })
-      ] });
-    };
-  }
-});
-
 // src/constants.ts
 var JUMLAH_PERTEMUAN_OPTIONS, KELAS_FASE_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_LAINNYA, PRAKTIK_PEDAGOGIS_OPTIONS;
 var init_constants = __esm({
@@ -1018,6 +968,57 @@ var init_constants = __esm({
       "Pembelajaran Berdiferensiasi (Differentiated Learning)",
       PRAKTIK_PEDAGOGIS_LAINNYA
     ];
+  }
+});
+
+// src/components/IdentityForm.tsx
+import { jsx as jsx14, jsxs as jsxs12 } from "react/jsx-runtime";
+var IdentityForm;
+var init_IdentityForm = __esm({
+  "src/components/IdentityForm.tsx"() {
+    "use strict";
+    init_constants();
+    IdentityForm = ({ formData, handleChange, onSubmit, isLoading, bundleCost }) => {
+      const inputClass = "w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all";
+      return /* @__PURE__ */ jsxs12("div", { className: "bg-white p-6 rounded-xl shadow-lg border border-slate-100", children: [
+        /* @__PURE__ */ jsx14("h2", { className: "text-2xl font-bold text-slate-800 mb-6 border-b pb-4", children: "Data Identitas & Kurikulum" }),
+        /* @__PURE__ */ jsxs12("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-6 mb-8", children: [
+          /* @__PURE__ */ jsxs12("div", { children: [
+            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Satuan Pendidikan" }),
+            /* @__PURE__ */ jsx14("input", { type: "text", name: "satuanPendidikan", value: formData.satuanPendidikan, onChange: handleChange, className: inputClass })
+          ] }),
+          /* @__PURE__ */ jsxs12("div", { children: [
+            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Mata Pelajaran" }),
+            /* @__PURE__ */ jsx14("input", { type: "text", name: "mataPelajaran", value: formData.mataPelajaran, onChange: handleChange, className: inputClass, placeholder: "Contoh: Matematika" })
+          ] }),
+          /* @__PURE__ */ jsxs12("div", { children: [
+            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Singkatan Mapel" }),
+            /* @__PURE__ */ jsx14("input", { type: "text", name: "singkatan", value: formData.singkatan, onChange: handleChange, className: inputClass, placeholder: "Contoh: MAT" })
+          ] }),
+          /* @__PURE__ */ jsxs12("div", { children: [
+            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Fase/Kelas" }),
+            /* @__PURE__ */ jsx14("select", { name: "kelasFase", value: formData.kelasFase, onChange: handleChange, className: inputClass, children: KELAS_FASE_OPTIONS.map((opt) => /* @__PURE__ */ jsx14("option", { value: opt, children: opt }, opt)) })
+          ] }),
+          /* @__PURE__ */ jsxs12("div", { children: [
+            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Alokasi Waktu" }),
+            /* @__PURE__ */ jsx14("input", { type: "text", name: "alokasiWaktu", value: formData.alokasiWaktu, onChange: handleChange, className: inputClass })
+          ] }),
+          /* @__PURE__ */ jsxs12("div", { children: [
+            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "CP Umum" }),
+            /* @__PURE__ */ jsx14("textarea", { name: "cpUmum", value: formData.cpUmum, onChange: handleChange, className: inputClass, rows: 3 })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx14("div", { className: "flex justify-end", children: /* @__PURE__ */ jsx14(
+          "button",
+          {
+            onClick: onSubmit,
+            disabled: isLoading,
+            className: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center gap-2",
+            children: isLoading ? "Sedang Memproses..." : `Generate Dokumen 1-6 (${bundleCost} Poin)`
+          }
+        ) })
+      ] });
+    };
   }
 });
 
@@ -1248,20 +1249,20 @@ ${newObjectives}` : newObjectives;
         }
         onSubmit(dataToSubmit);
       };
-      const inputClass = "w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-slate-100 disabled:opacity-50";
-      const labelClass = "block mb-2 text-sm font-medium text-sky-300";
+      const inputClass = "w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-white disabled:opacity-50";
+      const labelClass = "block mb-2 text-sm font-bold text-slate-800";
       const fieldSetClass = "space-y-4";
       const stepTitles = ["Identitas Dasar", "Desain Pembelajaran", "Detail Tambahan (Opsional)"];
-      const errorTextClass = "text-red-400 text-sm mt-1";
+      const errorTextClass = "text-red-600 text-sm mt-1 font-semibold";
       return /* @__PURE__ */ jsxs13("div", { className: "flex flex-col h-full", children: [
         /* @__PURE__ */ jsx15("div", { className: "flex-shrink-0", children: /* @__PURE__ */ jsxs13("div", { className: "mb-6", children: [
-          /* @__PURE__ */ jsxs13("h2", { className: "text-xl font-semibold text-white mb-3", children: [
+          /* @__PURE__ */ jsxs13("h2", { className: "text-xl font-bold text-slate-800 mb-3", children: [
             "Langkah ",
             step,
             " dari 3: ",
             stepTitles[step - 1]
           ] }),
-          /* @__PURE__ */ jsx15("div", { className: "flex w-full h-2 bg-slate-700 rounded-full overflow-hidden", children: /* @__PURE__ */ jsx15("div", { style: { width: `${step / 3 * 100}%` }, className: "bg-gradient-to-r from-sky-500 to-emerald-500 transition-all duration-500 ease-in-out rounded-full" }) })
+          /* @__PURE__ */ jsx15("div", { className: "flex w-full h-2 bg-slate-200 rounded-full overflow-hidden", children: /* @__PURE__ */ jsx15("div", { style: { width: `${step / 3 * 100}%` }, className: "bg-gradient-to-r from-sky-600 to-emerald-600 transition-all duration-500 ease-in-out rounded-full" }) })
         ] }) }),
         /* @__PURE__ */ jsxs13("div", { className: "flex-grow overflow-y-auto pr-2", children: [
           step === 1 && /* @__PURE__ */ jsxs13("fieldset", { className: fieldSetClass, children: [
@@ -1294,24 +1295,24 @@ ${newObjectives}` : newObjectives;
           step === 2 && /* @__PURE__ */ jsxs13("fieldset", { className: fieldSetClass, children: [
             /* @__PURE__ */ jsxs13("div", { children: [
               /* @__PURE__ */ jsx15("label", { className: labelClass, children: "Dimensi Profil Lulusan" }),
-              /* @__PURE__ */ jsx15("div", { className: "grid grid-cols-2 gap-x-4 gap-y-2", children: DIMENSI_PROFIL_LULUSAN.map((dim) => /* @__PURE__ */ jsxs13("label", { className: "flex items-center space-x-2 text-slate-200 cursor-pointer", children: [
+              /* @__PURE__ */ jsx15("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2", children: DIMENSI_PROFIL_LULUSAN.map((dim) => /* @__PURE__ */ jsxs13("label", { className: "flex items-center space-x-2 text-slate-700 cursor-pointer hover:text-sky-700 transition-colors", children: [
                 /* @__PURE__ */ jsx15(
                   "input",
                   {
                     type: "checkbox",
-                    className: "h-4 w-4 rounded bg-slate-600 border-slate-500 text-sky-500 focus:ring-sky-600",
+                    className: "h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500",
                     value: dim,
                     checked: formData.dimensiProfilLulusan.includes(dim),
                     onChange: () => handleDimensionChange(dim)
                   }
                 ),
-                /* @__PURE__ */ jsx15("span", { children: dim })
+                /* @__PURE__ */ jsx15("span", { className: "text-sm font-medium", children: dim })
               ] }, dim)) })
             ] }),
             /* @__PURE__ */ jsxs13("div", { children: [
               /* @__PURE__ */ jsxs13("label", { htmlFor: "capaianPembelajaran", className: labelClass, children: [
                 "Capaian Pembelajaran ",
-                /* @__PURE__ */ jsx15("span", { className: "text-slate-400 font-light", children: "(Opsional)" })
+                /* @__PURE__ */ jsx15("span", { className: "text-slate-500 font-normal", children: "(Opsional)" })
               ] }),
               /* @__PURE__ */ jsx15("textarea", { name: "capaianPembelajaran", id: "capaianPembelajaran", value: formData.capaianPembelajaran, onChange: handleChange, rows: 3, className: inputClass, placeholder: "Tuliskan capaian pembelajaran sesuai fase..." })
             ] }),
@@ -1393,35 +1394,35 @@ ${newObjectives}` : newObjectives;
             /* @__PURE__ */ jsxs13("div", { children: [
               /* @__PURE__ */ jsxs13("label", { htmlFor: "pesertaDidik", className: labelClass, children: [
                 "Peserta Didik ",
-                /* @__PURE__ */ jsx15("span", { className: "text-slate-400 font-light", children: "(Opsional)" })
+                /* @__PURE__ */ jsx15("span", { className: "text-slate-500 font-normal", children: "(Opsional)" })
               ] }),
               /* @__PURE__ */ jsx15("textarea", { name: "pesertaDidik", id: "pesertaDidik", value: formData.pesertaDidik, onChange: handleChange, rows: 3, className: inputClass, placeholder: "Identifikasi kesiapan, minat, atau kebutuhan belajar peserta didik..." })
             ] }),
             /* @__PURE__ */ jsxs13("div", { children: [
               /* @__PURE__ */ jsxs13("label", { htmlFor: "lintasDisiplinIlmu", className: labelClass, children: [
                 "Lintas Disiplin Ilmu ",
-                /* @__PURE__ */ jsx15("span", { className: "text-slate-400 font-light", children: "(Opsional)" })
+                /* @__PURE__ */ jsx15("span", { className: "text-slate-500 font-normal", children: "(Opsional)" })
               ] }),
               /* @__PURE__ */ jsx15("input", { type: "text", name: "lintasDisiplinIlmu", id: "lintasDisiplinIlmu", value: formData.lintasDisiplinIlmu, onChange: handleChange, className: inputClass, placeholder: "cth: Sosiologi, Ekonomi" })
             ] }),
             /* @__PURE__ */ jsxs13("div", { children: [
               /* @__PURE__ */ jsxs13("label", { htmlFor: "lingkunganPembelajaran", className: labelClass, children: [
                 "Lingkungan Pembelajaran ",
-                /* @__PURE__ */ jsx15("span", { className: "text-slate-400 font-light", children: "(Opsional)" })
+                /* @__PURE__ */ jsx15("span", { className: "text-slate-500 font-normal", children: "(Opsional)" })
               ] }),
               /* @__PURE__ */ jsx15("textarea", { name: "lingkunganPembelajaran", id: "lingkunganPembelajaran", value: formData.lingkunganPembelajaran, onChange: handleChange, rows: 3, className: inputClass, placeholder: "Jelaskan budaya belajar atau ruang fisik/virtual yang diinginkan..." })
             ] }),
             /* @__PURE__ */ jsxs13("div", { children: [
               /* @__PURE__ */ jsxs13("label", { htmlFor: "pemanfaatanDigital", className: labelClass, children: [
                 "Pemanfaatan Digital ",
-                /* @__PURE__ */ jsx15("span", { className: "text-slate-400 font-light", children: "(Opsional)" })
+                /* @__PURE__ */ jsx15("span", { className: "text-slate-500 font-normal", children: "(Opsional)" })
               ] }),
               /* @__PURE__ */ jsx15("textarea", { name: "pemanfaatanDigital", id: "pemanfaatanDigital", value: formData.pemanfaatanDigital, onChange: handleChange, rows: 3, className: inputClass, placeholder: "cth: Video pembelajaran, platform, perpustakaan digital..." })
             ] }),
             /* @__PURE__ */ jsxs13("div", { children: [
               /* @__PURE__ */ jsxs13("label", { htmlFor: "kemitraanPembelajaran", className: labelClass, children: [
                 "Kemitraan Pembelajaran ",
-                /* @__PURE__ */ jsx15("span", { className: "text-slate-400 font-light", children: "(Opsional)" })
+                /* @__PURE__ */ jsx15("span", { className: "text-slate-500 font-normal", children: "(Opsional)" })
               ] }),
               /* @__PURE__ */ jsx15("textarea", { name: "kemitraanPembelajaran", id: "kemitraanPembelajaran", value: formData.kemitraanPembelajaran, onChange: handleChange, rows: 3, className: inputClass, placeholder: "cth: Kolaborasi dengan guru mapel lain, orang tua, komunitas..." })
             ] })
@@ -9514,15 +9515,16 @@ function escapeHtml(text) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 function parseInlineMarkdownToHtmlSpans(text) {
-  let html = escapeHtml(text);
+  const hasHtml = /<[a-z][\s\S]*>/i.test(text);
+  let html = hasHtml ? text : escapeHtml(text);
   html = html.replace(/(?<!\w)\*\*(?!\s)(.+?)(?<!\s)\*\*(?!\w)/g, "<strong>$1</strong>");
   html = html.replace(/(?<!\w)\*(?!\s)(.+?)(?<!\s)\*(?!\w)/g, "<em>$1</em>");
   html = html.replace(/\*\*(.*?)\*\*/g, (match, p1) => {
-    if (p1.includes("<strong>") || p1.includes("&lt;strong&gt;")) return match;
+    if (p1.includes("<strong>") || p1.includes("&lt;strong&gt;") || hasHtml && p1.includes("<")) return match;
     return `<strong>${p1}</strong>`;
   });
   html = html.replace(/\*(.*?)\*/g, (match, p1) => {
-    if (p1.includes("<em>") || p1.includes("&lt;em&gt;")) return match;
+    if (p1.includes("<em>") || p1.includes("&lt;em&gt;") || hasHtml && p1.includes("<")) return match;
     return `<em>${p1}</em>`;
   });
   return html;
@@ -9656,7 +9658,10 @@ function cleanMarkdownContent(markdown) {
 }
 function markdownToHtml(markdown) {
   const cleanedMarkdown = cleanMarkdownContent(markdown);
-  if (cleanedMarkdown.startsWith("<p>")) {
+  if (cleanedMarkdown.startsWith("<p>Tidak ada konten")) {
+    return cleanedMarkdown;
+  }
+  if (/<(?:table|h[1-6]|ul|ol|div|p)\b/i.test(cleanedMarkdown)) {
     return cleanedMarkdown;
   }
   let lines = cleanedMarkdown.split("\n");
@@ -9986,22 +9991,35 @@ var init_HomePage = __esm({
         let tps = [];
         tables.forEach((table) => {
           const rows = table.querySelectorAll("tr");
-          rows.forEach((row) => {
-            const cells = row.querySelectorAll("td, th");
-            let rowText = row.textContent || "";
-            if (rowText.includes("TP") || cells.length >= 4) {
-              if (cells[0].tagName.toLowerCase() === "td") {
-                tps.push({
-                  kode: cells[0]?.textContent?.trim(),
-                  tujuan: cells[1]?.textContent?.trim(),
-                  materi: cells[2]?.textContent?.trim(),
-                  alokasi: cells[3]?.textContent?.trim()
-                });
+          let headerIndices = { kode: -1, tujuan: -1, materi: -1, alokasi: -1 };
+          rows.forEach((row, rowIndex) => {
+            const cells = Array.from(row.querySelectorAll("td, th"));
+            if (rowIndex < 2) {
+              cells.forEach((cell, cellIndex) => {
+                const text = cell.textContent?.toLowerCase() || "";
+                if (text.includes("kode") || text.includes("tp")) headerIndices.kode = cellIndex;
+                if (text.includes("tujuan") || text.includes("pembelajaran")) headerIndices.tujuan = cellIndex;
+                if (text.includes("materi")) headerIndices.materi = cellIndex;
+                if (text.includes("alokasi") || text.includes("jp") || text.includes("waktu")) headerIndices.alokasi = cellIndex;
+              });
+            }
+            if (cells.length >= 2) {
+              const rowText = row.textContent?.toLowerCase() || "";
+              const isHeader = rowText.includes("kode") || rowText.includes("tujuan") || rowText.includes("alokasi");
+              if (!isHeader) {
+                const kode = headerIndices.kode !== -1 ? cells[headerIndices.kode]?.textContent?.trim() : cells[0]?.textContent?.trim();
+                const tujuan = headerIndices.tujuan !== -1 ? cells[headerIndices.tujuan]?.textContent?.trim() : cells[1]?.textContent?.trim();
+                const materi = headerIndices.materi !== -1 ? cells[headerIndices.materi]?.textContent?.trim() : cells[2]?.textContent?.trim();
+                const alokasi = headerIndices.alokasi !== -1 ? cells[headerIndices.alokasi]?.textContent?.trim() : cells[3]?.textContent?.trim();
+                if (tujuan && tujuan.length > 5) {
+                  tps.push({ kode, tujuan, materi, alokasi });
+                }
               }
             }
           });
         });
-        setExtractedTPs(tps);
+        const uniqueTPs = Array.from(new Set(tps.map((t) => JSON.stringify(t)))).map((t) => JSON.parse(t));
+        setExtractedTPs(uniqueTPs);
       };
       const handleGenerateBundle = async () => {
         setError(null);

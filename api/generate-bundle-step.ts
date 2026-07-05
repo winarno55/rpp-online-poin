@@ -116,6 +116,18 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 }
 
 function constructPromptForStep(step: number, input: any, previousDocs: any): string {
+    const getFase = (k: string) => {
+        if (["Kelas I", "Kelas II"].includes(k)) return "Fase A";
+        if (["Kelas III", "Kelas IV"].includes(k)) return "Fase B";
+        if (["Kelas V", "Kelas VI"].includes(k)) return "Fase C";
+        if (["Kelas VII", "Kelas VIII", "Kelas IX"].includes(k)) return "Fase D";
+        if (k === "Kelas X") return "Fase E";
+        if (["Kelas XI", "Kelas XII"].includes(k)) return "Fase F";
+        return "";
+    };
+    const fase = getFase(input.kelasFase);
+    const kelasFaseCombined = `${input.kelasFase} / ${fase}`;
+
     const commonRules = `
 ATURAN WAJIB (STRICT INSTRUCTIONS):
 1. HANYA hasilkan kode HTML murni tanpa membungkusnya dengan markdown \`\`\`html.
@@ -129,7 +141,7 @@ ATURAN WAJIB (STRICT INSTRUCTIONS):
     const identityData = `
 Mata Pelajaran: ${input.mataPelajaran}
 Singkatan Mapel: ${input.singkatan}
-Kelas/Fase: ${input.kelasFase}
+Kelas/Fase: ${kelasFaseCombined}
 Tahun Pelajaran: ${input.tahunPelajaran}
 Alokasi Waktu: ${input.alokasiWaktu}
 JP per Minggu: ${input.jpPerMinggu}
