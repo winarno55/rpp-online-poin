@@ -10,6 +10,29 @@ export interface LessonPlanTemplate {
 }
 
 export interface LessonPlanInput {
+  // Data Identitas Baru
+  provinsiKota: string;
+  dinasPendidikan: string;
+  satuanPendidikan: string;
+  alamatSekolah: string;
+  singkatan: string;
+  tahunPelajaran: string;
+  alokasiWaktu: string;
+  jpPerMinggu: string;
+  durasiPertemuan: string;
+  namaGuru: string;
+  nipGuru: string;
+  namaKepalaSekolah: string;
+  nipKepalaSekolah: string;
+  kotaTanggalTtd: string;
+
+  // Data Kurikulum Dasar
+  elemenKode: string;
+  cpUmum: string;
+  cpPerElemen: string;
+  kalenderPendidikan: string;
+  rentangNilaiKktp: string;
+
   mataPelajaran: string;
   kelasFase: string;
   materi: string;

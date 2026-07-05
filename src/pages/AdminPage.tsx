@@ -31,6 +31,7 @@ interface PricingConfig {
     pointPackages: PointPackage[];
     paymentMethods: PaymentMethod[];
     sessionCosts: SessionCost[];
+    bundleCost: number;
 }
 
 const AdminPage: React.FC = () => {
@@ -50,7 +51,7 @@ const AdminPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     // State untuk pricing config
-    const [pricingConfig, setPricingConfig] = useState<PricingConfig>({ pointPackages: [], paymentMethods: [], sessionCosts: [] });
+    const [pricingConfig, setPricingConfig] = useState<PricingConfig>({ pointPackages: [], paymentMethods: [], sessionCosts: [], bundleCost: 50 });
     const [isSavingConfig, setIsSavingConfig] = useState(false);
     const [configMessage, setConfigMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const maxSessions = 5;
@@ -341,6 +342,16 @@ const AdminPage: React.FC = () => {
             <div className="bg-slate-800 shadow-2xl rounded-xl p-6 sm:p-8 w-full max-w-4xl mx-auto">
                  <h2 className="text-3xl font-bold text-white mb-6">Pengaturan Harga & Pembayaran</h2>
                  <div className="space-y-8">
+                    {/* Bundle Cost */}
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold text-emerald-300 mb-4">Biaya Bundle Dokumen 1-6 (Poin)</h3>
+                        <div className="flex items-center gap-4 p-3 bg-slate-700/50 rounded-lg">
+                            <span className="font-medium text-slate-300 w-40">Dokumen 1-6</span>
+                            <input type="number" value={pricingConfig.bundleCost || 50} onChange={(e) => setPricingConfig({...pricingConfig, bundleCost: Number(e.target.value)})} className={`${inputClass} w-40 text-center`} />
+                            <span className="text-slate-400">Poin</span>
+                        </div>
+                    </div>
+
                     {/* Session Costs */}
                     <div>
                          <h3 className="text-xl font-semibold text-sky-300 mb-4">Biaya Pembuatan Modul Ajar (Poin)</h3>

@@ -20,6 +20,7 @@ export interface IPaymentMethod extends Document {
 
 // Interface untuk dokumen utama PricingConfig
 export interface IPricingConfig extends Document {
+  bundleCost: number;
   pointPackages: IPointPackage[];
   paymentMethods: IPaymentMethod[];
   sessionCosts: ISessionCost[];
@@ -44,6 +45,7 @@ const PricingConfigSchema: Schema<IPricingConfig> = new Schema({
   pointPackages: [PointPackageSchema],
   paymentMethods: [PaymentMethodSchema],
   sessionCosts: [SessionCostSchema],
+  bundleCost: { type: Number, default: 50 },
 }, { timestamps: true });
 
 

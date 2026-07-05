@@ -23,6 +23,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         config = { 
             pointPackages: [],
             paymentMethods: [],
+            bundleCost: 50,
             sessionCosts: [
                 { sessions: 1, cost: 20 },
                 { sessions: 2, cost: 40 },

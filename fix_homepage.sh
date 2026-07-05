@@ -1,3 +1,5 @@
+#!/bin/bash
+cat << 'INNEREOF' > src/pages/HomePage.tsx
 import { fetchWithRetry } from "../utils/fetchWithRetry";
 import React, { useState, useEffect, useRef } from 'react';
 import { LessonPlanInput, initDB, addRppToHistory } from '../types';
@@ -21,7 +23,7 @@ const TABS = [
 ];
 
 const emptyForm: LessonPlanInput = {
-    provinsiKota: "", dinasPendidikan: "", satuanPendidikan: "SMP Negeri 3 Kerinci", alamatSekolah: "Jl. Lempur Tengah",
+    provinsiKota: "", dinasPendidikan: "", satuanPendidikan: "SMP Negeri 3 Kerinci", alamatSekolah: "Jl. Lempur Tengah, Kec. Gunung Raya, Kab. Kerinci",
     mataPelajaran: "", singkatan: "", kelasFase: "D / VII", tahunPelajaran: "", alokasiWaktu: "", jpPerMinggu: "",
     durasiPertemuan: "", namaGuru: "", nipGuru: "", namaKepalaSekolah: "", nipKepalaSekolah: "", kotaTanggalTtd: "",
     elemenKode: "", cpUmum: "", cpPerElemen: "", kalenderPendidikan: "", rentangNilaiKktp: "",
@@ -117,6 +119,7 @@ const HomePage: React.FC = () => {
         }
         setIsLoadingStep(0);
         
+        // Deduct points locally for UI since we charged on step 1
         const bundleCost = pricingConfig?.bundleCost || 50;
         updatePoints(Math.max(0, (authData.user?.points || 0) - bundleCost));
         
@@ -152,14 +155,16 @@ const HomePage: React.FC = () => {
                     if (done) break;
                     const chunk = decoder.decode(value, { stream: true });
                     accumulatedMarkdown += chunk;
-                    setModulHtml(accumulatedMarkdown);
+                    setModulHtml(markdownToHtml(accumulatedMarkdown));
                 }
                 
+                // Deduct UI points based on cost calculation
                 const numSessions = parseInt(data.jumlahPertemuan) || 1;
                 const costConfig = pricingConfig?.sessionCosts.find((sc:any) => sc.sessions === numSessions);
                 const cost = costConfig ? costConfig.cost : 0;
                 updatePoints(Math.max(0, newPoints - cost));
                 
+                // Save to history
                 try {
                     await addRppToHistory(data, accumulatedMarkdown);
                 } catch (e) {
@@ -170,15 +175,6 @@ const HomePage: React.FC = () => {
             setError(err.message);
         } finally {
             setIsGeneratingModul(false);
-        }
-    };
-
-    const handleDownloadDoc = async (htmlContent: string, fileName: string, isLandscape: boolean = false) => {
-        try {
-            const { exportToWord } = await import('../utils/docxUtils');
-            exportToWord(htmlContent, fileName, isLandscape ? 'landscape' : 'portrait');
-        } catch (e: any) {
-            setError('Gagal membuat DOC: ' + e.message);
         }
     };
 
@@ -254,10 +250,7 @@ const HomePage: React.FC = () => {
                     <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-100 min-h-[11in]">
                         <div className="flex justify-between items-center mb-6 no-print">
                             <h2 className="text-2xl font-bold text-slate-800">{TABS[activeTab]}</h2>
-                            <div className="flex gap-2">
-                                <button onClick={() => handleDownloadDoc(docs[activeTab] || '', `Dokumen_${activeTab}_${formData.mataPelajaran}`, activeTab >= 3 && activeTab <= 6)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">Unduh DOC</button>
-                                <button onClick={() => printDocument(docs[activeTab] || '', activeTab >= 3 && activeTab <= 6)} className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">Cetak / PDF</button>
-                            </div>
+                            <button onClick={() => printDocument(docs[activeTab] || '', activeTab >= 3 && activeTab <= 6)} className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">Cetak / PDF</button>
                         </div>
                         {docs[activeTab] ? (
                             <div className="prose max-w-none text-slate-800" dangerouslySetInnerHTML={{ __html: docs[activeTab] }} />
@@ -305,7 +298,6 @@ const HomePage: React.FC = () => {
                                 <div className="flex justify-between items-center mb-6 no-print">
                                     <h2 className="text-2xl font-bold text-slate-800">Preview Modul Ajar</h2>
                                     <div className="flex gap-2">
-                                        <button onClick={() => handleDownloadDoc(modulHtml || '', `ModulAjar_${formData.mataPelajaran}`, false)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">Unduh DOC</button>
                                         <button onClick={() => setIsEditingModul(!isEditingModul)} className="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">
                                             {isEditingModul ? 'Simpan' : 'Edit'}
                                         </button>
@@ -327,3 +319,6 @@ const HomePage: React.FC = () => {
 };
 
 export default HomePage;
+INNEREOF
+chmod +x fix_homepage.sh
+./fix_homepage.sh
