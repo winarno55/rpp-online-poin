@@ -159,14 +159,16 @@ export const saveToGoogleDocs = async (
   const delimiter = `\r\n--${boundary}\r\n`;
   const closeDelim = `\r\n--${boundary}--`;
 
-  const body =
-    delimiter +
+  const rawBody =
+    `--${boundary}\r\n` +
     'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
     JSON.stringify(metadata) +
     delimiter +
     'Content-Type: text/html; charset=UTF-8\r\n\r\n' +
     styledHtml +
     closeDelim;
+
+  const body = rawBody.replace(/\r?\n/g, '\r\n');
 
   const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
     method: 'POST',
