@@ -69,61 +69,28 @@ export const saveToGoogleDocs = async (
   title: string,
   accessToken: string
 ): Promise<{ id: string; url: string }> => {
-  // Professional, elegant layout styling
+  // To avoid Google Drive API 500 Internal Error during HTML conversion,
+  // we apply inline styles instead of a <style> block, as the Google Docs
+  // importer can crash on specific CSS blocks like border-collapse.
+  let styledHtmlContent = htmlContent
+    .replace(/<h1/g, '<h1 style="font-size: 20pt; font-weight: bold; color: #0369a1; text-align: center;"')
+    .replace(/<h2/g, '<h2 style="font-size: 14pt; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1;"')
+    .replace(/<h3/g, '<h3 style="font-size: 12pt; font-weight: bold; color: #334155;"')
+    .replace(/<table/g, '<table style="width: 100%; border-collapse: collapse; margin-bottom: 10pt;"')
+    .replace(/<th/g, '<th style="background-color: #f1f5f9; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; text-align: left;"')
+    .replace(/<td/g, '<td style="padding: 8px; border: 1px solid #cbd5e1; text-align: left;"')
+    .replace(/<ul/g, '<ul style="padding-left: 20pt; margin-bottom: 10pt;"')
+    .replace(/<ol/g, '<ol style="padding-left: 20pt; margin-bottom: 10pt;"')
+    .replace(/<li/g, '<li style="margin-bottom: 4pt;"')
+    .replace(/<p/g, '<p style="margin-bottom: 10pt;"');
+
   const styledHtml = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    font-size: 11pt;
-    line-height: 1.5;
-    color: #1e293b;
-  }
-  h1 {
-    font-size: 20pt;
-    font-weight: bold;
-    color: #0369a1;
-    text-align: center;
-  }
-  h2 {
-    font-size: 14pt;
-    font-weight: bold;
-    color: #0f766e;
-    border-bottom: 1px solid #cbd5e1;
-  }
-  h3 {
-    font-size: 12pt;
-    font-weight: bold;
-    color: #334155;
-  }
-  p {
-    margin-bottom: 10pt;
-  }
-  table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-  th, td {
-    border: 1px solid #cbd5e1;
-    padding: 8px;
-    text-align: left;
-  }
-  th {
-    background-color: #f1f5f9;
-    font-weight: bold;
-  }
-  ul, ol {
-    padding-left: 20pt;
-  }
-  li {
-    margin-bottom: 4pt;
-  }
-</style>
 </head>
-<body>
-  ${htmlContent}
+<body style="font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #1e293b;">
+  ${styledHtmlContent}
 </body>
 </html>`;
 
@@ -134,25 +101,26 @@ export const saveToGoogleDocs = async (
 
   const boundary = 'rpp_generator_google_docs_boundary';
 
-  // Constructing multipart/related body as a standard raw string to prevent the browser's fetch API
-  // from stripping the crucial "boundary" parameter from the Content-Type header.
-  const body = [
-    `--${boundary}`,
-    'Content-Type: application/json; charset=UTF-8',
-    '',
+  // Constructing multipart/related body using Blob.
+  // This ensures the browser automatically sets the correct Content-Length
+  // and properly handles UTF-8 multibyte characters.
+  const body = new Blob([
+    `--${boundary}\r\n`,
+    'Content-Type: application/json; charset=UTF-8\r\n\r\n',
     JSON.stringify(metadata),
-    `--${boundary}`,
-    'Content-Type: text/html; charset=UTF-8',
-    '',
+    `\r\n--${boundary}\r\n`,
+    'Content-Type: text/html; charset=UTF-8\r\n\r\n',
     styledHtml,
-    `--${boundary}--`
-  ].join('\r\n');
+    `\r\n--${boundary}--\r\n`
+  ], { type: `multipart/related; boundary=${boundary}` });
 
   const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': `multipart/related; boundary=${boundary}`,
+      'Authorization': `Bearer ${accessToken}`
+      // Note: We DO NOT set 'Content-Type' here. fetch will automatically
+      // set it to the Blob's type ('multipart/related; boundary=...') 
+      // along with the correct Content-Length.
     },
     body: body
   });
@@ -163,6 +131,7 @@ export const saveToGoogleDocs = async (
   }
 
   const result = await response.json();
+
   if (!result.id) {
     throw new Error('Gagal mendapatkan ID file dari Google Drive');
   }
