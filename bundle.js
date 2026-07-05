@@ -1282,6 +1282,35 @@ ${newObjectives}` : newObjectives;
         ] }) }),
         /* @__PURE__ */ jsxs13("div", { className: "flex-grow overflow-y-auto pr-2", children: [
           step === 1 && /* @__PURE__ */ jsxs13("fieldset", { className: fieldSetClass, children: [
+            /* @__PURE__ */ jsxs13("div", { className: "bg-slate-100 p-4 rounded-lg mb-6 border border-slate-200", children: [
+              /* @__PURE__ */ jsx15("h3", { className: "font-bold text-slate-700 mb-3 text-sm", children: "Identitas Sekolah & Guru" }),
+              /* @__PURE__ */ jsxs13("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
+                /* @__PURE__ */ jsxs13("div", { className: "md:col-span-2", children: [
+                  /* @__PURE__ */ jsx15("label", { htmlFor: "satuanPendidikan", className: labelClass, children: "Nama Sekolah" }),
+                  /* @__PURE__ */ jsx15("input", { type: "text", name: "satuanPendidikan", id: "satuanPendidikan", value: formData.satuanPendidikan, onChange: handleChange, className: inputClass, placeholder: "cth: SMP Negeri 1 Jakarta" })
+                ] }),
+                /* @__PURE__ */ jsxs13("div", { children: [
+                  /* @__PURE__ */ jsx15("label", { htmlFor: "namaGuru", className: labelClass, children: "Nama Guru" }),
+                  /* @__PURE__ */ jsx15("input", { type: "text", name: "namaGuru", id: "namaGuru", value: formData.namaGuru, onChange: handleChange, className: inputClass, placeholder: "Nama Guru Lengkap" })
+                ] }),
+                /* @__PURE__ */ jsxs13("div", { children: [
+                  /* @__PURE__ */ jsx15("label", { htmlFor: "nipGuru", className: labelClass, children: "NIP Guru" }),
+                  /* @__PURE__ */ jsx15("input", { type: "text", name: "nipGuru", id: "nipGuru", value: formData.nipGuru, onChange: handleChange, className: inputClass, placeholder: "NIP / NUPTK (opsional)" })
+                ] }),
+                /* @__PURE__ */ jsxs13("div", { children: [
+                  /* @__PURE__ */ jsx15("label", { htmlFor: "namaKepalaSekolah", className: labelClass, children: "Nama Kepala Sekolah" }),
+                  /* @__PURE__ */ jsx15("input", { type: "text", name: "namaKepalaSekolah", id: "namaKepalaSekolah", value: formData.namaKepalaSekolah, onChange: handleChange, className: inputClass, placeholder: "Nama Kepsek" })
+                ] }),
+                /* @__PURE__ */ jsxs13("div", { children: [
+                  /* @__PURE__ */ jsx15("label", { htmlFor: "nipKepalaSekolah", className: labelClass, children: "NIP Kepala Sekolah" }),
+                  /* @__PURE__ */ jsx15("input", { type: "text", name: "nipKepalaSekolah", id: "nipKepalaSekolah", value: formData.nipKepalaSekolah, onChange: handleChange, className: inputClass, placeholder: "NIP (opsional)" })
+                ] }),
+                /* @__PURE__ */ jsxs13("div", { className: "md:col-span-2", children: [
+                  /* @__PURE__ */ jsx15("label", { htmlFor: "kotaTanggalTtd", className: labelClass, children: "Kota & Tanggal Tanda Tangan" }),
+                  /* @__PURE__ */ jsx15("input", { type: "text", name: "kotaTanggalTtd", id: "kotaTanggalTtd", value: formData.kotaTanggalTtd, onChange: handleChange, className: inputClass, placeholder: "cth: Jakarta, 15 Juli 2024" })
+                ] })
+              ] })
+            ] }),
             /* @__PURE__ */ jsxs13("div", { children: [
               /* @__PURE__ */ jsx15("label", { htmlFor: "mataPelajaran", className: labelClass, children: "Mata Pelajaran" }),
               /* @__PURE__ */ jsx15("input", { type: "text", name: "mataPelajaran", id: "mataPelajaran", value: formData.mataPelajaran, onChange: handleChange, className: inputClass, placeholder: "cth: Bahasa Indonesia, Matematika" }),
@@ -9857,6 +9886,65 @@ var init_markdownUtils = __esm({
   }
 });
 
+// src/utils/documentApi.ts
+var saveDocument, getDocuments, updateDocument, deleteDocument;
+var init_documentApi = __esm({
+  "src/utils/documentApi.ts"() {
+    "use strict";
+    saveDocument = async (title, type, data) => {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/documents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...token ? { "Authorization": `Bearer ${token}` } : {}
+        },
+        body: JSON.stringify({ title, type, data })
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed to save document");
+      return json.data;
+    };
+    getDocuments = async () => {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/documents", {
+        headers: {
+          ...token ? { "Authorization": `Bearer ${token}` } : {}
+        }
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed to get documents");
+      return json.data;
+    };
+    updateDocument = async (id, title, data) => {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/documents?id=${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...token ? { "Authorization": `Bearer ${token}` } : {}
+        },
+        body: JSON.stringify({ title, data })
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed to update document");
+      return json.data;
+    };
+    deleteDocument = async (id) => {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/documents?id=${id}`, {
+        method: "DELETE",
+        headers: {
+          ...token ? { "Authorization": `Bearer ${token}` } : {}
+        }
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed to delete document");
+      return json.message;
+    };
+  }
+});
+
 // src/utils/docxUtils.ts
 var docxUtils_exports = {};
 __export(docxUtils_exports, {
@@ -9934,6 +10022,7 @@ var init_HomePage = __esm({
     init_useAuth();
     init_googleDocs();
     init_markdownUtils();
+    init_documentApi();
     TABS = [
       "Identitas & Kurikulum",
       "1. Analisis CP",
@@ -9992,13 +10081,19 @@ var init_HomePage = __esm({
       const [modulHtml, setModulHtml] = useState8(null);
       const [isGeneratingModul, setIsGeneratingModul] = useState8(false);
       const [isEditingModul, setIsEditingModul] = useState8(false);
+      const [savedDocuments, setSavedDocuments] = useState8([]);
+      const [isSaving, setIsSaving] = useState8(false);
+      const [activeDocumentId, setActiveDocumentId] = useState8(null);
       useEffect6(() => {
         initGoogleAuth((u, t) => {
         }, () => {
         });
         initDB().catch(console.error);
         fetch("/api/pricing/config").then((res) => res.json()).then(setPricingConfig).catch(console.error);
-      }, []);
+        if (authData?.token) {
+          getDocuments().then(setSavedDocuments).catch(console.error);
+        }
+      }, [authData?.token]);
       const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
       };
@@ -10038,6 +10133,65 @@ var init_HomePage = __esm({
         });
         const uniqueTPs = Array.from(new Set(tps.map((t) => JSON.stringify(t)))).map((t) => JSON.parse(t));
         setExtractedTPs(uniqueTPs);
+      };
+      const handleSave = async () => {
+        if (!authData?.token) {
+          setError("Silakan login untuk menyimpan dokumen.");
+          return;
+        }
+        setIsSaving(true);
+        setError(null);
+        try {
+          const title = `${appMode === "bundle" ? "Bundle" : "Modul"} ${formData.mataPelajaran || "Tanpa Judul"} - ${(/* @__PURE__ */ new Date()).toLocaleDateString("id-ID")}`;
+          const dataToSave = {
+            formData,
+            docs,
+            modulHtml
+          };
+          if (activeDocumentId) {
+            await updateDocument(activeDocumentId, title, dataToSave);
+          } else {
+            const newDoc = await saveDocument(title, appMode, dataToSave);
+            setActiveDocumentId(newDoc._id);
+          }
+          const updatedDocs = await getDocuments();
+          setSavedDocuments(updatedDocs);
+          alert("Dokumen berhasil disimpan!");
+        } catch (e) {
+          setError(e.message || "Gagal menyimpan dokumen");
+        } finally {
+          setIsSaving(false);
+        }
+      };
+      const loadDocument = (doc) => {
+        setAppMode(doc.type);
+        setFormData(doc.data.formData || emptyForm2);
+        setDocs(doc.data.docs || {});
+        setModulHtml(doc.data.modulHtml || null);
+        setActiveDocumentId(doc._id);
+        setActiveTab(doc.type === "bundle" ? 0 : 7);
+      };
+      const handleDeleteDocument = async (e, id) => {
+        e.stopPropagation();
+        if (!window.confirm("Apakah Anda yakin ingin menghapus dokumen ini?")) return;
+        try {
+          await deleteDocument(id);
+          if (activeDocumentId === id) {
+            handleCreateNew("select");
+          }
+          const updatedDocs = await getDocuments();
+          setSavedDocuments(updatedDocs);
+        } catch (err) {
+          alert(err.message || "Gagal menghapus dokumen");
+        }
+      };
+      const handleCreateNew = (mode) => {
+        setFormData(emptyForm2);
+        setDocs({});
+        setModulHtml(null);
+        setActiveDocumentId(null);
+        setAppMode(mode);
+        setActiveTab(mode === "bundle" ? 0 : 7);
       };
       const handleGenerateBundle = async () => {
         setError(null);
@@ -10161,64 +10315,82 @@ var init_HomePage = __esm({
         }
       };
       return /* @__PURE__ */ jsxs14("div", { className: "flex flex-col md:flex-row gap-6 min-h-screen", children: [
-        appMode === "select" && /* @__PURE__ */ jsx18("div", { className: "flex-1 flex items-center justify-center py-12", children: /* @__PURE__ */ jsxs14("div", { className: "max-w-4xl w-full", children: [
-          /* @__PURE__ */ jsxs14("div", { className: "text-center mb-10", children: [
-            /* @__PURE__ */ jsx18("h2", { className: "text-3xl font-bold text-slate-800 mb-4", children: "Mulai Buat Perangkat Ajar" }),
-            /* @__PURE__ */ jsx18("p", { className: "text-slate-600", children: "Pilih mode pembuatan dokumen sesuai dengan kebutuhan dan sisa poin Anda." })
+        appMode === "select" && /* @__PURE__ */ jsxs14("div", { className: "flex-1 flex flex-col items-center justify-center py-12", children: [
+          /* @__PURE__ */ jsxs14("div", { className: "max-w-4xl w-full", children: [
+            /* @__PURE__ */ jsxs14("div", { className: "text-center mb-10", children: [
+              /* @__PURE__ */ jsx18("h2", { className: "text-3xl font-bold text-slate-800 mb-4", children: "Mulai Buat Perangkat Ajar" }),
+              /* @__PURE__ */ jsx18("p", { className: "text-slate-600", children: "Pilih mode pembuatan dokumen sesuai dengan kebutuhan dan sisa poin Anda." })
+            ] }),
+            /* @__PURE__ */ jsxs14("div", { className: "grid md:grid-cols-2 gap-8", children: [
+              /* @__PURE__ */ jsxs14(
+                "div",
+                {
+                  className: "bg-white rounded-2xl shadow-xl border border-slate-200 p-8 hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer flex flex-col",
+                  onClick: () => handleCreateNew("modul_ajar"),
+                  children: [
+                    /* @__PURE__ */ jsx18("div", { className: "w-14 h-14 bg-sky-100 rounded-2xl flex items-center justify-center mb-6 text-sky-600", children: /* @__PURE__ */ jsx18("svg", { className: "w-8 h-8", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx18("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" }) }) }),
+                    /* @__PURE__ */ jsx18("h3", { className: "text-2xl font-bold text-slate-800 mb-3", children: "Modul Ajar Saja" }),
+                    /* @__PURE__ */ jsx18("p", { className: "text-slate-600 mb-6 flex-1", children: "Cocok untuk mencoba secara gratis (Trial) dengan mengisi topik dan TP secara mandiri. Langsung buat RPP/Modul Ajar tanpa perlu membuat CP/ATP/Prota/Promes terlebih dahulu." }),
+                    /* @__PURE__ */ jsx18("div", { className: "mt-auto", children: /* @__PURE__ */ jsx18("span", { className: "inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold", children: "Gratis 200 Poin Awal" }) })
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxs14(
+                "div",
+                {
+                  className: "bg-slate-800 rounded-2xl shadow-xl border border-slate-700 p-8 hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer flex flex-col",
+                  onClick: () => handleCreateNew("bundle"),
+                  children: [
+                    /* @__PURE__ */ jsx18("div", { className: "w-14 h-14 bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-6 text-indigo-400", children: /* @__PURE__ */ jsx18("svg", { className: "w-8 h-8", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx18("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" }) }) }),
+                    /* @__PURE__ */ jsx18("h3", { className: "text-2xl font-bold text-white mb-3", children: "Bundle Lengkap (Satu Semester)" }),
+                    /* @__PURE__ */ jsx18("p", { className: "text-slate-300 mb-6 flex-1", children: "Isi identitas satu kali, sistem akan secara otomatis membuatkan Dokumen Analisis CP, Tujuan Pembelajaran, ATP, Prota, Promes, KKTP, hingga ke Modul Ajar." }),
+                    /* @__PURE__ */ jsx18("div", { className: "mt-auto", children: /* @__PURE__ */ jsxs14("span", { className: "inline-flex items-center px-3 py-1 rounded-full bg-indigo-500/30 text-indigo-300 text-sm font-semibold", children: [
+                      "Membutuhkan ",
+                      pricingConfig?.bundleCost || 50,
+                      " Poin / Bundle"
+                    ] }) })
+                  ]
+                }
+              )
+            ] })
           ] }),
-          /* @__PURE__ */ jsxs14("div", { className: "grid md:grid-cols-2 gap-8", children: [
-            /* @__PURE__ */ jsxs14(
-              "div",
-              {
-                className: "bg-white rounded-2xl shadow-xl border border-slate-200 p-8 hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer flex flex-col",
-                onClick: () => {
-                  setAppMode("modul_ajar");
-                  setActiveTab(7);
-                },
-                children: [
-                  /* @__PURE__ */ jsx18("div", { className: "w-14 h-14 bg-sky-100 rounded-2xl flex items-center justify-center mb-6 text-sky-600", children: /* @__PURE__ */ jsx18("svg", { className: "w-8 h-8", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx18("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" }) }) }),
-                  /* @__PURE__ */ jsx18("h3", { className: "text-2xl font-bold text-slate-800 mb-3", children: "Modul Ajar Saja" }),
-                  /* @__PURE__ */ jsx18("p", { className: "text-slate-600 mb-6 flex-1", children: "Cocok untuk mencoba secara gratis (Trial) dengan mengisi topik dan TP secara mandiri. Langsung buat RPP/Modul Ajar tanpa perlu membuat CP/ATP/Prota/Promes terlebih dahulu." }),
-                  /* @__PURE__ */ jsx18("div", { className: "mt-auto", children: /* @__PURE__ */ jsx18("span", { className: "inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold", children: "Gratis 200 Poin Awal" }) })
-                ]
-              }
-            ),
-            /* @__PURE__ */ jsxs14(
-              "div",
-              {
-                className: "bg-slate-800 rounded-2xl shadow-xl border border-slate-700 p-8 hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer flex flex-col",
-                onClick: () => {
-                  setAppMode("bundle");
-                  setActiveTab(0);
-                },
-                children: [
-                  /* @__PURE__ */ jsx18("div", { className: "w-14 h-14 bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-6 text-indigo-400", children: /* @__PURE__ */ jsx18("svg", { className: "w-8 h-8", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx18("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" }) }) }),
-                  /* @__PURE__ */ jsx18("h3", { className: "text-2xl font-bold text-white mb-3", children: "Bundle Lengkap (Satu Semester)" }),
-                  /* @__PURE__ */ jsx18("p", { className: "text-slate-300 mb-6 flex-1", children: "Isi identitas satu kali, sistem akan secara otomatis membuatkan Dokumen Analisis CP, Tujuan Pembelajaran, ATP, Prota, Promes, KKTP, hingga ke Modul Ajar." }),
-                  /* @__PURE__ */ jsx18("div", { className: "mt-auto", children: /* @__PURE__ */ jsxs14("span", { className: "inline-flex items-center px-3 py-1 rounded-full bg-indigo-500/30 text-indigo-300 text-sm font-semibold", children: [
-                    "Membutuhkan ",
-                    pricingConfig?.bundleCost || 50,
-                    " Poin / Bundle"
-                  ] }) })
-                ]
-              }
-            )
+          authData?.token && savedDocuments.length > 0 && /* @__PURE__ */ jsxs14("div", { className: "max-w-4xl w-full mt-12 mb-12", children: [
+            /* @__PURE__ */ jsx18("h3", { className: "text-2xl font-bold text-slate-800 mb-6", children: "Dokumen Tersimpan" }),
+            /* @__PURE__ */ jsx18("div", { className: "grid md:grid-cols-2 lg:grid-cols-3 gap-6", children: savedDocuments.map((doc) => /* @__PURE__ */ jsxs14("div", { className: "relative bg-white rounded-xl shadow-md border border-slate-200 p-6 hover:shadow-lg transition-all cursor-pointer flex flex-col", onClick: () => loadDocument(doc), children: [
+              /* @__PURE__ */ jsxs14("div", { className: "flex items-center justify-between mb-3", children: [
+                /* @__PURE__ */ jsx18("span", { className: `text-xs font-semibold px-2 py-1 rounded-md ${doc.type === "bundle" ? "bg-indigo-100 text-indigo-700" : "bg-sky-100 text-sky-700"}`, children: doc.type === "bundle" ? "Bundle" : "Modul" }),
+                /* @__PURE__ */ jsx18("span", { className: "text-xs text-slate-500", children: new Date(doc.updatedAt).toLocaleDateString("id-ID") })
+              ] }),
+              /* @__PURE__ */ jsx18("h4", { className: "font-bold text-slate-800 line-clamp-2 pr-8", children: doc.title }),
+              /* @__PURE__ */ jsx18("button", { onClick: (e) => handleDeleteDocument(e, doc._id), className: "absolute bottom-4 right-4 text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors", title: "Hapus Dokumen", children: /* @__PURE__ */ jsx18("svg", { className: "w-5 h-5", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx18("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" }) }) })
+            ] }, doc._id)) })
           ] })
-        ] }) }),
+        ] }),
         appMode !== "select" && /* @__PURE__ */ jsxs14(Fragment3, { children: [
           appMode === "bundle" && /* @__PURE__ */ jsxs14("div", { className: "w-full md:w-64 flex-shrink-0 bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700 h-fit sticky top-8", children: [
             /* @__PURE__ */ jsx18("h3", { className: "text-white font-bold mb-4 text-lg border-b border-slate-600 pb-2", children: "Menu Dokumen" }),
-            /* @__PURE__ */ jsx18("ul", { className: "space-y-2", children: TABS.map((tab, idx) => /* @__PURE__ */ jsx18("li", { children: /* @__PURE__ */ jsxs14(
-              "button",
-              {
-                onClick: () => setActiveTab(idx),
-                className: `w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${activeTab === idx ? "bg-sky-600 text-white font-semibold" : "text-slate-300 hover:bg-slate-700"}`,
-                children: [
-                  tab,
-                  isLoadingStep === idx && /* @__PURE__ */ jsx18("span", { className: "ml-2 animate-pulse text-sky-300", children: "\u23F3" })
-                ]
-              }
-            ) }, idx)) })
+            /* @__PURE__ */ jsxs14("ul", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsx18("li", { children: /* @__PURE__ */ jsx18(
+                "button",
+                {
+                  onClick: () => setAppMode("select"),
+                  className: "w-full text-left px-4 py-2 rounded-lg text-sm transition-colors text-slate-300 hover:bg-slate-700 flex items-center mb-4",
+                  children: "\u2190 Kembali"
+                }
+              ) }),
+              TABS.map((tab, idx) => /* @__PURE__ */ jsx18("li", { children: /* @__PURE__ */ jsxs14(
+                "button",
+                {
+                  onClick: () => setActiveTab(idx),
+                  className: `w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${activeTab === idx ? "bg-sky-600 text-white font-semibold" : "text-slate-300 hover:bg-slate-700"}`,
+                  children: [
+                    tab,
+                    isLoadingStep === idx && /* @__PURE__ */ jsx18("span", { className: "ml-2 animate-pulse text-sky-300", children: "\u23F3" })
+                  ]
+                }
+              ) }, idx))
+            ] }),
+            /* @__PURE__ */ jsx18("div", { className: "mt-6 pt-4 border-t border-slate-600", children: /* @__PURE__ */ jsx18("button", { onClick: handleSave, disabled: isSaving, className: "w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm", children: isSaving ? "Menyimpan..." : activeDocumentId ? "Simpan Perubahan" : "Simpan Bundle" }) })
           ] }),
           appMode === "modul_ajar" && /* @__PURE__ */ jsxs14("div", { className: "w-full md:w-64 flex-shrink-0 bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700 h-fit sticky top-8", children: [
             /* @__PURE__ */ jsx18("h3", { className: "text-white font-bold mb-4 text-lg border-b border-slate-600 pb-2", children: "Navigasi" }),
@@ -10238,7 +10410,8 @@ var init_HomePage = __esm({
                   children: "Modul Ajar"
                 }
               ) })
-            ] })
+            ] }),
+            /* @__PURE__ */ jsx18("div", { className: "mt-6 pt-4 border-t border-slate-600", children: /* @__PURE__ */ jsx18("button", { onClick: handleSave, disabled: isSaving, className: "w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm", children: isSaving ? "Menyimpan..." : activeDocumentId ? "Simpan Perubahan" : "Simpan Modul" }) })
           ] }),
           /* @__PURE__ */ jsxs14("div", { className: "flex-1 w-full max-w-[8.5in]", children: [
             error && /* @__PURE__ */ jsx18("div", { className: "bg-red-100 text-red-700 p-4 rounded-lg mb-6 border border-red-200", children: error }),

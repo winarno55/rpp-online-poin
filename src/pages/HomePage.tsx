@@ -8,6 +8,7 @@ import { LessonPlanEditor } from '../components/LessonPlanEditor';
 import { useAuth } from '../hooks/useAuth';
 import { initGoogleAuth } from '../utils/googleDocs';
 import { markdownToHtml } from '../utils/markdownUtils';
+import { getDocuments, saveDocument, updateDocument, deleteDocument, SavedDocument } from '../utils/documentApi';
 
 const TABS = [
     'Identitas & Kurikulum', 
@@ -45,12 +46,19 @@ const HomePage: React.FC = () => {
     const [modulHtml, setModulHtml] = useState<string | null>(null);
     const [isGeneratingModul, setIsGeneratingModul] = useState(false);
     const [isEditingModul, setIsEditingModul] = useState(false);
+    const [savedDocuments, setSavedDocuments] = useState<SavedDocument[]>([]);
+    const [isSaving, setIsSaving] = useState(false);
+    const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
     
     useEffect(() => {
         initGoogleAuth((u, t) => {}, () => {});
         initDB().catch(console.error);
         fetch('/api/pricing/config').then(res => res.json()).then(setPricingConfig).catch(console.error);
-    }, []);
+        
+        if (authData?.token) {
+            getDocuments().then(setSavedDocuments).catch(console.error);
+        }
+    }, [authData?.token]);
 
     const handleChange = (e: any) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -102,6 +110,72 @@ const HomePage: React.FC = () => {
         // Remove duplicates and empty ones
         const uniqueTPs = Array.from(new Set(tps.map(t => JSON.stringify(t)))).map(t => JSON.parse(t));
         setExtractedTPs(uniqueTPs);
+    };
+
+    
+    const handleSave = async () => {
+        if (!authData?.token) {
+            setError("Silakan login untuk menyimpan dokumen.");
+            return;
+        }
+        setIsSaving(true);
+        setError(null);
+        try {
+            const title = `${appMode === 'bundle' ? 'Bundle' : 'Modul'} ${formData.mataPelajaran || 'Tanpa Judul'} - ${new Date().toLocaleDateString('id-ID')}`;
+            const dataToSave = {
+                formData,
+                docs,
+                modulHtml
+            };
+            if (activeDocumentId) {
+                await updateDocument(activeDocumentId, title, dataToSave);
+            } else {
+                const newDoc = await saveDocument(title, appMode, dataToSave);
+                setActiveDocumentId(newDoc._id);
+            }
+            
+            // Refresh saved docs
+            const updatedDocs = await getDocuments();
+            setSavedDocuments(updatedDocs);
+            alert('Dokumen berhasil disimpan!');
+        } catch (e: any) {
+            setError(e.message || "Gagal menyimpan dokumen");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+    
+    const loadDocument = (doc: SavedDocument) => {
+        setAppMode(doc.type);
+        setFormData(doc.data.formData || emptyForm);
+        setDocs(doc.data.docs || {});
+        setModulHtml(doc.data.modulHtml || null);
+        setActiveDocumentId(doc._id);
+        setActiveTab(doc.type === 'bundle' ? 0 : 7);
+    };
+    
+    
+    const handleDeleteDocument = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (!window.confirm("Apakah Anda yakin ingin menghapus dokumen ini?")) return;
+        try {
+            await deleteDocument(id);
+            if (activeDocumentId === id) {
+                handleCreateNew('select' as any);
+            }
+            const updatedDocs = await getDocuments();
+            setSavedDocuments(updatedDocs);
+        } catch (err: any) {
+            alert(err.message || 'Gagal menghapus dokumen');
+        }
+    };
+    const handleCreateNew = (mode: 'bundle' | 'modul_ajar') => {
+        setFormData(emptyForm);
+        setDocs({});
+        setModulHtml(null);
+        setActiveDocumentId(null);
+        setAppMode(mode);
+        setActiveTab(mode === 'bundle' ? 0 : 7);
     };
 
     const handleGenerateBundle = async () => {
@@ -242,7 +316,7 @@ const HomePage: React.FC = () => {
     return (
         <div className="flex flex-col md:flex-row gap-6 min-h-screen">
             {appMode === 'select' && (
-                <div className="flex-1 flex items-center justify-center py-12">
+                <div className="flex-1 flex flex-col items-center justify-center py-12">
                     <div className="max-w-4xl w-full">
                         <div className="text-center mb-10">
                             <h2 className="text-3xl font-bold text-slate-800 mb-4">Mulai Buat Perangkat Ajar</h2>
@@ -251,7 +325,7 @@ const HomePage: React.FC = () => {
                         <div className="grid md:grid-cols-2 gap-8">
                             {/* Card Modul Ajar Saja */}
                             <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer flex flex-col"
-                                 onClick={() => { setAppMode('modul_ajar'); setActiveTab(7); }}>
+                                 onClick={() => handleCreateNew('modul_ajar')}>
                                 <div className="w-14 h-14 bg-sky-100 rounded-2xl flex items-center justify-center mb-6 text-sky-600">
                                     <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -266,7 +340,7 @@ const HomePage: React.FC = () => {
 
                             {/* Card Bundle Lengkap */}
                             <div className="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 p-8 hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer flex flex-col"
-                                 onClick={() => { setAppMode('bundle'); setActiveTab(0); }}>
+                                 onClick={() => handleCreateNew('bundle')}>
                                 <div className="w-14 h-14 bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-6 text-indigo-400">
                                     <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -280,6 +354,29 @@ const HomePage: React.FC = () => {
                             </div>
                         </div>
                     </div>
+                        
+                    {/* Saved Documents Section */}
+                    {authData?.token && savedDocuments.length > 0 && (
+                        <div className="max-w-4xl w-full mt-12 mb-12">
+                            <h3 className="text-2xl font-bold text-slate-800 mb-6">Dokumen Tersimpan</h3>
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {savedDocuments.map(doc => (
+                                    <div key={doc._id} className="relative bg-white rounded-xl shadow-md border border-slate-200 p-6 hover:shadow-lg transition-all cursor-pointer flex flex-col" onClick={() => loadDocument(doc)}>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className={`text-xs font-semibold px-2 py-1 rounded-md ${doc.type === 'bundle' ? 'bg-indigo-100 text-indigo-700' : 'bg-sky-100 text-sky-700'}`}>
+                                                {doc.type === 'bundle' ? 'Bundle' : 'Modul'}
+                                            </span>
+                                            <span className="text-xs text-slate-500">{new Date(doc.updatedAt).toLocaleDateString('id-ID')}</span>
+                                        </div>
+                                        <h4 className="font-bold text-slate-800 line-clamp-2 pr-8">{doc.title}</h4>
+                                        <button onClick={(e) => handleDeleteDocument(e, doc._id)} className="absolute bottom-4 right-4 text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors" title="Hapus Dokumen">
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -290,6 +387,15 @@ const HomePage: React.FC = () => {
                         <div className="w-full md:w-64 flex-shrink-0 bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700 h-fit sticky top-8">
                             <h3 className="text-white font-bold mb-4 text-lg border-b border-slate-600 pb-2">Menu Dokumen</h3>
                             <ul className="space-y-2">
+                                
+                                <li>
+                                    <button 
+                                        onClick={() => setAppMode('select')}
+                                        className="w-full text-left px-4 py-2 rounded-lg text-sm transition-colors text-slate-300 hover:bg-slate-700 flex items-center mb-4"
+                                    >
+                                        ← Kembali
+                                    </button>
+                                </li>
                                 {TABS.map((tab, idx) => (
                                     <li key={idx}>
                                         <button 
@@ -302,6 +408,11 @@ const HomePage: React.FC = () => {
                                     </li>
                                 ))}
                             </ul>
+                            <div className="mt-6 pt-4 border-t border-slate-600">
+                                <button onClick={handleSave} disabled={isSaving} className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm">
+                                    {isSaving ? 'Menyimpan...' : (activeDocumentId ? 'Simpan Perubahan' : 'Simpan Bundle')}
+                                </button>
+                            </div>
                         </div>
                     )}
                     
@@ -325,6 +436,11 @@ const HomePage: React.FC = () => {
                                     </button>
                                 </li>
                             </ul>
+                            <div className="mt-6 pt-4 border-t border-slate-600">
+                                <button onClick={handleSave} disabled={isSaving} className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm">
+                                    {isSaving ? 'Menyimpan...' : (activeDocumentId ? 'Simpan Perubahan' : 'Simpan Modul')}
+                                </button>
+                            </div>
                         </div>
                     )}
 
