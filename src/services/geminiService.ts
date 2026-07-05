@@ -32,6 +32,9 @@ ATURAN WAJIB (STRICT INSTRUCTIONS):
 5. Setiap Header Tabel (<th>) wajib menggunakan warna latar belakang Biru Tua (#1a3a5c) dengan teks putih tebal.
 6. Integrasikan istilah "Dimensi Profil Lulusan" sesuai pilihan pengguna.
 7. Penomoran kode dokumen harus taat struktur: [Singkatan Mapel]-[Fase/Kelas]-[Kode Elemen]-[Nomor Urut].
+8. Di bagian paling akhir dokumen (setelah Daftar Pustaka), WAJIB tambahkan blok tanda tangan (Mengetahui Kepala Sekolah dan Guru Mata Pelajaran) menggunakan format tabel tanpa garis (border="0" style="border:none; width:100%; margin-top:40px;") yang rapi, memuat nama dan NIP: Kepala Sekolah (${input.namaKepalaSekolah}, NIP: ${input.nipKepalaSekolah}), Guru (${input.namaGuru}, NIP: ${input.nipGuru}), dan Tempat/Tanggal (${input.kotaTanggalTtd}).
+9. Pertimbangkan tahap perkembangan kognitif anak pada jenjang/fase tersebut sesuai Standar Proses pendidikan di Indonesia.
+10. Bagian Asesmen (Diagnostik, Formatif, Sumatif) HARUS SANGAT JELAS dan DETAIL. Jangan hanya menyebutkan jenisnya, tapi berikan contoh instrumen nyata (misalnya 3 contoh soal) dan rubrik penilaian (kriteria dan skor).
 
 STRUKTUR MODUL YANG DIHARAPKAN:
 A. INFORMASI UMUM
@@ -47,8 +50,8 @@ B. KOMPONEN INTI
 - Pemahaman Bermakna
 - Pertanyaan Pemantik
 - Kegiatan Pembelajaran (Pendahuluan, Inti, Penutup) dipecah per pertemuan (${jumlahPertemuan}).
-  - Gunakan sintaks model pembelajaran yang sesuai dengan ${praktikPedagogis}.
-  - Berikan detail instruksi guru dan aktivitas siswa.
+  - WAJIB gunakan sintaks model pembelajaran yang sesuai dengan ${praktikPedagogis}.
+  - Berikan detail instruksi aktivitas guru dan peserta didik yang SANGAT OPERASIONAL, interaktif, dan sesuai dengan Standar Proses pendidikan di Indonesia (termasuk penguatan literasi, numerasi, dan Profil Pelajar Pancasila).
 - Asesmen (Diagnostik, Formatif, Sumatif) dengan rubrik yang jelas.
 
 C. LAMPIRAN

@@ -923,7 +923,7 @@ var init_types = __esm({
 });
 
 // src/constants.ts
-var JUMLAH_PERTEMUAN_OPTIONS, KELAS_FASE_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_LAINNYA, PRAKTIK_PEDAGOGIS_OPTIONS;
+var JUMLAH_PERTEMUAN_OPTIONS, KELAS_OPTIONS, getFaseForKelas, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_LAINNYA, PRAKTIK_PEDAGOGIS_OPTIONS;
 var init_constants = __esm({
   "src/constants.ts"() {
     "use strict";
@@ -934,20 +934,29 @@ var init_constants = __esm({
       "4 Kali Pertemuan",
       "5 Kali Pertemuan"
     ];
-    KELAS_FASE_OPTIONS = [
-      "Kelas I / Fase A",
-      "Kelas II / Fase A",
-      "Kelas III / Fase B",
-      "Kelas IV / Fase B",
-      "Kelas V / Fase C",
-      "Kelas VI / Fase C",
-      "Kelas VII / Fase D",
-      "Kelas VIII / Fase D",
-      "Kelas IX / Fase D",
-      "Kelas X / Fase E",
-      "Kelas XI / Fase F",
-      "Kelas XII / Fase F"
+    KELAS_OPTIONS = [
+      "Kelas I",
+      "Kelas II",
+      "Kelas III",
+      "Kelas IV",
+      "Kelas V",
+      "Kelas VI",
+      "Kelas VII",
+      "Kelas VIII",
+      "Kelas IX",
+      "Kelas X",
+      "Kelas XI",
+      "Kelas XII"
     ];
+    getFaseForKelas = (kelas) => {
+      if (["Kelas I", "Kelas II"].includes(kelas)) return "Fase A";
+      if (["Kelas III", "Kelas IV"].includes(kelas)) return "Fase B";
+      if (["Kelas V", "Kelas VI"].includes(kelas)) return "Fase C";
+      if (["Kelas VII", "Kelas VIII", "Kelas IX"].includes(kelas)) return "Fase D";
+      if (kelas === "Kelas X") return "Fase E";
+      if (["Kelas XI", "Kelas XII"].includes(kelas)) return "Fase F";
+      return "";
+    };
     DIMENSI_PROFIL_LULUSAN = [
       "Keimanan dan Ketakwaan terhadap Tuhan YME",
       "Kewargaan",
@@ -996,8 +1005,15 @@ var init_IdentityForm = __esm({
             /* @__PURE__ */ jsx14("input", { type: "text", name: "singkatan", value: formData.singkatan, onChange: handleChange, className: inputClass, placeholder: "Contoh: MAT" })
           ] }),
           /* @__PURE__ */ jsxs12("div", { children: [
-            /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Fase/Kelas" }),
-            /* @__PURE__ */ jsx14("select", { name: "kelasFase", value: formData.kelasFase, onChange: handleChange, className: inputClass, children: KELAS_FASE_OPTIONS.map((opt) => /* @__PURE__ */ jsx14("option", { value: opt, children: opt }, opt)) })
+            /* @__PURE__ */ jsxs12("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: [
+              "Kelas ",
+              /* @__PURE__ */ jsxs12("span", { className: "text-slate-500 font-normal ml-1", children: [
+                "(",
+                getFaseForKelas(formData.kelasFase),
+                ")"
+              ] })
+            ] }),
+            /* @__PURE__ */ jsx14("select", { name: "kelasFase", value: formData.kelasFase, onChange: handleChange, className: inputClass, children: KELAS_OPTIONS.map((opt) => /* @__PURE__ */ jsx14("option", { value: opt, children: opt }, opt)) })
           ] }),
           /* @__PURE__ */ jsxs12("div", { children: [
             /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Alokasi Waktu" }),
@@ -1051,7 +1067,7 @@ var init_LessonPlanForm = __esm({
       kalenderPendidikan: "",
       rentangNilaiKktp: "",
       mataPelajaran: "",
-      kelasFase: KELAS_FASE_OPTIONS[0],
+      kelasFase: KELAS_OPTIONS[0],
       materi: "",
       jumlahPertemuan: JUMLAH_PERTEMUAN_OPTIONS[0],
       jamPelajaran: "",
@@ -1249,7 +1265,7 @@ ${newObjectives}` : newObjectives;
         }
         onSubmit(dataToSubmit);
       };
-      const inputClass = "w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-white disabled:opacity-50";
+      const inputClass = "w-full p-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-slate-800 disabled:opacity-50";
       const labelClass = "block mb-2 text-sm font-bold text-slate-800";
       const fieldSetClass = "space-y-4";
       const stepTitles = ["Identitas Dasar", "Desain Pembelajaran", "Detail Tambahan (Opsional)"];
@@ -1272,8 +1288,8 @@ ${newObjectives}` : newObjectives;
               errors.mataPelajaran && /* @__PURE__ */ jsx15("p", { className: errorTextClass, children: errors.mataPelajaran })
             ] }),
             /* @__PURE__ */ jsxs13("div", { children: [
-              /* @__PURE__ */ jsx15("label", { htmlFor: "kelasFase", className: labelClass, children: "Kelas/Fase" }),
-              /* @__PURE__ */ jsx15("select", { name: "kelasFase", id: "kelasFase", value: formData.kelasFase, onChange: handleChange, className: inputClass, children: KELAS_FASE_OPTIONS.map((opt) => /* @__PURE__ */ jsx15("option", { value: opt, children: opt }, opt)) })
+              /* @__PURE__ */ jsx15("label", { htmlFor: "kelasFase", className: labelClass, children: "Kelas" }),
+              /* @__PURE__ */ jsx15("select", { name: "kelasFase", id: "kelasFase", value: formData.kelasFase, onChange: handleChange, className: inputClass, children: KELAS_OPTIONS.map((opt) => /* @__PURE__ */ jsx15("option", { value: opt, children: opt }, opt)) })
             ] }),
             /* @__PURE__ */ jsxs13("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
               /* @__PURE__ */ jsxs13("div", { children: [
@@ -1287,8 +1303,9 @@ ${newObjectives}` : newObjectives;
               ] })
             ] }),
             /* @__PURE__ */ jsxs13("div", { children: [
-              /* @__PURE__ */ jsx15("label", { htmlFor: "materi", className: labelClass, children: "Materi" }),
-              /* @__PURE__ */ jsx15("input", { type: "text", name: "materi", id: "materi", value: formData.materi, onChange: handleChange, className: inputClass, placeholder: "Tuliskan topik pembelajaran" }),
+              /* @__PURE__ */ jsx15("label", { htmlFor: "materi", className: labelClass, children: "Materi Pembelajaran" }),
+              /* @__PURE__ */ jsx15("input", { type: "text", name: "materi", id: "materi", value: formData.materi, onChange: handleChange, className: inputClass, placeholder: "Contoh: Bilangan Bulat (Materi bisa diambil dari TP)" }),
+              /* @__PURE__ */ jsx15("p", { className: "text-xs text-slate-500 mt-1", children: "Topik spesifik yang akan diajarkan, biasanya berkaitan dengan Tujuan Pembelajaran." }),
               errors.materi && /* @__PURE__ */ jsx15("p", { className: errorTextClass, children: errors.materi })
             ] })
           ] }),
@@ -1340,14 +1357,14 @@ ${newObjectives}` : newObjectives;
               /* @__PURE__ */ jsx15("textarea", { name: "tujuanPembelajaran", id: "tujuanPembelajaran", value: formData.tujuanPembelajaran, onChange: handleChange, rows: 4, className: inputClass, placeholder: "Tuliskan tujuan pembelajaran atau klik dapatkan saran AI di atas..." }),
               errors.tujuanPembelajaran && /* @__PURE__ */ jsx15("p", { className: errorTextClass, children: errors.tujuanPembelajaran }),
               suggestionError && /* @__PURE__ */ jsx15("p", { className: `${errorTextClass} mt-2`, children: suggestionError }),
-              suggestions.length > 0 && !isSuggesting && /* @__PURE__ */ jsxs13("div", { className: "mt-2 space-y-2 bg-slate-900/50 p-3 rounded-lg", children: [
-                /* @__PURE__ */ jsx15("p", { className: "text-sm text-slate-300 mb-2", children: "Pilih satu atau lebih saran untuk ditambahkan:" }),
-                /* @__PURE__ */ jsx15("div", { className: "space-y-2", children: suggestions.map((suggestion, index) => /* @__PURE__ */ jsxs13("label", { className: "flex items-start p-2 bg-slate-700 hover:bg-slate-600 rounded-md text-slate-200 text-sm transition-colors cursor-pointer", children: [
+              suggestions.length > 0 && !isSuggesting && /* @__PURE__ */ jsxs13("div", { className: "mt-2 space-y-2 bg-slate-50 p-4 border border-slate-200 rounded-lg", children: [
+                /* @__PURE__ */ jsx15("p", { className: "text-sm font-semibold text-slate-800 mb-2", children: "Pilih satu atau lebih saran untuk ditambahkan:" }),
+                /* @__PURE__ */ jsx15("div", { className: "space-y-2", children: suggestions.map((suggestion, index) => /* @__PURE__ */ jsxs13("label", { className: "flex items-start p-3 bg-white border border-slate-200 hover:bg-slate-50 rounded-md text-slate-700 text-sm transition-colors cursor-pointer", children: [
                   /* @__PURE__ */ jsx15(
                     "input",
                     {
                       type: "checkbox",
-                      className: "h-4 w-4 rounded bg-slate-800 border-slate-500 text-sky-500 focus:ring-sky-600 mt-1 mr-3 flex-shrink-0",
+                      className: "h-4 w-4 rounded bg-white border-slate-300 text-sky-600 focus:ring-sky-500 mt-1 mr-3 flex-shrink-0",
                       checked: selectedSuggestions.includes(suggestion),
                       onChange: () => handleSuggestionSelectionChange(suggestion)
                     }
@@ -9903,7 +9920,7 @@ __export(HomePage_exports, {
   default: () => HomePage_default
 });
 import { useState as useState8, useEffect as useEffect6 } from "react";
-import { jsx as jsx18, jsxs as jsxs14 } from "react/jsx-runtime";
+import { Fragment as Fragment3, jsx as jsx18, jsxs as jsxs14 } from "react/jsx-runtime";
 var TABS, emptyForm2, HomePage, HomePage_default;
 var init_HomePage = __esm({
   "src/pages/HomePage.tsx"() {
@@ -9934,7 +9951,7 @@ var init_HomePage = __esm({
       alamatSekolah: "Jl. Lempur Tengah",
       mataPelajaran: "",
       singkatan: "",
-      kelasFase: "D / VII",
+      kelasFase: "Kelas VII",
       tahunPelajaran: "",
       alokasiWaktu: "",
       jpPerMinggu: "",
@@ -9964,6 +9981,7 @@ var init_HomePage = __esm({
     };
     HomePage = () => {
       const { authData, updatePoints } = useAuth();
+      const [appMode, setAppMode] = useState8("select");
       const [activeTab, setActiveTab] = useState8(0);
       const [formData, setFormData] = useState8(emptyForm2);
       const [pricingConfig, setPricingConfig] = useState8(null);
@@ -10143,87 +10161,153 @@ var init_HomePage = __esm({
         }
       };
       return /* @__PURE__ */ jsxs14("div", { className: "flex flex-col md:flex-row gap-6 min-h-screen", children: [
-        /* @__PURE__ */ jsxs14("div", { className: "w-full md:w-64 flex-shrink-0 bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700 h-fit sticky top-8", children: [
-          /* @__PURE__ */ jsx18("h3", { className: "text-white font-bold mb-4 text-lg border-b border-slate-600 pb-2", children: "Menu Dokumen" }),
-          /* @__PURE__ */ jsx18("ul", { className: "space-y-2", children: TABS.map((tab, idx) => /* @__PURE__ */ jsx18("li", { children: /* @__PURE__ */ jsxs14(
-            "button",
-            {
-              onClick: () => setActiveTab(idx),
-              className: `w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${activeTab === idx ? "bg-sky-600 text-white font-semibold" : "text-slate-300 hover:bg-slate-700"}`,
-              children: [
-                tab,
-                isLoadingStep === idx && /* @__PURE__ */ jsx18("span", { className: "ml-2 animate-pulse text-sky-300", children: "\u23F3" })
-              ]
-            }
-          ) }, idx)) })
-        ] }),
-        /* @__PURE__ */ jsxs14("div", { className: "flex-1 w-full max-w-[8.5in]", children: [
-          error && /* @__PURE__ */ jsx18("div", { className: "bg-red-100 text-red-700 p-4 rounded-lg mb-6 border border-red-200", children: error }),
-          activeTab === 0 && /* @__PURE__ */ jsx18(
-            IdentityForm,
-            {
-              formData,
-              handleChange,
-              onSubmit: handleGenerateBundle,
-              isLoading: isLoadingStep > 0,
-              bundleCost: pricingConfig?.bundleCost || 50
-            }
-          ),
-          activeTab > 0 && activeTab < 7 && /* @__PURE__ */ jsxs14("div", { className: "bg-white p-8 rounded-xl shadow-lg border border-slate-100 min-h-[11in]", children: [
-            /* @__PURE__ */ jsxs14("div", { className: "flex justify-between items-center mb-6 no-print", children: [
-              /* @__PURE__ */ jsx18("h2", { className: "text-2xl font-bold text-slate-800", children: TABS[activeTab] }),
-              /* @__PURE__ */ jsxs14("div", { className: "flex gap-2", children: [
-                /* @__PURE__ */ jsx18("button", { onClick: () => handleDownloadDoc(docs[activeTab] || "", `Dokumen_${activeTab}_${formData.mataPelajaran}`, activeTab >= 3 && activeTab <= 6), className: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold", children: "Unduh DOC" }),
-                /* @__PURE__ */ jsx18("button", { onClick: () => printDocument(docs[activeTab] || "", activeTab >= 3 && activeTab <= 6), className: "bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-semibold", children: "Cetak / PDF" })
-              ] })
-            ] }),
-            docs[activeTab] ? /* @__PURE__ */ jsx18("div", { className: "prose max-w-none text-slate-800", dangerouslySetInnerHTML: { __html: docs[activeTab] } }) : /* @__PURE__ */ jsx18("div", { className: "text-slate-500 text-center py-20 italic", children: "Dokumen belum di-generate. Silakan generate dari tab Identitas." })
+        appMode === "select" && /* @__PURE__ */ jsx18("div", { className: "flex-1 flex items-center justify-center py-12", children: /* @__PURE__ */ jsxs14("div", { className: "max-w-4xl w-full", children: [
+          /* @__PURE__ */ jsxs14("div", { className: "text-center mb-10", children: [
+            /* @__PURE__ */ jsx18("h2", { className: "text-3xl font-bold text-slate-800 mb-4", children: "Mulai Buat Perangkat Ajar" }),
+            /* @__PURE__ */ jsx18("p", { className: "text-slate-600", children: "Pilih mode pembuatan dokumen sesuai dengan kebutuhan dan sisa poin Anda." })
           ] }),
-          activeTab === 7 && /* @__PURE__ */ jsxs14("div", { className: "space-y-6", children: [
-            /* @__PURE__ */ jsxs14("div", { className: "bg-white p-6 rounded-xl shadow-lg border border-slate-100", children: [
-              /* @__PURE__ */ jsx18("h2", { className: "text-2xl font-bold text-slate-800 mb-6", children: "Buat Modul Ajar Baru" }),
-              extractedTPs.length > 0 ? /* @__PURE__ */ jsxs14("div", { className: "mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg", children: [
-                /* @__PURE__ */ jsx18("label", { className: "block text-sm font-semibold text-emerald-800 mb-2", children: "Pilih Tujuan Pembelajaran dari ATP:" }),
-                /* @__PURE__ */ jsxs14(
-                  "select",
-                  {
-                    className: "w-full p-2 border border-emerald-300 rounded",
-                    onChange: (e) => setFormData({ ...formData, tujuanPembelajaran: e.target.value }),
-                    children: [
-                      /* @__PURE__ */ jsx18("option", { value: "", children: "-- Pilih TP --" }),
-                      extractedTPs.map((tp, i) => /* @__PURE__ */ jsxs14("option", { value: tp.tujuan, children: [
-                        tp.kode,
-                        " - ",
-                        tp.tujuan
-                      ] }, i))
-                    ]
-                  }
-                )
-              ] }) : /* @__PURE__ */ jsx18("div", { className: "mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm", children: "\u26A0\uFE0F ATP belum digenerate atau TP tidak ditemukan. Anda dapat mengisi manual." }),
-              /* @__PURE__ */ jsx18(
-                LessonPlanForm,
+          /* @__PURE__ */ jsxs14("div", { className: "grid md:grid-cols-2 gap-8", children: [
+            /* @__PURE__ */ jsxs14(
+              "div",
+              {
+                className: "bg-white rounded-2xl shadow-xl border border-slate-200 p-8 hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer flex flex-col",
+                onClick: () => {
+                  setAppMode("modul_ajar");
+                  setActiveTab(7);
+                },
+                children: [
+                  /* @__PURE__ */ jsx18("div", { className: "w-14 h-14 bg-sky-100 rounded-2xl flex items-center justify-center mb-6 text-sky-600", children: /* @__PURE__ */ jsx18("svg", { className: "w-8 h-8", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx18("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" }) }) }),
+                  /* @__PURE__ */ jsx18("h3", { className: "text-2xl font-bold text-slate-800 mb-3", children: "Modul Ajar Saja" }),
+                  /* @__PURE__ */ jsx18("p", { className: "text-slate-600 mb-6 flex-1", children: "Cocok untuk mencoba secara gratis (Trial) dengan mengisi topik dan TP secara mandiri. Langsung buat RPP/Modul Ajar tanpa perlu membuat CP/ATP/Prota/Promes terlebih dahulu." }),
+                  /* @__PURE__ */ jsx18("div", { className: "mt-auto", children: /* @__PURE__ */ jsx18("span", { className: "inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold", children: "Gratis 200 Poin Awal" }) })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxs14(
+              "div",
+              {
+                className: "bg-slate-800 rounded-2xl shadow-xl border border-slate-700 p-8 hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer flex flex-col",
+                onClick: () => {
+                  setAppMode("bundle");
+                  setActiveTab(0);
+                },
+                children: [
+                  /* @__PURE__ */ jsx18("div", { className: "w-14 h-14 bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-6 text-indigo-400", children: /* @__PURE__ */ jsx18("svg", { className: "w-8 h-8", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx18("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" }) }) }),
+                  /* @__PURE__ */ jsx18("h3", { className: "text-2xl font-bold text-white mb-3", children: "Bundle Lengkap (Satu Semester)" }),
+                  /* @__PURE__ */ jsx18("p", { className: "text-slate-300 mb-6 flex-1", children: "Isi identitas satu kali, sistem akan secara otomatis membuatkan Dokumen Analisis CP, Tujuan Pembelajaran, ATP, Prota, Promes, KKTP, hingga ke Modul Ajar." }),
+                  /* @__PURE__ */ jsx18("div", { className: "mt-auto", children: /* @__PURE__ */ jsxs14("span", { className: "inline-flex items-center px-3 py-1 rounded-full bg-indigo-500/30 text-indigo-300 text-sm font-semibold", children: [
+                    "Membutuhkan ",
+                    pricingConfig?.bundleCost || 50,
+                    " Poin / Bundle"
+                  ] }) })
+                ]
+              }
+            )
+          ] })
+        ] }) }),
+        appMode !== "select" && /* @__PURE__ */ jsxs14(Fragment3, { children: [
+          appMode === "bundle" && /* @__PURE__ */ jsxs14("div", { className: "w-full md:w-64 flex-shrink-0 bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700 h-fit sticky top-8", children: [
+            /* @__PURE__ */ jsx18("h3", { className: "text-white font-bold mb-4 text-lg border-b border-slate-600 pb-2", children: "Menu Dokumen" }),
+            /* @__PURE__ */ jsx18("ul", { className: "space-y-2", children: TABS.map((tab, idx) => /* @__PURE__ */ jsx18("li", { children: /* @__PURE__ */ jsxs14(
+              "button",
+              {
+                onClick: () => setActiveTab(idx),
+                className: `w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${activeTab === idx ? "bg-sky-600 text-white font-semibold" : "text-slate-300 hover:bg-slate-700"}`,
+                children: [
+                  tab,
+                  isLoadingStep === idx && /* @__PURE__ */ jsx18("span", { className: "ml-2 animate-pulse text-sky-300", children: "\u23F3" })
+                ]
+              }
+            ) }, idx)) })
+          ] }),
+          appMode === "modul_ajar" && /* @__PURE__ */ jsxs14("div", { className: "w-full md:w-64 flex-shrink-0 bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700 h-fit sticky top-8", children: [
+            /* @__PURE__ */ jsx18("h3", { className: "text-white font-bold mb-4 text-lg border-b border-slate-600 pb-2", children: "Navigasi" }),
+            /* @__PURE__ */ jsxs14("ul", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsx18("li", { children: /* @__PURE__ */ jsx18(
+                "button",
                 {
-                  onSubmit: (data) => handleGenerateModulAjar({ ...formData, ...data }),
-                  isLoading: isGeneratingModul,
-                  points: authData.user?.points || 0,
-                  sessionCosts: pricingConfig?.sessionCosts || [],
-                  token: authData.token,
-                  initialData: formData,
-                  updatePoints: () => {
-                  }
+                  onClick: () => setAppMode("select"),
+                  className: "w-full text-left px-4 py-2 rounded-lg text-sm transition-colors text-slate-300 hover:bg-slate-700 flex items-center",
+                  children: "\u2190 Kembali ke Pilihan Mode"
                 }
-              )
-            ] }),
-            modulHtml && /* @__PURE__ */ jsxs14("div", { className: "bg-white p-8 rounded-xl shadow-lg border border-slate-100 min-h-[11in]", children: [
+              ) }),
+              /* @__PURE__ */ jsx18("li", { children: /* @__PURE__ */ jsx18(
+                "button",
+                {
+                  className: "w-full text-left px-4 py-2 rounded-lg text-sm transition-colors bg-sky-600 text-white font-semibold mt-4",
+                  children: "Modul Ajar"
+                }
+              ) })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxs14("div", { className: "flex-1 w-full max-w-[8.5in]", children: [
+            error && /* @__PURE__ */ jsx18("div", { className: "bg-red-100 text-red-700 p-4 rounded-lg mb-6 border border-red-200", children: error }),
+            activeTab === 0 && /* @__PURE__ */ jsx18(
+              IdentityForm,
+              {
+                formData,
+                handleChange,
+                onSubmit: handleGenerateBundle,
+                isLoading: isLoadingStep > 0,
+                bundleCost: pricingConfig?.bundleCost || 50
+              }
+            ),
+            activeTab > 0 && activeTab < 7 && /* @__PURE__ */ jsxs14("div", { className: "bg-white p-8 rounded-xl shadow-lg border border-slate-100 min-h-[11in]", children: [
               /* @__PURE__ */ jsxs14("div", { className: "flex justify-between items-center mb-6 no-print", children: [
-                /* @__PURE__ */ jsx18("h2", { className: "text-2xl font-bold text-slate-800", children: "Preview Modul Ajar" }),
+                /* @__PURE__ */ jsx18("h2", { className: "text-2xl font-bold text-slate-800", children: TABS[activeTab] }),
                 /* @__PURE__ */ jsxs14("div", { className: "flex gap-2", children: [
-                  /* @__PURE__ */ jsx18("button", { onClick: () => handleDownloadDoc(modulHtml || "", `ModulAjar_${formData.mataPelajaran}`, false), className: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold", children: "Unduh DOC" }),
-                  /* @__PURE__ */ jsx18("button", { onClick: () => setIsEditingModul(!isEditingModul), className: "bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-semibold", children: isEditingModul ? "Simpan" : "Edit" }),
-                  /* @__PURE__ */ jsx18("button", { onClick: () => printDocument(modulHtml, false), className: "bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-semibold", children: "Cetak / PDF" })
+                  /* @__PURE__ */ jsx18("button", { onClick: () => handleDownloadDoc(docs[activeTab] || "", `Dokumen_${activeTab}_${formData.mataPelajaran}`, activeTab >= 3 && activeTab <= 6), className: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold", children: "Unduh DOC" }),
+                  /* @__PURE__ */ jsx18("button", { onClick: () => printDocument(docs[activeTab] || "", activeTab >= 3 && activeTab <= 6), className: "bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-semibold", children: "Cetak / PDF" })
                 ] })
               ] }),
-              isEditingModul ? /* @__PURE__ */ jsx18(LessonPlanEditor, { html: modulHtml, onChange: setModulHtml }) : /* @__PURE__ */ jsx18(LessonPlanDisplay, { htmlContent: modulHtml })
+              docs[activeTab] ? /* @__PURE__ */ jsx18("div", { className: "prose max-w-none text-slate-800", dangerouslySetInnerHTML: { __html: docs[activeTab] } }) : /* @__PURE__ */ jsx18("div", { className: "text-slate-500 text-center py-20 italic", children: "Dokumen belum di-generate. Silakan generate dari tab Identitas." })
+            ] }),
+            activeTab === 7 && /* @__PURE__ */ jsxs14("div", { className: "space-y-6", children: [
+              /* @__PURE__ */ jsxs14("div", { className: "bg-white p-6 rounded-xl shadow-lg border border-slate-100", children: [
+                /* @__PURE__ */ jsx18("h2", { className: "text-2xl font-bold text-slate-800 mb-6", children: "Buat Modul Ajar Baru" }),
+                extractedTPs.length > 0 ? /* @__PURE__ */ jsxs14("div", { className: "mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg", children: [
+                  /* @__PURE__ */ jsx18("label", { className: "block text-sm font-semibold text-emerald-800 mb-2", children: "Pilih Tujuan Pembelajaran dari ATP:" }),
+                  /* @__PURE__ */ jsxs14(
+                    "select",
+                    {
+                      className: "w-full p-2 border border-emerald-300 rounded bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none",
+                      onChange: (e) => setFormData({ ...formData, tujuanPembelajaran: e.target.value }),
+                      children: [
+                        /* @__PURE__ */ jsx18("option", { value: "", children: "-- Pilih TP --" }),
+                        extractedTPs.map((tp, i) => /* @__PURE__ */ jsxs14("option", { value: tp.tujuan, children: [
+                          tp.kode,
+                          " - ",
+                          tp.tujuan
+                        ] }, i))
+                      ]
+                    }
+                  )
+                ] }) : /* @__PURE__ */ jsx18("div", { className: "mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm", children: "\u26A0\uFE0F ATP belum digenerate atau TP tidak ditemukan. Anda dapat mengisi manual." }),
+                /* @__PURE__ */ jsx18(
+                  LessonPlanForm,
+                  {
+                    onSubmit: (data) => handleGenerateModulAjar({ ...formData, ...data }),
+                    isLoading: isGeneratingModul,
+                    points: authData.user?.points || 0,
+                    sessionCosts: pricingConfig?.sessionCosts || [],
+                    token: authData.token,
+                    initialData: formData,
+                    updatePoints: () => {
+                    }
+                  }
+                )
+              ] }),
+              modulHtml && /* @__PURE__ */ jsxs14("div", { className: "bg-white p-8 rounded-xl shadow-lg border border-slate-100 min-h-[11in]", children: [
+                /* @__PURE__ */ jsxs14("div", { className: "flex justify-between items-center mb-6 no-print", children: [
+                  /* @__PURE__ */ jsx18("h2", { className: "text-2xl font-bold text-slate-800", children: "Preview Modul Ajar" }),
+                  /* @__PURE__ */ jsxs14("div", { className: "flex gap-2", children: [
+                    /* @__PURE__ */ jsx18("button", { onClick: () => handleDownloadDoc(modulHtml || "", `ModulAjar_${formData.mataPelajaran}`, false), className: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold", children: "Unduh DOC" }),
+                    /* @__PURE__ */ jsx18("button", { onClick: () => setIsEditingModul(!isEditingModul), className: "bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-semibold", children: isEditingModul ? "Simpan" : "Edit" }),
+                    /* @__PURE__ */ jsx18("button", { onClick: () => printDocument(modulHtml, false), className: "bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-semibold", children: "Cetak / PDF" })
+                  ] })
+                ] }),
+                isEditingModul ? /* @__PURE__ */ jsx18(LessonPlanEditor, { html: modulHtml, onChange: setModulHtml }) : /* @__PURE__ */ jsx18(LessonPlanDisplay, { htmlContent: modulHtml })
+              ] })
             ] })
           ] })
         ] })
@@ -10668,7 +10752,7 @@ __export(HistoryDetailPage_exports, {
 });
 import { useState as useState11, useEffect as useEffect9, useCallback as useCallback3 } from "react";
 import { useParams as useParams2, Link as Link11 } from "react-router-dom";
-import { Fragment as Fragment3, jsx as jsx21, jsxs as jsxs17 } from "react/jsx-runtime";
+import { Fragment as Fragment4, jsx as jsx21, jsxs as jsxs17 } from "react/jsx-runtime";
 var HistoryDetailPage, HistoryDetailPage_default;
 var init_HistoryDetailPage = __esm({
   "src/pages/HistoryDetailPage.tsx"() {
@@ -10808,7 +10892,7 @@ var init_HistoryDetailPage = __esm({
           /* @__PURE__ */ jsx21("div", { className: "mt-4 flex flex-row gap-3 justify-center", children: !isEditing ? /* @__PURE__ */ jsxs17("button", { onClick: handleEdit, className: `${editButtonBaseClass} bg-slate-600 hover:bg-slate-700 text-white`, children: [
             /* @__PURE__ */ jsx21("svg", { xmlns: "http://www.w3.org/2000/svg", className: "h-4 w-4", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" }) }),
             "Edit Modul"
-          ] }) : /* @__PURE__ */ jsxs17(Fragment3, { children: [
+          ] }) : /* @__PURE__ */ jsxs17(Fragment4, { children: [
             /* @__PURE__ */ jsxs17("button", { onClick: handleSave, className: `${editButtonBaseClass} bg-green-500 hover:bg-green-600 text-white`, children: [
               /* @__PURE__ */ jsx21("svg", { xmlns: "http://www.w3.org/2000/svg", className: "h-4 w-4", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M5 13l4 4L19 7" }) }),
               "Simpan Perubahan"

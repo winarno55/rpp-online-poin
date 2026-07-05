@@ -137,6 +137,8 @@ ATURAN WAJIB (STRICT INSTRUCTIONS):
 5. Gunakan istilah "Dimensi Profil Lulusan".
 6. Penomoran kode dokumen harus taat struktur: [Singkatan Mapel]-[Fase/Kelas]-[Kode Elemen]-[Nomor Urut].
 7. Gunakan tag HTML semantik: <h1> untuk judul dokumen, <h2> untuk bagian, <p> untuk teks, <ul>/<li> untuk daftar.
+8. Di bagian paling akhir dokumen, WAJIB tambahkan blok tanda tangan (Mengetahui Kepala Sekolah dan Guru Mata Pelajaran) menggunakan format tabel tanpa garis (border="0" atau style="border:none; width: 100%; margin-top: 40px;") yang rapi, memuat nama dan NIP: Kepala Sekolah (${input.namaKepalaSekolah}, NIP: ${input.nipKepalaSekolah}), Guru (${input.namaGuru}, NIP: ${input.nipGuru}), dan Tempat/Tanggal (${input.kotaTanggalTtd}).
+9. Pertimbangkan tahap perkembangan psikologis dan kognitif anak pada jenjang/fase tersebut sesuai standar proses di Indonesia.
 `;
     const identityData = `
 Mata Pelajaran: ${input.mataPelajaran}

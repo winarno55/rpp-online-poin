@@ -313,8 +313,9 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
                   </div>
               </div>
               <div>
-                <label htmlFor="materi" className={labelClass}>Materi</label>
-                <input type="text" name="materi" id="materi" value={formData.materi} onChange={handleChange} className={inputClass} placeholder="Tuliskan topik pembelajaran" />
+                <label htmlFor="materi" className={labelClass}>Materi Pembelajaran</label>
+                <input type="text" name="materi" id="materi" value={formData.materi} onChange={handleChange} className={inputClass} placeholder="Contoh: Bilangan Bulat (Materi bisa diambil dari TP)" />
+                <p className="text-xs text-slate-500 mt-1">Topik spesifik yang akan diajarkan, biasanya berkaitan dengan Tujuan Pembelajaran.</p>
                 {errors.materi && <p className={errorTextClass}>{errors.materi}</p>}
               </div>
             </fieldset>
