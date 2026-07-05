@@ -1,5 +1,6 @@
 import React from 'react';
 import { LessonPlanInput } from '../types';
+import { KELAS_FASE_OPTIONS } from '../constants';
 
 interface Props {
   formData: LessonPlanInput;
@@ -31,7 +32,11 @@ export const IdentityForm: React.FC<Props> = ({ formData, handleChange, onSubmit
         </div>
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">Fase/Kelas</label>
-          <input type="text" name="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass} placeholder="Contoh: D / VII" />
+          <select name="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass}>
+            {KELAS_FASE_OPTIONS.map(opt => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">Alokasi Waktu</label>

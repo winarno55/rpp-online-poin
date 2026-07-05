@@ -117,13 +117,14 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 
 function constructPromptForStep(step: number, input: any, previousDocs: any): string {
     const commonRules = `
-ATURAN UMUM (COMMON RULES):
+ATURAN WAJIB (STRICT INSTRUCTIONS):
 1. HANYA hasilkan kode HTML murni tanpa membungkusnya dengan markdown \`\`\`html.
-2. JANGAN berikan teks pengantar atau penutup apa pun.
-3. Seluruh tabel harus menggunakan format tag HTML standar (<table border="1" style="border-collapse: collapse; width: 100%;">).
+2. JANGAN berikan teks pengantar atau penutup apa pun. Mulailah langsung dengan konten utama.
+3. Seluruh tabel harus menggunakan format tag HTML standar (<table border="1" style="border-collapse: collapse; width: 100%; margin-bottom: 20px;">).
 4. Setiap Header Tabel (<th>) wajib menggunakan warna latar belakang Biru Tua (#1a3a5c) dengan teks putih tebal.
 5. Gunakan istilah "Dimensi Profil Lulusan".
 6. Penomoran kode dokumen harus taat struktur: [Singkatan Mapel]-[Fase/Kelas]-[Kode Elemen]-[Nomor Urut].
+7. Gunakan tag HTML semantik: <h1> untuk judul dokumen, <h2> untuk bagian, <p> untuk teks, <ul>/<li> untuk daftar.
 `;
     const identityData = `
 Mata Pelajaran: ${input.mataPelajaran}
@@ -139,17 +140,17 @@ CP per Elemen: ${input.cpPerElemen}
 `;
 
     if (step === 1) {
-        return `${commonRules}\nBuatlah Dokumen 1 (Analisis Capaian Pembelajaran) berdasarkan data berikut:\n${identityData}`;
+        return `${commonRules}\nBuatlah Dokumen 1 (Analisis Capaian Pembelajaran) yang komprehensif. Analisis elemen-elemen CP berikut dan hubungkan dengan Fase/Kelas. Hasil akhirnya adalah tabel analisis kompetensi dan ruang lingkup materi.\nData:\n${identityData}`;
     } else if (step === 2) {
-        return `${commonRules}\nBerikut adalah Dokumen 1:\n${previousDocs.doc1}\nBuatlah Dokumen 2 (Tujuan Pembelajaran) berdasarkan Dokumen 1.`;
+        return `${commonRules}\nBerikut adalah Dokumen 1:\n${previousDocs.doc1}\nBuatlah Dokumen 2 (Tujuan Pembelajaran) berdasarkan Dokumen 1. Rumuskan Tujuan Pembelajaran (TP) yang ABCD (Audience, Behavior, Condition, Degree). Sajikan dalam tabel dengan kolom: Kode TP, Tujuan Pembelajaran, dan Kata Kunci.`;
     } else if (step === 3) {
-        return `${commonRules}\nBerikut adalah Dokumen 2:\n${previousDocs.doc2}\nBuatlah Dokumen 3 (Alur Tujuan Pembelajaran). \nPASTIKAN Anda menggunakan format tabel HTML dengan sebuah kolom bernama "Kode TP", kolom "Tujuan Pembelajaran", kolom "Materi Pokok", dan kolom "Alokasi JP". Ini sangat krusial untuk diparsing oleh sistem.`;
+        return `${commonRules}\nBerikut adalah Dokumen 2:\n${previousDocs.doc2}\nBuatlah Dokumen 3 (Alur Tujuan Pembelajaran - ATP). Susun TP ke dalam alur yang logis dan urut. \nWAJIB: Gunakan format tabel HTML dengan kolom: "Kode TP", "Tujuan Pembelajaran", "Materi Pokok", dan "Alokasi JP".`;
     } else if (step === 4) {
-        return `${commonRules}\nBerikut adalah Dokumen 3 (ATP):\n${previousDocs.doc3}\nBuatlah Dokumen 4 (Program Tahunan) menggunakan data Kalender Pendidikan: ${input.kalenderPendidikan}`;
+        return `${commonRules}\nBerikut adalah Dokumen 3 (ATP):\n${previousDocs.doc3}\nBuatlah Dokumen 4 (Program Tahunan). Alokasikan JP per semester berdasarkan data Kalender Pendidikan: ${input.kalenderPendidikan}`;
     } else if (step === 5) {
-        return `${commonRules}\nBerikut adalah Dokumen 4:\n${previousDocs.doc4}\nBuatlah Dokumen 5 (Program Semester 1 & 2) disatukan dalam satu output.`;
+        return `${commonRules}\nBerikut adalah Dokumen 4:\n${previousDocs.doc4}\nBuatlah Dokumen 5 (Program Semester 1 & 2). Buat tabel distribusi JP per bulan/minggu untuk satu tahun pelajaran.`;
     } else if (step === 6) {
-        return `${commonRules}\nBerikut adalah Dokumen 3:\n${previousDocs.doc3}\nBuatlah Dokumen 6 (Kriteria Ketercapaian Tujuan Pembelajaran - KKTP) menggunakan rentang nilai: ${input.rentangNilaiKktp}`;
+        return `${commonRules}\nBerikut adalah Dokumen 3:\n${previousDocs.doc3}\nBuatlah Dokumen 6 (Kriteria Ketercapaian Tujuan Pembelajaran - KKTP). Gunakan rentang nilai: ${input.rentangNilaiKktp}. Buat deskripsi kriteria ketuntasan untuk setiap TP.`;
     }
     return '';
 }

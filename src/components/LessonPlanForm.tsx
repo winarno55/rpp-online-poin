@@ -265,20 +265,20 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
     onSubmit(dataToSubmit);
   };
 
-  const inputClass = "w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-slate-100 disabled:opacity-50";
-  const labelClass = "block mb-2 text-sm font-medium text-sky-300";
+  const inputClass = "w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors placeholder-slate-400 text-white disabled:opacity-50";
+  const labelClass = "block mb-2 text-sm font-bold text-slate-800";
   const fieldSetClass = "space-y-4";
   const stepTitles = ['Identitas Dasar', 'Desain Pembelajaran', 'Detail Tambahan (Opsional)'];
-  const errorTextClass = "text-red-400 text-sm mt-1";
+  const errorTextClass = "text-red-600 text-sm mt-1 font-semibold";
 
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-shrink-0">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-white mb-3">Langkah {step} dari 3: {stepTitles[step - 1]}</h2>
-          <div className="flex w-full h-2 bg-slate-700 rounded-full overflow-hidden">
-            <div style={{ width: `${(step / 3) * 100}%` }} className="bg-gradient-to-r from-sky-500 to-emerald-500 transition-all duration-500 ease-in-out rounded-full"></div>
+          <h2 className="text-xl font-bold text-slate-800 mb-3">Langkah {step} dari 3: {stepTitles[step - 1]}</h2>
+          <div className="flex w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div style={{ width: `${(step / 3) * 100}%` }} className="bg-gradient-to-r from-sky-600 to-emerald-600 transition-all duration-500 ease-in-out rounded-full"></div>
           </div>
         </div>
       </div>
@@ -324,22 +324,22 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
             <fieldset className={fieldSetClass}>
               <div>
                   <label className={labelClass}>Dimensi Profil Lulusan</label>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
                       {DIMENSI_PROFIL_LULUSAN.map(dim => (
-                          <label key={dim} className="flex items-center space-x-2 text-slate-200 cursor-pointer">
+                          <label key={dim} className="flex items-center space-x-2 text-slate-700 cursor-pointer hover:text-sky-700 transition-colors">
                               <input type="checkbox"
-                                  className="h-4 w-4 rounded bg-slate-600 border-slate-500 text-sky-500 focus:ring-sky-600"
+                                  className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
                                   value={dim}
                                   checked={formData.dimensiProfilLulusan.includes(dim)}
                                   onChange={() => handleDimensionChange(dim)}
                               />
-                              <span>{dim}</span>
+                              <span className="text-sm font-medium">{dim}</span>
                           </label>
                       ))}
                   </div>
               </div>
               <div>
-                <label htmlFor="capaianPembelajaran" className={labelClass}>Capaian Pembelajaran <span className="text-slate-400 font-light">(Opsional)</span></label>
+                <label htmlFor="capaianPembelajaran" className={labelClass}>Capaian Pembelajaran <span className="text-slate-500 font-normal">(Opsional)</span></label>
                 <textarea name="capaianPembelajaran" id="capaianPembelajaran" value={formData.capaianPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="Tuliskan capaian pembelajaran sesuai fase..." />
               </div>
               <div>
@@ -423,23 +423,23 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
           {step === 3 && (
             <fieldset className={fieldSetClass}>
               <div>
-                <label htmlFor="pesertaDidik" className={labelClass}>Peserta Didik <span className="text-slate-400 font-light">(Opsional)</span></label>
+                <label htmlFor="pesertaDidik" className={labelClass}>Peserta Didik <span className="text-slate-500 font-normal">(Opsional)</span></label>
                 <textarea name="pesertaDidik" id="pesertaDidik" value={formData.pesertaDidik} onChange={handleChange} rows={3} className={inputClass} placeholder="Identifikasi kesiapan, minat, atau kebutuhan belajar peserta didik..." />
               </div>
               <div>
-                <label htmlFor="lintasDisiplinIlmu" className={labelClass}>Lintas Disiplin Ilmu <span className="text-slate-400 font-light">(Opsional)</span></label>
+                <label htmlFor="lintasDisiplinIlmu" className={labelClass}>Lintas Disiplin Ilmu <span className="text-slate-500 font-normal">(Opsional)</span></label>
                 <input type="text" name="lintasDisiplinIlmu" id="lintasDisiplinIlmu" value={formData.lintasDisiplinIlmu} onChange={handleChange} className={inputClass} placeholder="cth: Sosiologi, Ekonomi" />
               </div>
                <div>
-                <label htmlFor="lingkunganPembelajaran" className={labelClass}>Lingkungan Pembelajaran <span className="text-slate-400 font-light">(Opsional)</span></label>
+                <label htmlFor="lingkunganPembelajaran" className={labelClass}>Lingkungan Pembelajaran <span className="text-slate-500 font-normal">(Opsional)</span></label>
                 <textarea name="lingkunganPembelajaran" id="lingkunganPembelajaran" value={formData.lingkunganPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="Jelaskan budaya belajar atau ruang fisik/virtual yang diinginkan..." />
               </div>
                <div>
-                <label htmlFor="pemanfaatanDigital" className={labelClass}>Pemanfaatan Digital <span className="text-slate-400 font-light">(Opsional)</span></label>
+                <label htmlFor="pemanfaatanDigital" className={labelClass}>Pemanfaatan Digital <span className="text-slate-500 font-normal">(Opsional)</span></label>
                 <textarea name="pemanfaatanDigital" id="pemanfaatanDigital" value={formData.pemanfaatanDigital} onChange={handleChange} rows={3} className={inputClass} placeholder="cth: Video pembelajaran, platform, perpustakaan digital..." />
               </div>
               <div>
-                <label htmlFor="kemitraanPembelajaran" className={labelClass}>Kemitraan Pembelajaran <span className="text-slate-400 font-light">(Opsional)</span></label>
+                <label htmlFor="kemitraanPembelajaran" className={labelClass}>Kemitraan Pembelajaran <span className="text-slate-500 font-normal">(Opsional)</span></label>
                 <textarea name="kemitraanPembelajaran" id="kemitraanPembelajaran" value={formData.kemitraanPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="cth: Kolaborasi dengan guru mapel lain, orang tua, komunitas..." />
               </div>
             </fieldset>

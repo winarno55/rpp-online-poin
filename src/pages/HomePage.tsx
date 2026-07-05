@@ -63,22 +63,44 @@ const HomePage: React.FC = () => {
         
         tables.forEach(table => {
             const rows = table.querySelectorAll('tr');
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td, th');
-                let rowText = row.textContent || '';
-                if (rowText.includes('TP') || (cells.length >= 4)) {
-                    if (cells[0].tagName.toLowerCase() === 'td') {
-                        tps.push({
-                            kode: cells[0]?.textContent?.trim(),
-                            tujuan: cells[1]?.textContent?.trim(),
-                            materi: cells[2]?.textContent?.trim(),
-                            alokasi: cells[3]?.textContent?.trim()
-                        });
+            let headerIndices = { kode: -1, tujuan: -1, materi: -1, alokasi: -1 };
+
+            rows.forEach((row, rowIndex) => {
+                const cells = Array.from(row.querySelectorAll('td, th'));
+                
+                // Try to find headers first
+                if (rowIndex < 2) { 
+                    cells.forEach((cell, cellIndex) => {
+                        const text = cell.textContent?.toLowerCase() || '';
+                        if (text.includes('kode') || text.includes('tp')) headerIndices.kode = cellIndex;
+                        if (text.includes('tujuan') || text.includes('pembelajaran')) headerIndices.tujuan = cellIndex;
+                        if (text.includes('materi')) headerIndices.materi = cellIndex;
+                        if (text.includes('alokasi') || text.includes('jp') || text.includes('waktu')) headerIndices.alokasi = cellIndex;
+                    });
+                }
+
+                // If we found some headers or it looks like a data row
+                if (cells.length >= 2) {
+                    const rowText = row.textContent?.toLowerCase() || '';
+                    const isHeader = rowText.includes('kode') || rowText.includes('tujuan') || rowText.includes('alokasi');
+                    
+                    if (!isHeader) {
+                        const kode = headerIndices.kode !== -1 ? cells[headerIndices.kode]?.textContent?.trim() : cells[0]?.textContent?.trim();
+                        const tujuan = headerIndices.tujuan !== -1 ? cells[headerIndices.tujuan]?.textContent?.trim() : cells[1]?.textContent?.trim();
+                        const materi = headerIndices.materi !== -1 ? cells[headerIndices.materi]?.textContent?.trim() : cells[2]?.textContent?.trim();
+                        const alokasi = headerIndices.alokasi !== -1 ? cells[headerIndices.alokasi]?.textContent?.trim() : cells[3]?.textContent?.trim();
+
+                        if (tujuan && tujuan.length > 5) { // Basic sanity check
+                            tps.push({ kode, tujuan, materi, alokasi });
+                        }
                     }
                 }
             });
         });
-        setExtractedTPs(tps);
+        
+        // Remove duplicates and empty ones
+        const uniqueTPs = Array.from(new Set(tps.map(t => JSON.stringify(t)))).map(t => JSON.parse(t));
+        setExtractedTPs(uniqueTPs);
     };
 
     const handleGenerateBundle = async () => {

@@ -10,7 +10,10 @@ function escapeHtml(text: string): string {
 
 // Helper to convert inline markdown (bold, italic) to HTML spans
 function parseInlineMarkdownToHtmlSpans(text: string): string {
-    let html = escapeHtml(text); // Escape HTML first
+    // If the text already contains HTML tags (like <h2>, <td>, etc.), don't escape it.
+    // This allows the AI to return raw HTML as requested in the prompt.
+    const hasHtml = /<[a-z][\s\S]*>/i.test(text);
+    let html = hasHtml ? text : escapeHtml(text); 
 
     // Regex for bold and italic:
     html = html.replace(/(?<!\w)\*\*(?!\s)(.+?)(?<!\s)\*\*(?!\w)/g, '<strong>$1</strong>');
@@ -18,11 +21,11 @@ function parseInlineMarkdownToHtmlSpans(text: string): string {
     
     // Simpler fallbacks
     html = html.replace(/\*\*(.*?)\*\*/g, (match, p1) => {
-        if (p1.includes('<strong>') || p1.includes('&lt;strong&gt;')) return match;
+        if (p1.includes('<strong>') || p1.includes('&lt;strong&gt;') || (hasHtml && p1.includes('<'))) return match;
         return `<strong>${p1}</strong>`;
     });
     html = html.replace(/\*(.*?)\*/g, (match, p1) => {
-        if (p1.includes('<em>') || p1.includes('&lt;em&gt;')) return match;
+        if (p1.includes('<em>') || p1.includes('&lt;em&gt;') || (hasHtml && p1.includes('<'))) return match;
         return `<em>${p1}</em>`;
     });
     
