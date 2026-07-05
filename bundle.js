@@ -9871,25 +9871,25 @@ var init_docxUtils = __esm({
          div.WordSection1 { page: WordSection1; }` : `@page WordSection1 { size: 595.3pt 841.9pt; margin: 72.0pt 72.0pt 72.0pt 72.0pt; mso-header-margin: 35.4pt; mso-footer-margin: 35.4pt; mso-paper-source: 0; }
          div.WordSection1 { page: WordSection1; }`;
       const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
-                         xmlns:w='urn:schemas-microsoft-com:office:word'
-                         xmlns='http://www.w3.org/TR/REC-html40'>
-                        <head>
-                          <meta charset='utf-8'>
-                          <title>Modul Ajar</title>
-                          <style>
-                            /* --- General Word Compatibility Styles --- */
-                            ${pageStyle}
-                            body { font-family: Calibri, sans-serif; font-size: 11pt; line-height: 1.3; }
-                            p { margin: 0 0 8pt 0; }
-                            /* Let Word handle list indentation by removing custom padding */
-                            ul, ol { margin-top: 0; margin-bottom: 8pt; }
-                            li { margin-bottom: 4pt; }
-                            table { border-collapse: collapse; width: 100%; margin-bottom: 10pt; }
-                            td, th { border: 1px solid black; padding: 5px; }
-                            th { background-color: #1a3a5c; color: white; font-weight: bold; }
-                            h1, h2, h3, h4, h5, h6 { font-family: 'Cambria', 'Times New Roman', serif; margin-top: 18pt; margin-bottom: 10pt; }
-                          </style>
-                        </head><body><div class="WordSection1">`;
+                        xmlns:w='urn:schemas-microsoft-com:office:word'
+                        xmlns='http://www.w3.org/TR/REC-html40'>
+                       <head>
+                         <meta charset='utf-8'>
+                         <title>Modul Ajar</title>
+                         <style>
+                           /* --- General Word Compatibility Styles --- */
+                           ${pageStyle}
+                           body { font-family: Calibri, sans-serif; font-size: 11pt; line-height: 1.3; }
+                           p { margin: 0 0 8pt 0; }
+                           /* Let Word handle list indentation by removing custom padding */
+                           ul, ol { margin-top: 0; margin-bottom: 8pt; }
+                           li { margin-bottom: 4pt; }
+                           table { border-collapse: collapse; width: 100%; margin-bottom: 10pt; }
+                           td, th { border: 1px solid black; padding: 5px; }
+                           th { background-color: #1a3a5c; color: white; font-weight: bold; }
+                           h1, h2, h3, h4, h5, h6 { font-family: 'Cambria', 'Times New Roman', serif; margin-top: 18pt; margin-bottom: 10pt; }
+                         </style>
+                       </head><body><div class="WordSection1">`;
       const footer = "</div></body></html>";
       return header + bodyContent + footer;
     };
