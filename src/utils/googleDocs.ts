@@ -70,85 +70,62 @@ export const saveToGoogleDocs = async (
   accessToken: string
 ): Promise<{ id: string; url: string }> => {
   // Professional, elegant layout styling
-  const styledHtml = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-    <meta charset="utf-8">
-    <style>
-      body {
-        font-family: "Georgia", "Times New Roman", serif;
-        font-size: 11pt;
-        line-height: 1.6;
-        color: #1e293b;
-      }
-      h1 {
-        font-family: "Arial", "Helvetica", sans-serif;
-        font-size: 22pt;
-        font-weight: bold;
-        color: #0369a1;
-        margin-top: 24pt;
-        margin-bottom: 12pt;
-        text-align: center;
-      }
-      h2 {
-        font-family: "Arial", "Helvetica", sans-serif;
-        font-size: 15pt;
-        font-weight: bold;
-        color: #0f766e;
-        margin-top: 20pt;
-        margin-bottom: 8pt;
-        border-bottom: 1.5px solid #cbd5e1;
-        padding-bottom: 4px;
-      }
-      h3 {
-        font-family: "Arial", "Helvetica", sans-serif;
-        font-size: 12pt;
-        font-weight: bold;
-        color: #334155;
-        margin-top: 14pt;
-        margin-bottom: 6pt;
-      }
-      p {
-        margin-top: 0;
-        margin-bottom: 10pt;
-      }
-      table {
-        border-collapse: collapse;
-        width: 100%;
-        margin-top: 14pt;
-        margin-bottom: 14pt;
-        font-size: 10pt;
-      }
-      th, td {
-        border: 1px solid #cbd5e1;
-        padding: 10px;
-        text-align: left;
-        vertical-align: top;
-      }
-      th {
-        background-color: #f1f5f9;
-        font-weight: bold;
-        color: #1e293b;
-      }
-      ul, ol {
-        margin-top: 0;
-        margin-bottom: 10pt;
-        padding-left: 20pt;
-      }
-      li {
-        margin-bottom: 5pt;
-      }
-      strong {
-        color: #0f172a;
-      }
-    </style>
-    </head>
-    <body>
-      ${htmlContent}
-    </body>
-    </html>
-  `;
+  const styledHtml = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #1e293b;
+  }
+  h1 {
+    font-size: 20pt;
+    font-weight: bold;
+    color: #0369a1;
+    text-align: center;
+  }
+  h2 {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #0f766e;
+    border-bottom: 1px solid #cbd5e1;
+  }
+  h3 {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #334155;
+  }
+  p {
+    margin-bottom: 10pt;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background-color: #f1f5f9;
+    font-weight: bold;
+  }
+  ul, ol {
+    padding-left: 20pt;
+  }
+  li {
+    margin-bottom: 4pt;
+  }
+</style>
+</head>
+<body>
+  ${htmlContent}
+</body>
+</html>`;
 
   const metadata = {
     name: title,
@@ -157,18 +134,19 @@ export const saveToGoogleDocs = async (
 
   const boundary = 'rpp_generator_google_docs_boundary';
 
-  // Constructing multipart/related body using Blobs to handle multibyte characters correctly
-  const parts = [
-    `--${boundary}\r\n`,
-    'Content-Type: application/json; charset=UTF-8\r\n\r\n',
+  // Constructing multipart/related body as a standard raw string to prevent the browser's fetch API
+  // from stripping the crucial "boundary" parameter from the Content-Type header.
+  const body = [
+    `--${boundary}`,
+    'Content-Type: application/json; charset=UTF-8',
+    '',
     JSON.stringify(metadata),
-    `\r\n--${boundary}\r\n`,
-    'Content-Type: text/html; charset=UTF-8\r\n\r\n',
+    `--${boundary}`,
+    'Content-Type: text/html; charset=UTF-8',
+    '',
     styledHtml,
-    `\r\n--${boundary}--`
-  ];
-
-  const body = new Blob(parts, { type: 'multipart/related' });
+    `--${boundary}--`
+  ].join('\r\n');
 
   const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
     method: 'POST',
