@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "npx esbuild src/index.tsx --bundle --outfile=bundle.js --format=esm --jsx=automatic --loader:.ts=tsx --resolve-extensions=.tsx,.ts,.js,.jsx --external:react --external:react-dom/client --external:react-router-dom --external:pizzip --external:docxtemplater --external:file-saver",
-    "dev": "vercel dev"
+    "dev": "tsx server.ts",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "start": "node dist/server.cjs"
   },
   "dependencies": {
     "@google/genai": "^1.6.0",
@@ -33,6 +34,7 @@
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.1.4",
     "esbuild": "^0.23.0",
+    "tsx": "^4.23.0",
     "typescript": "^5.3.3",
     "vercel": "^32.6.1",
     "vite": "^7.3.1"

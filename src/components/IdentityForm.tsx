@@ -33,6 +33,7 @@ export const IdentityForm: React.FC<Props> = ({ formData, handleChange, onSubmit
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">Kelas <span className="text-slate-500 font-normal ml-1">({getFaseForKelas(formData.kelasFase)})</span></label>
           <select name="kelasFase" value={formData.kelasFase} onChange={handleChange} className={inputClass}>
+            <option value="" disabled>Pilih Kelas</option>
             {KELAS_OPTIONS.map(opt => (
               <option key={opt} value={opt}>{opt}</option>
             ))}

@@ -1013,7 +1013,10 @@ var init_IdentityForm = __esm({
                 ")"
               ] })
             ] }),
-            /* @__PURE__ */ jsx14("select", { name: "kelasFase", value: formData.kelasFase, onChange: handleChange, className: inputClass, children: KELAS_OPTIONS.map((opt) => /* @__PURE__ */ jsx14("option", { value: opt, children: opt }, opt)) })
+            /* @__PURE__ */ jsxs12("select", { name: "kelasFase", value: formData.kelasFase, onChange: handleChange, className: inputClass, children: [
+              /* @__PURE__ */ jsx14("option", { value: "", disabled: true, children: "Pilih Kelas" }),
+              KELAS_OPTIONS.map((opt) => /* @__PURE__ */ jsx14("option", { value: opt, children: opt }, opt))
+            ] })
           ] }),
           /* @__PURE__ */ jsxs12("div", { children: [
             /* @__PURE__ */ jsx14("label", { className: "block text-sm font-semibold text-slate-700 mb-2", children: "Alokasi Waktu" }),
@@ -10036,11 +10039,11 @@ var init_HomePage = __esm({
     emptyForm2 = {
       provinsiKota: "",
       dinasPendidikan: "",
-      satuanPendidikan: "SMP Negeri 3 Kerinci",
-      alamatSekolah: "Jl. Lempur Tengah",
+      satuanPendidikan: "",
+      alamatSekolah: "",
       mataPelajaran: "",
       singkatan: "",
-      kelasFase: "Kelas VII",
+      kelasFase: "",
       tahunPelajaran: "",
       alokasiWaktu: "",
       jpPerMinggu: "",
