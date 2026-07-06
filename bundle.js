@@ -9895,7 +9895,7 @@ var init_documentApi = __esm({
   "src/utils/documentApi.ts"() {
     "use strict";
     saveDocument = async (title, type, data) => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const res = await fetch("/api/documents", {
         method: "POST",
         headers: {
@@ -9909,7 +9909,7 @@ var init_documentApi = __esm({
       return json.data;
     };
     getDocuments = async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const res = await fetch("/api/documents", {
         headers: {
           ...token ? { "Authorization": `Bearer ${token}` } : {}
@@ -9920,7 +9920,7 @@ var init_documentApi = __esm({
       return json.data;
     };
     updateDocument = async (id, title, data) => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const res = await fetch(`/api/documents?id=${id}`, {
         method: "PUT",
         headers: {
@@ -9934,7 +9934,7 @@ var init_documentApi = __esm({
       return json.data;
     };
     deleteDocument = async (id) => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const res = await fetch(`/api/documents?id=${id}`, {
         method: "DELETE",
         headers: {

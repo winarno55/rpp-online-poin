@@ -10,7 +10,7 @@ export interface SavedDocument {
 }
 
 export const saveDocument = async (title: string, type: 'modul' | 'bundle', data: any) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     const res = await fetch('/api/documents', {
         method: 'POST',
         headers: {
@@ -25,7 +25,7 @@ export const saveDocument = async (title: string, type: 'modul' | 'bundle', data
 };
 
 export const getDocuments = async (): Promise<SavedDocument[]> => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     const res = await fetch('/api/documents', {
         headers: {
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -37,7 +37,7 @@ export const getDocuments = async (): Promise<SavedDocument[]> => {
 };
 
 export const getDocumentById = async (id: string): Promise<SavedDocument> => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     const res = await fetch(`/api/documents?id=${id}`, {
         headers: {
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -49,7 +49,7 @@ export const getDocumentById = async (id: string): Promise<SavedDocument> => {
 };
 
 export const updateDocument = async (id: string, title: string, data: any) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     const res = await fetch(`/api/documents?id=${id}`, {
         method: 'PUT',
         headers: {
@@ -64,7 +64,7 @@ export const updateDocument = async (id: string, title: string, data: any) => {
 };
 
 export const deleteDocument = async (id: string) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     const res = await fetch(`/api/documents?id=${id}`, {
         method: 'DELETE',
         headers: {
