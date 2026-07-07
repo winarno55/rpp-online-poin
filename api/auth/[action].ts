@@ -3,6 +3,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
 import dbConnect from '../_lib/db.js';
 import User, { IUser } from '../_lib/models/User.js';
+import { protect } from '../_lib/auth.js';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
@@ -144,6 +145,34 @@ async function handleResetPassword(req: VercelRequest, res: VercelResponse) {
     res.status(200).json({ success: true, message: 'Password berhasil direset!' });
 }
 
+async function handleMe(req: VercelRequest, res: VercelResponse) {
+    if (req.method !== 'GET') return res.status(405).json({ message: 'Method Not Allowed' });
+    
+    let authFailed = false;
+    await new Promise<void>((resolve) => {
+        protect(req as any, res, () => {
+            resolve();
+        }).catch((err) => {
+            console.error('Me endpoint protect error:', err);
+            authFailed = true;
+            resolve();
+        });
+    });
+
+    if (res.headersSent || authFailed) return;
+
+    const reqUser = (req as any).user;
+    if (!reqUser) return res.status(401).json({ message: 'Unauthorized' });
+
+    await dbConnect();
+    const user = await User.findById(reqUser._id).exec();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.status(200).json({
+        user: { id: user._id.toString(), email: user.email, points: user.points, role: user.role }
+    });
+}
+
 // --- MAIN DISPATCHER ---
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
@@ -157,6 +186,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
                 case 'register': return await handleRegister(req, res);
                 case 'forgot-password': return await handleForgotPassword(req, res);
                 case 'reset-password': return await handleResetPassword(req, res);
+                case 'me': return await handleMe(req, res);
                 default: return res.status(404).json({ message: 'Invalid auth endpoint' });
             }
         } catch (error: any) {

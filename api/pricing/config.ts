@@ -17,10 +17,11 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
       
       let config = await PricingConfig.findOne().exec();
       
+      let configObj: any;
       if (!config) {
         // Provide a default empty state for packages and methods, 
         // and a logical default for session costs to prevent the app from breaking.
-        config = { 
+        configObj = { 
             pointPackages: [],
             paymentMethods: [],
             bundleCost: 50,
@@ -31,10 +32,21 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
                 { sessions: 4, cost: 80 },
                 { sessions: 5, cost: 100 },
             ]
-        } as any;
+        };
+      } else {
+        configObj = config.toObject();
       }
 
-      res.status(200).json(config);
+      // Append Midtrans public configuration
+      configObj.midtrans = {
+        clientKey: process.env.MIDTRANS_CLIENT_KEY || 'Mid-client-bDt1DpSIqw3TrDbG',
+        isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true',
+        snapScriptUrl: process.env.MIDTRANS_IS_PRODUCTION === 'true'
+          ? 'https://app.midtrans.com/snap/snap.js'
+          : 'https://app.sandbox.midtrans.com/snap/snap.js'
+      };
+
+      res.status(200).json(configObj);
 
     } catch (error: any) {
       console.error("Error fetching pricing config:", error);
