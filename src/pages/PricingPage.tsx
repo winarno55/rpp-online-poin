@@ -33,6 +33,9 @@ const PricingPage: React.FC = () => {
         message: string;
     } | null>(null);
 
+    // Ganti menjadi 'true' jika akun Midtrans Anda sudah selesai disurvei/diterima (Aktif)
+    const showAutomaticPayment = false;
+
     useEffect(() => {
         const fetchConfig = async () => {
             setLoading(true);
@@ -236,20 +239,26 @@ const PricingPage: React.FC = () => {
                                 <p className="text-2xl font-bold text-slate-800">{formatCurrency(pkg.price)}</p>
                             </div>
 
-                            <button
-                                onClick={() => handleBuyInstant(pkg, index)}
-                                disabled={payingIndex !== null}
-                                className="w-full bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-500 hover:to-emerald-500 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors flex items-center justify-center space-x-2 text-sm disabled:opacity-50"
-                            >
-                                {payingIndex === index ? (
-                                    <>
-                                        <LoadingSpinner size="sm" />
-                                        <span>Memproses...</span>
-                                    </>
-                                ) : (
-                                    <span>Bayar Instan (Otomatis)</span>
-                                )}
-                            </button>
+                            {showAutomaticPayment ? (
+                                <button
+                                    onClick={() => handleBuyInstant(pkg, index)}
+                                    disabled={payingIndex !== null}
+                                    className="w-full bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-500 hover:to-emerald-500 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors flex items-center justify-center space-x-2 text-sm disabled:opacity-50"
+                                >
+                                    {payingIndex === index ? (
+                                        <>
+                                            <LoadingSpinner size="sm" />
+                                            <span>Memproses...</span>
+                                        </>
+                                    ) : (
+                                        <span>Bayar Instan (Otomatis)</span>
+                                    )}
+                                </button>
+                            ) : (
+                                <div className="text-xs text-slate-500 italic mt-2 bg-slate-100 p-2 rounded w-full">
+                                    Gunakan transfer manual di bawah ini
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
