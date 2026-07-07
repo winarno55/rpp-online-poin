@@ -39,7 +39,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 
       // Append Midtrans public configuration
       configObj.midtrans = {
-        clientKey: process.env.MIDTRANS_CLIENT_KEY || 'Mid-client-bDt1DpSIqw3TrDbG',
+        clientKey: process.env.MIDTRANS_CLIENT_KEY || '',
         isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true',
         snapScriptUrl: process.env.MIDTRANS_IS_PRODUCTION === 'true'
           ? 'https://app.midtrans.com/snap/snap.js'

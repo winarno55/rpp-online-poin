@@ -36,7 +36,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // 1. Verify Midtrans Signature Key
         // signature_key = SHA512(order_id + status_code + gross_amount + ServerKey)
-        const serverKey = process.env.MIDTRANS_SERVER_KEY || 'Mid-server-1bs5YO350b42wbXfT7q-ObwC';
+        const serverKey = process.env.MIDTRANS_SERVER_KEY;
+        if (!serverKey) {
+          console.error('MIDTRANS_SERVER_KEY is not defined!');
+          res.status(500).json({ message: 'Konfigurasi server key tidak ditemukan' });
+          return resolve();
+        }
         const rawSignatureString = `${order_id}${status_code}${gross_amount}${serverKey}`;
         const computedSignature = crypto
           .createHash('sha512')

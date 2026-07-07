@@ -52,7 +52,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // 2. Determine environment and credentials
         const isProduction = process.env.MIDTRANS_IS_PRODUCTION === 'true';
-        const serverKey = process.env.MIDTRANS_SERVER_KEY || 'Mid-server-1bs5YO350b42wbXfT7q-ObwC';
+        const serverKey = process.env.MIDTRANS_SERVER_KEY;
+        if (!serverKey) {
+          res.status(500).json({ message: 'Konfigurasi pembayaran (MIDTRANS_SERVER_KEY) belum diatur di server.' });
+          return resolve();
+        }
         const midtransUrl = isProduction
           ? 'https://app.midtrans.com/snap/v1/transactions'
           : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
