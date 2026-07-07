@@ -12,6 +12,8 @@ import authActionHandler from './api/auth/[action].js';
 import pricingConfigHandler from './api/pricing/config.js';
 import templateHandler from './api/template.js';
 import documentsHandler from './api/documents.js';
+import paymentCreateHandler from './api/payment/create.js';
+import paymentNotificationHandler from './api/payment/notification.js';
 
 async function startServer() {
   const app = express();
@@ -50,6 +52,8 @@ async function startServer() {
   app.all('/api/pricing/config', wrap(pricingConfigHandler));
   app.all('/api/template', wrap(templateHandler));
   app.all('/api/documents', wrap(documentsHandler));
+  app.all('/api/payment/create', wrap(paymentCreateHandler));
+  app.all('/api/payment/notification', wrap(paymentNotificationHandler));
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
