@@ -319,6 +319,13 @@ const HomePage: React.FC = () => {
                 <div className="flex-1 flex flex-col items-center justify-center py-12">
                     <div className="max-w-4xl w-full">
                         <div className="text-center mb-10">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold mb-4 animate-pulse shadow-sm">
+                                <span className="flex h-2 w-2 relative">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
+                                UPGRADE: Mengacu CP Terbaru Kepala BSKAP No. 046/H/KR/2025
+                            </div>
                             <h2 className="text-3xl font-bold text-slate-800 mb-4">Mulai Buat Perangkat Ajar</h2>
                             <p className="text-slate-600">Pilih mode pembuatan dokumen sesuai dengan kebutuhan dan sisa poin Anda.</p>
                         </div>

@@ -247,8 +247,55 @@ const AdminPage: React.FC = () => {
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const totalUsersCount = users.length;
+    const activeUsersCount = users.filter(user => user.points > 200).length;
+    const passiveUsersCount = totalUsersCount - activeUsersCount;
+    const activePercentage = totalUsersCount > 0 ? Math.round((activeUsersCount / totalUsersCount) * 100) : 0;
+    const passivePercentage = totalUsersCount > 0 ? Math.round((passiveUsersCount / totalUsersCount) * 100) : 0;
+
     return (
         <div className="space-y-12">
+            {/* Dashboard Analisis Aktivitas Pengguna */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mx-auto">
+                {/* Total Users Card */}
+                <div className="bg-slate-800 border border-slate-700/50 shadow-xl rounded-xl p-6 flex flex-col justify-between transition-all hover:border-sky-500/30">
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-sky-400 uppercase tracking-wider">Total Pengguna</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-sky-400">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A11.386 11.386 0 0 1 10.089 18H9.749A11.378 11.378 0 0 1 4.873 19.237V19.13c0-1.113.285-2.16.786-3.07M15 19.128v.109a11.386 11.386 0 0 1-4.911-1.237c-.501-.91-.786-1.957-.786-3.07M10.828 10.089A4.125 4.125 0 1 0 6.172 6.172a4.125 4.125 0 0 0 4.656 3.917Z" />
+                        </svg>
+                    </div>
+                    <div className="flex items-baseline gap-2 mt-4">
+                        <span className="text-4xl font-extrabold text-white">{totalUsersCount}</span>
+                        <span className="text-xs text-slate-400 font-medium">Pengguna terdaftar</span>
+                    </div>
+                </div>
+
+                {/* Active Users Card */}
+                <div className="bg-slate-800 border border-slate-700/50 shadow-xl rounded-xl p-6 flex flex-col justify-between transition-all hover:border-emerald-500/30">
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-emerald-400 uppercase tracking-wider">Pengguna Aktif</span>
+                        <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-medium border border-emerald-500/20">Poin &gt; 200</span>
+                    </div>
+                    <div className="flex items-baseline gap-2 mt-4">
+                        <span className="text-4xl font-extrabold text-emerald-400">{activeUsersCount}</span>
+                        <span className="text-xs text-slate-400 font-medium">({activePercentage}%) dari total</span>
+                    </div>
+                </div>
+
+                {/* Passive Users Card */}
+                <div className="bg-slate-800 border border-slate-700/50 shadow-xl rounded-xl p-6 flex flex-col justify-between transition-all hover:border-rose-500/30">
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-rose-400 uppercase tracking-wider">Pengguna Pasif</span>
+                        <span className="text-xs bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded-full font-medium border border-rose-500/20">Poin ≤ 200</span>
+                    </div>
+                    <div className="flex items-baseline gap-2 mt-4">
+                        <span className="text-4xl font-extrabold text-rose-400">{passiveUsersCount}</span>
+                        <span className="text-xs text-slate-400 font-medium">({passivePercentage}%) dari total</span>
+                    </div>
+                </div>
+            </div>
+
             {/* User Management Section */}
             <div className="bg-slate-800 shadow-2xl rounded-xl p-6 sm:p-8 w-full max-w-4xl mx-auto">
                 <div className="flex justify-between items-center mb-6">

@@ -22,6 +22,8 @@ export const generateLessonPlanPrompt = (input: LessonPlanInput): string => {
 
   return `Anda adalah seorang ahli pengembangan kurikulum dan desainer instruksional yang sangat berpengalaman di Indonesia, ahli dalam Kurikulum Merdeka.
   
+PENTING: Seluruh analisis Capaian Pembelajaran (CP), penyusunan Tujuan Pembelajaran (TP), dan pembuatan Modul Ajar (RPP) wajib sepenuhnya mengacu pada regulasi kurikulum terbaru di Indonesia, yaitu **Keputusan Kepala BSKAP (Badan Standar, Kurikulum, dan Asesmen Pendidikan) Nomor 046/H/KR/2025** (bukan Nomor 032/H/KR/2024 maupun Nomor 033/H/KR/2022). Pastikan semua standar kompetensi, materi pokok, pembagian elemen, dan deskripsi capaian disesuaikan dengan standar keputusan 046/H/KR/2025 tersebut.
+  
 Tugas Anda: Buatlah Modul Ajar (Dokumen 7) yang lengkap, profesional, dan siap pakai. Gunakan pendekatan Deep Learning (Mindful, Meaningful, Joyful).
 
 ATURAN WAJIB (STRICT INSTRUCTIONS):

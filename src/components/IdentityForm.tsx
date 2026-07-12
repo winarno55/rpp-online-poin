@@ -43,9 +43,21 @@ export const IdentityForm: React.FC<Props> = ({ formData, handleChange, onSubmit
           <label className="block text-sm font-semibold text-slate-700 mb-2">Alokasi Waktu</label>
           <input type="text" name="alokasiWaktu" value={formData.alokasiWaktu} onChange={handleChange} className={inputClass} />
         </div>
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">CP Umum</label>
-          <textarea name="cpUmum" value={formData.cpUmum} onChange={handleChange} className={inputClass} rows={3} />
+        <div className="md:col-span-2">
+          <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+            <span>CP Umum (Capaian Pembelajaran)</span>
+            <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold border border-emerald-200">
+              Mengacu ke BSKAP No. 046/H/KR/2025 Terbaru
+            </span>
+          </label>
+          <textarea 
+            name="cpUmum" 
+            value={formData.cpUmum} 
+            onChange={handleChange} 
+            className={inputClass} 
+            rows={3} 
+            placeholder="Tuliskan Capaian Pembelajaran (CP) Umum atau biarkan kosong agar AI melaraskannya secara otomatis berdasarkan standar BSKAP No. 046/H/KR/2025 terbaru..."
+          />
         </div>
       </div>
 

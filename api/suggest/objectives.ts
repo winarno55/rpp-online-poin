@@ -53,7 +53,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         let lastError = null;
         
         const prompt = `
-            Anda adalah seorang ahli dalam desain pembelajaran. Berdasarkan informasi berikut, berikan 3 contoh Tujuan Pembelajaran yang jelas, terukur, dan relevan untuk RPP (Rencana Pelaksanaan Pembelajaran).
+            Anda adalah seorang ahli dalam desain pembelajaran Kurikulum Merdeka di Indonesia. Berdasarkan informasi berikut, berikan 3 contoh Tujuan Pembelajaran yang jelas, terukur, dan relevan untuk RPP (Rencana Pelaksanaan Pembelajaran) dengan sepenuhnya mengacu pada **Keputusan Kepala BSKAP Nomor 046/H/KR/2025**.
             - Mata Pelajaran: ${mataPelajaran}
             - Kelas/Fase: ${kelasFase}
             - Materi Pembahasan: ${materi}

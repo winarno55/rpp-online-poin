@@ -371,7 +371,18 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
               </div>
               <div>
                 <label htmlFor="capaianPembelajaran" className={labelClass}>Capaian Pembelajaran <span className="text-slate-500 font-normal">(Opsional)</span></label>
-                <textarea name="capaianPembelajaran" id="capaianPembelajaran" value={formData.capaianPembelajaran} onChange={handleChange} rows={3} className={inputClass} placeholder="Tuliskan capaian pembelajaran sesuai fase..." />
+                <textarea 
+                  name="capaianPembelajaran" 
+                  id="capaianPembelajaran" 
+                  value={formData.capaianPembelajaran} 
+                  onChange={handleChange} 
+                  rows={3} 
+                  className={inputClass} 
+                  placeholder="Tuliskan capaian pembelajaran atau biarkan kosong agar AI melaraskannya secara otomatis berdasarkan standar BSKAP No. 046/H/KR/2025 terbaru..." 
+                />
+                <p className="text-xs text-emerald-600 mt-1 font-semibold flex items-center gap-1">
+                  <span>✨</span> Mengacu pada Keputusan Kepala BSKAP No. 046/H/KR/2025 terbaru.
+                </p>
               </div>
               <div>
                 <div className="flex justify-between items-center mb-2">

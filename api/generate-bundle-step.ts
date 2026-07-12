@@ -129,6 +129,8 @@ function constructPromptForStep(step: number, input: any, previousDocs: any): st
     const kelasFaseCombined = `${input.kelasFase} / ${fase}`;
 
     const commonRules = `
+PENTING: Seluruh analisis Capaian Pembelajaran (CP), penyusunan Tujuan Pembelajaran (TP), pembuatan Alur Tujuan Pembelajaran (ATP), Prota, Promes, KKTP, dan Modul Ajar (RPP) wajib sepenuhnya mengacu pada regulasi kurikulum terbaru di Indonesia, yaitu **Keputusan Kepala BSKAP (Badan Standar, Kurikulum, dan Asesmen Pendidikan) Nomor 046/H/KR/2025** (bukan Nomor 032/H/KR/2024 maupun Nomor 033/H/KR/2022). Pastikan semua standar kompetensi, materi pokok, dan pembagian elemen disesuaikan dengan Keputusan Kepala BSKAP Nomor 046/H/KR/2025.
+
 ATURAN WAJIB (STRICT INSTRUCTIONS):
 1. HANYA hasilkan kode HTML murni tanpa membungkusnya dengan markdown \`\`\`html.
 2. JANGAN berikan teks pengantar atau penutup apa pun. Mulailah langsung dengan konten utama.
