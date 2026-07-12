@@ -10,6 +10,7 @@ const corsHandler = cors();
 
 // DAFTAR MODEL PRIORITAS (Strategi "WATERFALL")
 const MODELS_TO_TRY = [
+    'gemini-3.5-flash',          // Latest Gen 3.5 Flash
     'gemini-3.1-pro-preview',    // 1. Gen 3.1 Pro
     'gemini-3-flash-preview',    // 2. Gen 3 Flash
     'gemini-2.5-pro-preview',    // 3. Gen 2.5 Pro
@@ -68,6 +69,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                 try {
                     const ai = new GoogleGenAI({ apiKey });
                     
+                    const hasSearch = modelName.startsWith('gemini-3');
                     const response = await ai.models.generateContent({
                         model: modelName,
                         contents: prompt,
@@ -84,7 +86,8 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                                         }
                                     }
                                 }
-                            }
+                            },
+                            tools: hasSearch ? [{ googleSearch: {} }] : undefined
                         }
                     });
                     

@@ -11,6 +11,7 @@ import cors from 'cors';
 const corsHandler = cors();
 
 const MODELS_TO_TRY = [
+    'gemini-3.5-flash',
     'gemini-3.1-pro-preview',
     'gemini-3-flash-preview',
     'gemini-2.5-pro-preview',
@@ -71,9 +72,13 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                 for (let i = 0; i < apiKeys.length; i++) {
                     try {
                         const ai = new GoogleGenAI({ apiKey: apiKeys[i] });
+                        const hasSearch = modelName.startsWith('gemini-3');
                         const stream = await ai.models.generateContentStream({
                             model: modelName,
                             contents: prompt,
+                            config: hasSearch ? {
+                                tools: [{ googleSearch: {} }]
+                            } : undefined
                         });
                         responseStream = stream;
                         break modelLoop;

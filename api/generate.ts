@@ -16,6 +16,7 @@ const corsHandler = cors();
 // Konsep: Coba Pro -> Flash di setiap Generasi (3 -> 2.5 -> 2).
 // Ini menyeimbangkan Kualitas Tertinggi dengan Ketersediaan.
 const MODELS_TO_TRY = [
+    'gemini-3.5-flash',          // Latest Gen 3.5 Flash
     'gemini-3.1-pro-preview',    // 1. Gen 3.1 Pro (Kualitas Tertinggi)
     'gemini-3-flash-preview',    // 2. Gen 3 Flash (Kecepatan Tertinggi)
     'gemini-2.5-pro-preview',    // 3. Gen 2.5 Pro (Penalaran Kuat)
@@ -83,10 +84,14 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                     try {
                         const ai = new GoogleGenAI({ apiKey });
                         
+                        const hasSearch = modelName.startsWith('gemini-3');
                         // Coba connect dengan model saat ini
                         const stream = await ai.models.generateContentStream({
                             model: modelName,
                             contents: prompt,
+                            config: hasSearch ? {
+                                tools: [{ googleSearch: {} }]
+                            } : undefined
                         });
                         
                         responseStream = stream;
