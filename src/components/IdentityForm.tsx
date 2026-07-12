@@ -43,6 +43,30 @@ export const IdentityForm: React.FC<Props> = ({ formData, handleChange, onSubmit
           <label className="block text-sm font-semibold text-slate-700 mb-2">Alokasi Waktu</label>
           <input type="text" name="alokasiWaktu" value={formData.alokasiWaktu} onChange={handleChange} className={inputClass} />
         </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Tahun Pelajaran</label>
+          <input type="text" name="tahunPelajaran" value={formData.tahunPelajaran} onChange={handleChange} className={inputClass} placeholder="Contoh: 2025/2026" />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Tempat / Tanggal TTD</label>
+          <input type="text" name="kotaTanggalTtd" value={formData.kotaTanggalTtd} onChange={handleChange} className={inputClass} placeholder="Contoh: Jakarta, 14 Juli 2025" />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Nama Guru Mata Pelajaran</label>
+          <input type="text" name="namaGuru" value={formData.namaGuru} onChange={handleChange} className={inputClass} placeholder="Nama Guru beserta Gelar" />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">NIP Guru Mata Pelajaran</label>
+          <input type="text" name="nipGuru" value={formData.nipGuru} onChange={handleChange} className={inputClass} placeholder="NIP Guru" />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Nama Kepala Sekolah</label>
+          <input type="text" name="namaKepalaSekolah" value={formData.namaKepalaSekolah} onChange={handleChange} className={inputClass} placeholder="Nama Kepala Sekolah beserta Gelar" />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">NIP Kepala Sekolah</label>
+          <input type="text" name="nipKepalaSekolah" value={formData.nipKepalaSekolah} onChange={handleChange} className={inputClass} placeholder="NIP Kepala Sekolah" />
+        </div>
         <div className="md:col-span-2">
           <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
             <span>CP Umum (Capaian Pembelajaran)</span>

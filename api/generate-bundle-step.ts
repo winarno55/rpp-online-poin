@@ -152,8 +152,27 @@ function constructPromptForStep(step: number, input: any, previousDocs: any): st
     const fase = getFase(input.kelasFase);
     const kelasFaseCombined = `${input.kelasFase} / ${fase}`;
 
+    const isPjok = input.mataPelajaran?.toLowerCase().includes('pjok') ||
+                   input.mataPelajaran?.toLowerCase().includes('penjas') ||
+                   input.mataPelajaran?.toLowerCase().includes('jasmani') ||
+                   input.mataPelajaran?.toLowerCase().includes('olahraga');
+
+    const pjokSpecificRules = isPjok ? `
+KHUSUS MATAPELAJARAN PJOK (Pendidikan Jasmani, Olahraga, dan Kesehatan):
+Sesuai **BSKAP No. 046/H/KR/2025**, elemen PJOK tidak lagi menggunakan elemen lama (Keterampilan Gerak, Pengetahuan Gerak, Pemanfaatan Gerak, dsb). 
+Anda **WAJIB** menggunakan 4 Elemen Baru PJOK berikut beserta deskripsi Capaian Pembelajarannya:
+1. **Terampil Bergerak** (TB) - Capaian Pembelajaran: Peserta didik mempraktikkan keterampilan gerak dasar (lokomotor, non-lokomotor, manipulatif) secara mandiri atau dalam bentuk variasi dan kombinasi gerak secara tepat dalam berbagai aktivitas jasmani, permainan, dan olahraga.
+2. **Belajar melalui Gerak** (BMG) - Capaian Pembelajaran: Peserta didik memahami dan menerapkan konsep, prinsip, prosedur, taktik, dan strategi gerak, serta menginternalisasi nilai-nilai karakter (mandiri, kerja sama, sportivitas, tanggung jawab) melalui aktivitas jasmani secara aman dan menyenangkan.
+3. **Bergaya Hidup Aktif** (BHA) - Capaian Pembelajaran: Peserta didik melakukan aktivitas jasmani secara teratur untuk memelihara dan meningkatkan kebugaran jasmani terkait kesehatan serta membiasakan gaya hidup aktif secara mandiri.
+4. **Memilih Hidup yang Menyehatkan** (MHM) - Capaian Pembelajaran: Peserta didik memahami dan menerapkan perilaku hidup bersih dan sehat, memelihara kesehatan kebersihan diri dan reproduksi, serta memahami pencegahan bahaya NAPZA dan penyakit menular/tidak menular.
+
+Pastikan pada Dokumen 1 (Analisis CP) dan dokumen-dokumen selanjutnya, elemen-elemen dan CP PJOK yang disajikan adalah keempat elemen di atas! JANGAN SEKALI-KALI menggunakan elemen lama (Keterampilan/Pengetahuan/Pemanfaatan Gerak).
+` : '';
+
     const commonRules = `
 PENTING: Seluruh analisis Capaian Pembelajaran (CP), penyusunan Tujuan Pembelajaran (TP), pembuatan Alur Tujuan Pembelajaran (ATP), Prota, Promes, KKTP, dan Modul Ajar (RPP) wajib sepenuhnya mengacu pada regulasi kurikulum terbaru di Indonesia, yaitu **Keputusan Kepala BSKAP (Badan Standar, Kurikulum, dan Asesmen Pendidikan) Nomor 046/H/KR/2025** (bukan Nomor 032/H/KR/2024 maupun Nomor 033/H/KR/2022). Pastikan semua standar kompetensi, materi pokok, dan pembagian elemen disesuaikan dengan Keputusan Kepala BSKAP Nomor 046/H/KR/2025.
+
+${pjokSpecificRules}
 
 ATURAN WAJIB (STRICT INSTRUCTIONS):
 1. HANYA hasilkan kode HTML murni tanpa membungkusnya dengan markdown \`\`\`html.

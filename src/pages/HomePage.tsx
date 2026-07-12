@@ -22,10 +22,10 @@ const TABS = [
 ];
 
 const emptyForm: LessonPlanInput = {
-    provinsiKota: "", dinasPendidikan: "", satuanPendidikan: "", alamatSekolah: "",
-    mataPelajaran: "", singkatan: "", kelasFase: "", tahunPelajaran: "", alokasiWaktu: "", jpPerMinggu: "",
-    durasiPertemuan: "", namaGuru: "", nipGuru: "", namaKepalaSekolah: "", nipKepalaSekolah: "", kotaTanggalTtd: "",
-    elemenKode: "", cpUmum: "", cpPerElemen: "", kalenderPendidikan: "", rentangNilaiKktp: "",
+    provinsiKota: "", dinasPendidikan: "", satuanPendidikan: "SD Negeri Jaya Bangsa", alamatSekolah: "",
+    mataPelajaran: "", singkatan: "", kelasFase: "", tahunPelajaran: "2025/2026", alokasiWaktu: "2 x 35 Menit (1 Pertemuan)", jpPerMinggu: "",
+    durasiPertemuan: "", namaGuru: "Rian Hidayat, S.Pd.Gr.", nipGuru: "199103252018041002", namaKepalaSekolah: "Dr. Ahmad Susilo, M.Pd.", nipKepalaSekolah: "197508122002121003", kotaTanggalTtd: "Jakarta, 14 Juli 2025",
+    elemenKode: "", cpUmum: "", cpPerElemen: "", kalenderPendidikan: "Alokasi efektif semester ganjil adalah 18 minggu efektif sesuai Kalender Pendidikan Dinas Provinsi.", rentangNilaiKktp: "0-60: Belum Tuntas, 61-75: Cukup, 76-90: Baik, 91-100: Sangat Baik",
     materi: "", jumlahPertemuan: "1 Pertemuan", jamPelajaran: "", pesertaDidik: "", dimensiProfilLulusan: [],
     capaianPembelajaran: "", lintasDisiplinIlmu: "", tujuanPembelajaran: "", praktikPedagogis: "Pendekatan Berdiferensiasi",
     lingkunganPembelajaran: "", pemanfaatanDigital: "", kemitraanPembelajaran: ""
