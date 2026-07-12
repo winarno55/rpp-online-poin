@@ -14,8 +14,7 @@ const MODELS_TO_TRY = [
     'gemini-3.1-pro-preview',    // 1. Gen 3.1 Pro
     'gemini-3-flash-preview',    // 2. Gen 3 Flash
     'gemini-2.5-pro-preview',    // 3. Gen 2.5 Pro
-    'gemini-2.0-pro-exp-02-05',  // 4. Gen 2 Pro
-    'gemini-2.0-flash-exp'       // 5. Gen 2 Flash
+    'gemini-2.0-pro-exp-02-05'   // 4. Gen 2 Pro
 ];
 
 type AuthRequest = VercelRequest & {
@@ -68,44 +67,81 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                 const apiKey = apiKeys[i];
                 try {
                     const ai = new GoogleGenAI({ apiKey });
-                    
                     const hasSearch = modelName.startsWith('gemini-3');
-                    const response = await ai.models.generateContent({
-                        model: modelName,
-                        contents: prompt,
-                        config: {
-                            responseMimeType: "application/json",
-                            responseSchema: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    suggestions: {
-                                        type: Type.ARRAY,
-                                        description: "Daftar 3 saran tujuan pembelajaran dalam format string.",
-                                        items: {
-                                            type: Type.STRING
+                    let response;
+
+                    if (hasSearch) {
+                        try {
+                            response = await ai.models.generateContent({
+                                model: modelName,
+                                contents: prompt,
+                                config: {
+                                    responseMimeType: "application/json",
+                                    responseSchema: {
+                                        type: Type.OBJECT,
+                                        properties: {
+                                            suggestions: {
+                                                type: Type.ARRAY,
+                                                description: "Daftar 3 saran tujuan pembelajaran dalam format string.",
+                                                items: {
+                                                    type: Type.STRING
+                                                }
+                                            }
+                                        }
+                                    },
+                                    tools: [{ googleSearch: {} }]
+                                }
+                            });
+                        } catch (searchError: any) {
+                            console.warn(`[${modelName}] Key ${i + 1} failed with Google Search for Suggestion: ${searchError.message}. Retrying without search...`);
+                            response = await ai.models.generateContent({
+                                model: modelName,
+                                contents: prompt,
+                                config: {
+                                    responseMimeType: "application/json",
+                                    responseSchema: {
+                                        type: Type.OBJECT,
+                                        properties: {
+                                            suggestions: {
+                                                type: Type.ARRAY,
+                                                description: "Daftar 3 saran tujuan pembelajaran dalam format string.",
+                                                items: {
+                                                    type: Type.STRING
+                                                }
+                                            }
                                         }
                                     }
                                 }
-                            },
-                            tools: hasSearch ? [{ googleSearch: {} }] : undefined
+                            });
                         }
-                    });
+                    } else {
+                        response = await ai.models.generateContent({
+                            model: modelName,
+                            contents: prompt,
+                            config: {
+                                responseMimeType: "application/json",
+                                responseSchema: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        suggestions: {
+                                            type: Type.ARRAY,
+                                            description: "Daftar 3 saran tujuan pembelajaran dalam format string.",
+                                            items: {
+                                                type: Type.STRING
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
                     
                     finalResponse = response;
                     break modelLoop; // Berhasil, keluar dari semua loop
 
                 } catch (error: any) {
                     lastError = error;
-                    const errorMessage = error.message ? error.message.toLowerCase() : '';
-                    const isRetryable = errorMessage.includes('429') || errorMessage.includes('503') || errorMessage.includes('quota') || errorMessage.includes('resource exhausted');
-                    
-                    if (isRetryable) {
-                         console.warn(`[${modelName}] Key ${i + 1} Failed for Suggestion: ${error.message}. Retrying...`);
-                        continue;
-                    } else {
-                        // Error lain, coba key berikutnya
-                        continue;
-                    }
+                    console.warn(`[${modelName}] Key ${i + 1} Failed for Suggestion: ${error.message}`);
                 }
             }
             console.warn(`All keys failed for Suggestion on model ${modelName}. Switching model...`);

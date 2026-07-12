@@ -20,8 +20,7 @@ const MODELS_TO_TRY = [
     'gemini-3.1-pro-preview',    // 1. Gen 3.1 Pro (Kualitas Tertinggi)
     'gemini-3-flash-preview',    // 2. Gen 3 Flash (Kecepatan Tertinggi)
     'gemini-2.5-pro-preview',    // 3. Gen 2.5 Pro (Penalaran Kuat)
-    'gemini-2.0-pro-exp-02-05',  // 4. Gen 2.0 Pro (Kualitas Stabil)
-    'gemini-2.0-flash-exp'       // 5. Gen 2.0 Flash (Cadangan Terakhir)
+    'gemini-2.0-pro-exp-02-05'   // 4. Gen 2.0 Pro (Kualitas Stabil)
 ];
 
 type AuthRequest = VercelRequest & {
@@ -83,16 +82,31 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                     
                     try {
                         const ai = new GoogleGenAI({ apiKey });
-                        
                         const hasSearch = modelName.startsWith('gemini-3');
-                        // Coba connect dengan model saat ini
-                        const stream = await ai.models.generateContentStream({
-                            model: modelName,
-                            contents: prompt,
-                            config: hasSearch ? {
-                                tools: [{ googleSearch: {} }]
-                            } : undefined
-                        });
+                        let stream;
+                        
+                        if (hasSearch) {
+                            try {
+                                stream = await ai.models.generateContentStream({
+                                    model: modelName,
+                                    contents: prompt,
+                                    config: {
+                                        tools: [{ googleSearch: {} }]
+                                    }
+                                });
+                            } catch (searchError: any) {
+                                console.warn(`[${modelName}] Key ${i + 1} failed with Google Search: ${searchError.message}. Retrying without search...`);
+                                stream = await ai.models.generateContentStream({
+                                    model: modelName,
+                                    contents: prompt
+                                });
+                            }
+                        } else {
+                            stream = await ai.models.generateContentStream({
+                                model: modelName,
+                                contents: prompt
+                            });
+                        }
                         
                         responseStream = stream;
                         successModel = modelName;
@@ -102,19 +116,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 
                     } catch (error: any) {
                         lastError = error;
-                        
-                        const errorMessage = error.message ? error.message.toLowerCase() : '';
-                        // Cek error quota (429) atau server overload (503)
-                        const isRetryable = errorMessage.includes('429') || errorMessage.includes('503') || errorMessage.includes('quota') || errorMessage.includes('resource exhausted');
-                        
-                        if (isRetryable) {
-                            console.warn(`[${modelName}] Key ${i + 1} Failed: ${error.message}. Trying next key...`);
-                            continue; // Lanjut ke key berikutnya di model yang sama
-                        } else {
-                            // Jika error fatal (misal API key invalid format), mungkin tetap lanjut coba key lain
-                            console.warn(`[${modelName}] Key ${i + 1} Fatal/Unknown Error: ${error.message}. Trying next key...`);
-                            continue;
-                        }
+                        console.warn(`[${modelName}] Key ${i + 1} Failed: ${error.message}`);
                     }
                 }
                 console.warn(`All keys failed for model ${modelName}. Switching to next model...`);

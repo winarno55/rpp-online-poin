@@ -15,8 +15,7 @@ const MODELS_TO_TRY = [
     'gemini-3.1-pro-preview',
     'gemini-3-flash-preview',
     'gemini-2.5-pro-preview',
-    'gemini-2.0-pro-exp-02-05',
-    'gemini-2.0-flash-exp'
+    'gemini-2.0-pro-exp-02-05'
 ];
 
 type AuthRequest = VercelRequest & { user?: IUser; };
@@ -70,20 +69,40 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 
             modelLoop: for (const modelName of MODELS_TO_TRY) {
                 for (let i = 0; i < apiKeys.length; i++) {
+                    const apiKey = apiKeys[i];
                     try {
-                        const ai = new GoogleGenAI({ apiKey: apiKeys[i] });
+                        const ai = new GoogleGenAI({ apiKey });
                         const hasSearch = modelName.startsWith('gemini-3');
-                        const stream = await ai.models.generateContentStream({
-                            model: modelName,
-                            contents: prompt,
-                            config: hasSearch ? {
-                                tools: [{ googleSearch: {} }]
-                            } : undefined
-                        });
+                        let stream;
+
+                        if (hasSearch) {
+                            try {
+                                stream = await ai.models.generateContentStream({
+                                    model: modelName,
+                                    contents: prompt,
+                                    config: {
+                                        tools: [{ googleSearch: {} }]
+                                    }
+                                });
+                            } catch (searchError: any) {
+                                console.warn(`[${modelName}] Key ${i + 1} failed with Google Search: ${searchError.message}. Retrying without search...`);
+                                stream = await ai.models.generateContentStream({
+                                    model: modelName,
+                                    contents: prompt
+                                });
+                            }
+                        } else {
+                            stream = await ai.models.generateContentStream({
+                                model: modelName,
+                                contents: prompt
+                            });
+                        }
+
                         responseStream = stream;
                         break modelLoop;
                     } catch (error: any) {
                         lastError = error;
+                        console.warn(`[${modelName}] Key ${i + 1} failed: ${error.message}`);
                     }
                 }
             }
