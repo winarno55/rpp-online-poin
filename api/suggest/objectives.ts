@@ -53,10 +53,17 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         let lastError = null;
         
         const prompt = `
-            Anda adalah seorang ahli dalam desain pembelajaran Kurikulum Merdeka di Indonesia. Berdasarkan informasi berikut, berikan 3 contoh Tujuan Pembelajaran yang jelas, terukur, dan relevan untuk RPP (Rencana Pelaksanaan Pembelajaran) dengan sepenuhnya mengacu pada **Keputusan Kepala BSKAP Nomor 046/H/KR/2025**.
+            Anda adalah seorang ahli dalam desain pembelajaran Kurikulum Merdeka di Indonesia. Berdasarkan informasi berikut, berikan 3 contoh Tujuan Pembelajaran yang jelas, terukur, dan relevan untuk RPP (Rencana Pelaksanaan Pembelajaran) dengan sepenuhnya mengacu pada **Keputusan Kepala BSKAP Nomor 046/H/KR/2025** (bukan regulasi lama 033/2022 atau 032/2024).
+            
+            Informasi:
             - Mata Pelajaran: ${mataPelajaran}
             - Kelas/Fase: ${kelasFase}
             - Materi Pembahasan: ${materi}
+
+            SANGAT PENTING:
+            1. Jika Anda mendeteksi bahwa mata pelajaran ini adalah PJOK, Anda WAJIB menyesuaikan tujuan pembelajaran dengan salah satu atau kombinasi dari 4 elemen baru PJOK (Terampil Bergerak, Belajar melalui Gerak, Bergaya Hidup Aktif, Memilih Hidup yang Menyehatkan) sesuai BSKAP 046/H/KR/2025. JANGAN gunakan istilah elemen lama (Keterampilan Gerak, dsb).
+            2. Untuk mata pelajaran lain (Matematika, IPAS, Bahasa Indonesia, Pendidikan Pancasila, Pendidikan Agama, Seni Rupa, dll.), pastikan substansi materi, ruang lingkup, dan kompetensi yang diukur sesuai dengan revisi CP terbaru di BSKAP No. 046/H/KR/2025.
+            3. Karena Anda memiliki akses Google Search Grounding, jika Anda tidak yakin mengenai cakupan CP terbaru 046/H/KR/2025 untuk mata pelajaran ini, lakukan pencarian web terlebih dahulu dengan kata kunci: \`"046/H/KR/2025" "${mataPelajaran}" "${kelasFase}" capaian pembelajaran\`.
 
             Setiap tujuan pembelajaran harus dirumuskan sebagai kalimat lengkap yang dimulai dengan "Peserta didik dapat..." atau "Melalui kegiatan..., peserta didik mampu...". Buatlah 3 variasi yang berbeda, mungkin dengan fokus pada ranah kognitif, afektif, atau psikomotor yang berbeda. Jangan berikan nomor atau bullet point, hanya hasilkan JSON.
         `;
