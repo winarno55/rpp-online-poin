@@ -37,11 +37,19 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         configObj = config.toObject();
       }
 
+      const isSandbox = config ? (config.midtransSandbox ?? true) : true;
+      const isProduction = !isSandbox;
+      const clientKey = isProduction
+        ? (process.env.MIDTRANS_PRODUCTION_CLIENT_KEY || process.env.MIDTRANS_CLIENT_KEY || '')
+        : (process.env.MIDTRANS_SANDBOX_CLIENT_KEY || process.env.MIDTRANS_CLIENT_KEY || '');
+      const enabled = config ? (config.midtransEnabled ?? false) : false;
+
       // Append Midtrans public configuration
       configObj.midtrans = {
-        clientKey: process.env.MIDTRANS_CLIENT_KEY || '',
-        isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true',
-        snapScriptUrl: process.env.MIDTRANS_IS_PRODUCTION === 'true'
+        clientKey,
+        isProduction,
+        enabled,
+        snapScriptUrl: isProduction
           ? 'https://app.midtrans.com/snap/snap.js'
           : 'https://app.sandbox.midtrans.com/snap/snap.js'
       };

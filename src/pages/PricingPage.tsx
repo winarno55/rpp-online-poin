@@ -33,8 +33,7 @@ const PricingPage: React.FC = () => {
         message: string;
     } | null>(null);
 
-    // Ganti menjadi 'true' jika akun Midtrans Anda sudah selesai disurvei/diterima (Aktif)
-    const showAutomaticPayment = false;
+    const showAutomaticPayment = config?.midtrans?.enabled ?? false;
 
     useEffect(() => {
         const fetchConfig = async () => {

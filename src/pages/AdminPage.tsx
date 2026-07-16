@@ -32,6 +32,8 @@ interface PricingConfig {
     paymentMethods: PaymentMethod[];
     sessionCosts: SessionCost[];
     bundleCost: number;
+    midtransSandbox?: boolean;
+    midtransEnabled?: boolean;
 }
 
 const AdminPage: React.FC = () => {
@@ -51,7 +53,14 @@ const AdminPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     // State untuk pricing config
-    const [pricingConfig, setPricingConfig] = useState<PricingConfig>({ pointPackages: [], paymentMethods: [], sessionCosts: [], bundleCost: 50 });
+    const [pricingConfig, setPricingConfig] = useState<PricingConfig>({ 
+        pointPackages: [], 
+        paymentMethods: [], 
+        sessionCosts: [], 
+        bundleCost: 50,
+        midtransSandbox: true,
+        midtransEnabled: false
+    });
     const [isSavingConfig, setIsSavingConfig] = useState(false);
     const [configMessage, setConfigMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const maxSessions = 5;
@@ -398,6 +407,63 @@ const AdminPage: React.FC = () => {
                             <span className="text-slate-400">Poin</span>
                         </div>
                     </div>
+
+                    {/* Midtrans Config (Pembayaran Otomatis) */}
+                    <div className="mb-8 border-t border-slate-700/50 pt-6">
+                        <h3 className="text-xl font-semibold text-emerald-300 mb-4">Integrasi Pembayaran Otomatis (Midtrans)</h3>
+                        <div className="space-y-4 p-4 bg-slate-700/30 rounded-xl border border-slate-700/60">
+                            {/* Toggle Midtrans Enabled */}
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="font-semibold text-white">Status Pembayaran Otomatis</p>
+                                    <p className="text-sm text-slate-400">Aktifkan atau nonaktifkan fitur pembayaran instan otomatis via Midtrans.</p>
+                                </div>
+                                <button
+                                    onClick={() => setPricingConfig({ ...pricingConfig, midtransEnabled: !pricingConfig.midtransEnabled })}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                                        pricingConfig.midtransEnabled ? 'bg-emerald-500' : 'bg-slate-600'
+                                    }`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                            pricingConfig.midtransEnabled ? 'translate-x-6' : 'translate-x-1'
+                                        }`}
+                                    />
+                                </button>
+                            </div>
+
+                            {/* Toggle Midtrans Sandbox */}
+                            <div className="flex items-center justify-between border-t border-slate-700/50 pt-4">
+                                <div>
+                                    <p className="font-semibold text-white">Mode Sandbox (Uji Coba)</p>
+                                    <p className="text-sm text-slate-400">
+                                        Saat aktif (ON), sistem menggunakan lingkungan sandbox (uji coba) Midtrans. Nonaktifkan (OFF) untuk beralih ke Mode Production (Live).
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setPricingConfig({ ...pricingConfig, midtransSandbox: pricingConfig.midtransSandbox === undefined ? true : !pricingConfig.midtransSandbox })}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                                        (pricingConfig.midtransSandbox !== false) ? 'bg-amber-500' : 'bg-slate-600'
+                                    }`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                            (pricingConfig.midtransSandbox !== false) ? 'translate-x-6' : 'translate-x-1'
+                                        }`}
+                                    />
+                                </button>
+                            </div>
+
+                            <div className="text-xs text-slate-400 bg-slate-800/60 p-3 rounded border border-slate-700/40">
+                                <span className="font-bold text-amber-300">Catatan Konfigurasi:</span> Pastikan Anda telah mengatur variabel lingkungan server di Vercel:
+                                <ul className="list-disc list-inside mt-1 space-y-1">
+                                    <li><code className="text-teal-300">MIDTRANS_CLIENT_KEY</code> &amp; <code className="text-teal-300">MIDTRANS_SERVER_KEY</code> (Default)</li>
+                                    <li><code className="text-teal-300">MIDTRANS_SANDBOX_CLIENT_KEY</code> &amp; <code className="text-teal-300">MIDTRANS_SANDBOX_SERVER_KEY</code> (Spesifik Sandbox)</li>
+                                    <li><code className="text-teal-300">MIDTRANS_PRODUCTION_CLIENT_KEY</code> &amp; <code className="text-teal-300">MIDTRANS_PRODUCTION_SERVER_KEY</code> (Spesifik Production)</li>
+                                </ul>
+                             </div>
+                         </div>
+                     </div>
 
                     {/* Session Costs */}
                     <div>

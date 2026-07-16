@@ -205,12 +205,24 @@ Durasi Pertemuan: ${input.durasiPertemuan}
 Daftar Elemen & Kode: ${input.elemenKode}
 CP Umum: ${input.cpUmum}
 CP per Elemen: ${input.cpPerElemen}
+Capaian Pembelajaran (Acuan Utama): ${input.capaianPembelajaran || ''}
+Tujuan Pembelajaran Pilihan Pengguna: ${input.tujuanPembelajaran || ''}
 `;
 
     if (step === 1) {
-        return `${commonRules}\nBuatlah Dokumen 1 (Analisis Capaian Pembelajaran) yang komprehensif. Analisis elemen-elemen CP berikut dan hubungkan dengan Fase/Kelas. Hasil akhirnya adalah tabel analisis kompetensi dan ruang lingkup materi.\nData:\n${identityData}`;
+        return `${commonRules}
+SANGAT PENTING: Jika pengguna menyediakan "Capaian Pembelajaran (Acuan Utama)" di atas, Anda WAJIB menggunakan rumusan CP tersebut secara literal dan utuh sebagai konten dasar utama analisis Anda. Jangan melenceng atau mengubah substansinya.
+
+Buatlah Dokumen 1 (Analisis Capaian Pembelajaran) yang komprehensif. Analisis elemen-elemen CP berikut dan hubungkan dengan Fase/Kelas. Hasil akhirnya adalah tabel analisis kompetensi dan ruang lingkup materi.
+Data:
+${identityData}`;
     } else if (step === 2) {
-        return `${commonRules}\nBerikut adalah Dokumen 1:\n${previousDocs.doc1}\nBuatlah Dokumen 2 (Tujuan Pembelajaran) berdasarkan Dokumen 1. Rumuskan Tujuan Pembelajaran (TP) yang ABCD (Audience, Behavior, Condition, Degree). Sajikan dalam tabel dengan kolom: Kode TP, Tujuan Pembelajaran, dan Kata Kunci.`;
+        return `${commonRules}
+SANGAT PENTING: Jika pengguna menyediakan "Tujuan Pembelajaran Pilihan Pengguna" di atas, Anda WAJIB menggunakan rumusan tujuan pembelajaran tersebut secara literal dan terstruktur sebagai isi utama Dokumen 2 ini. Jangan merumuskan ulang yang sudah dipilih pengguna.
+
+Berikut adalah Dokumen 1:
+${previousDocs.doc1}
+Buatlah Dokumen 2 (Tujuan Pembelajaran) berdasarkan Dokumen 1 dan Tujuan Pembelajaran Pilihan Pengguna. Rumuskan Tujuan Pembelajaran (TP) yang ABCD (Audience, Behavior, Condition, Degree). Sajikan dalam tabel dengan kolom: Kode TP, Tujuan Pembelajaran, dan Kata Kunci.`;
     } else if (step === 3) {
         return `${commonRules}\nBerikut adalah Dokumen 2:\n${previousDocs.doc2}\nBuatlah Dokumen 3 (Alur Tujuan Pembelajaran - ATP). Susun TP ke dalam alur yang logis dan urut. \nWAJIB: Gunakan format tabel HTML dengan kolom: "Kode TP", "Tujuan Pembelajaran", "Materi Pokok", dan "Alokasi JP".`;
     } else if (step === 4) {

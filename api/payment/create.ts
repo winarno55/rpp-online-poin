@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import dbConnect from '../_lib/db.js';
 import Transaction from '../_lib/models/Transaction.js';
+import PricingConfig from '../_lib/models/PricingConfig.js';
 import { protect } from '../_lib/auth.js';
 import cors from 'cors';
 
@@ -51,10 +52,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // 2. Determine environment and credentials
-        const isProduction = process.env.MIDTRANS_IS_PRODUCTION === 'true';
-        const serverKey = process.env.MIDTRANS_SERVER_KEY;
+        const config = await PricingConfig.findOne().exec();
+        const midtransEnabled = config ? (config.midtransEnabled ?? false) : false;
+        if (!midtransEnabled) {
+          res.status(400).json({ message: 'Pembayaran otomatis via Midtrans saat ini sedang dinonaktifkan oleh Admin.' });
+          return resolve();
+        }
+
+        const isSandbox = config ? (config.midtransSandbox ?? true) : true;
+        const isProduction = !isSandbox;
+        const serverKey = isProduction
+          ? (process.env.MIDTRANS_PRODUCTION_SERVER_KEY || process.env.MIDTRANS_SERVER_KEY)
+          : (process.env.MIDTRANS_SANDBOX_SERVER_KEY || process.env.MIDTRANS_SERVER_KEY);
+
         if (!serverKey) {
-          res.status(500).json({ message: 'Konfigurasi pembayaran (MIDTRANS_SERVER_KEY) belum diatur di server.' });
+          res.status(500).json({ message: 'Konfigurasi pembayaran (Server Key) belum diatur di server.' });
           return resolve();
         }
         const midtransUrl = isProduction

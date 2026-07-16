@@ -13,7 +13,7 @@ const getFase = (k: string) => {
 export const generateLessonPlanPrompt = (input: LessonPlanInput): string => {
   const { 
     mataPelajaran, singkatan, kelasFase, tahunPelajaran, alokasiWaktu, jpPerMinggu, durasiPertemuan,
-    materi, jumlahPertemuan, tujuanPembelajaran, praktikPedagogis,
+    materi, jumlahPertemuan, tujuanPembelajaran, capaianPembelajaran, praktikPedagogis,
     dimensiProfilLulusan
   } = input;
 
@@ -54,6 +54,8 @@ ${pjokSpecificRules}
   
 Tugas Anda: Buatlah Modul Ajar (Dokumen 7) yang lengkap, profesional, dan siap pakai. Gunakan pendekatan Deep Learning (Mindful, Meaningful, Joyful).
 
+SANGAT PENTING: Jika pengguna telah menyediakan Capaian Pembelajaran: "${capaianPembelajaran || ''}", Anda WAJIB menggunakan rumusan CP tersebut secara literal dan tepat untuk seluruh rancangan kegiatan belajar, tujuan pembelajaran, dan asesmen dalam Modul Ajar ini. Jangan melenceng atau mengubah substansinya.
+
 ATURAN WAJIB (STRICT INSTRUCTIONS):
 1. HANYA hasilkan kode HTML murni tanpa membungkusnya dengan markdown \`\`\`html.
 2. JANGAN berikan teks pengantar atau penutup apa pun. Mulailah langsung dengan judul atau struktur modul.
@@ -70,6 +72,7 @@ STRUKTUR MODUL YANG DIHARAPKAN:
 A. INFORMASI UMUM
 - Identitas Sekolah (Satuan Pendidikan, Guru, Fase/Kelas, Semester, Alokasi Waktu)
 - Kompetensi Awal
+- Capaian Pembelajaran: ${capaianPembelajaran || 'Diselaraskan otomatis dengan BSKAP 046/2025'}
 - Dimensi Profil Lulusan (Sebutkan: ${dimensiProfilLulusan.join(', ')})
 - Sarana dan Prasarana (Lingkungan Pembelajaran: ${input.lingkunganPembelajaran || 'Kelas'}, Pemanfaatan Digital: ${input.pemanfaatanDigital || 'Ada'})
 - Target Peserta Didik
@@ -97,5 +100,6 @@ Fase/Kelas: ${kelasFaseCombined}
 Tahun Pelajaran: ${tahunPelajaran}
 Materi: ${materi}
 Jumlah Pertemuan: ${jumlahPertemuan} (Total JP: ${input.jamPelajaran})
+Capaian Pembelajaran (Acuan Utama): ${capaianPembelajaran || ''}
 `;
 };

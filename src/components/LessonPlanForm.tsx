@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LessonPlanInput } from '../types';
 import { JUMLAH_PERTEMUAN_OPTIONS, DIMENSI_PROFIL_LULUSAN, PRAKTIK_PEDAGOGIS_OPTIONS, KELAS_OPTIONS, PRAKTIK_PEDAGOGIS_LAINNYA } from '../constants';
+import { findOfficialCp, formatCpForTextarea } from '../utils/cpDatabase';
 
 interface SessionCost {
   sessions: number;
@@ -65,6 +66,39 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
   const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
+
+  // State untuk status pencarian CP resmi
+  const [cpStatus, setCpStatus] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+
+  const handleLoadOfficialCp = () => {
+    if (!formData.mataPelajaran.trim()) {
+      setCpStatus({
+        type: 'error',
+        message: 'Silakan isi Mata Pelajaran di langkah 1 terlebih dahulu.'
+      });
+      setTimeout(() => setCpStatus(null), 5000);
+      return;
+    }
+
+    const match = findOfficialCp(formData.mataPelajaran, formData.kelasFase);
+    if (match) {
+      const formatted = formatCpForTextarea(match);
+      setFormData(prev => ({
+        ...prev,
+        capaianPembelajaran: formatted
+      }));
+      setCpStatus({
+        type: 'success',
+        message: `Berhasil memuat CP Resmi BSKAP 046/2025 untuk ${match.subjectName} (${match.fase})!`
+      });
+    } else {
+      setCpStatus({
+        type: 'error',
+        message: `Maaf, CP resmi untuk "${formData.mataPelajaran}" (${formData.kelasFase}) tidak ditemukan di database lokal. Anda dapat mengetik manual atau membiarkan AI menyelaraskannya secara otomatis.`
+      });
+    }
+    setTimeout(() => setCpStatus(null), 5000);
+  };
 
   useEffect(() => {
     // This effect handles both setting template data and resetting the form.
@@ -370,18 +404,41 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
                   </div>
               </div>
               <div>
-                <label htmlFor="capaianPembelajaran" className={labelClass}>Capaian Pembelajaran <span className="text-slate-500 font-normal">(Opsional)</span></label>
+                <div className="flex justify-between items-center mb-2">
+                    <label htmlFor="capaianPembelajaran" className={labelClass}>
+                      Capaian Pembelajaran <span className="text-slate-500 font-normal">(Opsional)</span>
+                    </label>
+                    <button 
+                        type="button" 
+                        onClick={handleLoadOfficialCp} 
+                        className="text-xs flex items-center gap-1 text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-md font-bold transition-colors"
+                        aria-label="Ambil CP Resmi BSKAP 046/2025"
+                    >
+                        📚 Ambil CP Resmi BSKAP 046/2025 (Gratis)
+                    </button>
+                </div>
+
+                {cpStatus && (
+                  <div className={`p-3 rounded-lg mb-3 text-xs font-medium border ${
+                    cpStatus.type === 'success' 
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+                      : 'bg-amber-50 text-amber-800 border-amber-200'
+                  }`}>
+                    {cpStatus.message}
+                  </div>
+                )}
+
                 <textarea 
                   name="capaianPembelajaran" 
                   id="capaianPembelajaran" 
                   value={formData.capaianPembelajaran} 
                   onChange={handleChange} 
-                  rows={3} 
+                  rows={4} 
                   className={inputClass} 
-                  placeholder="Tuliskan capaian pembelajaran atau biarkan kosong agar AI melaraskannya secara otomatis berdasarkan standar BSKAP No. 046/H/KR/2025 terbaru..." 
+                  placeholder="Tuliskan capaian pembelajaran atau klik tombol di atas untuk memuat Capaian Pembelajaran resmi BSKAP No. 046/H/KR/2025 secara otomatis..." 
                 />
-                <p className="text-xs text-emerald-600 mt-1 font-semibold flex items-center gap-1">
-                  <span>✨</span> Mengacu pada Keputusan Kepala BSKAP No. 046/H/KR/2025 terbaru.
+                <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                  <span>✨</span> Mengacu pada Keputusan Kepala BSKAP No. 046/H/KR/2025 terbaru. Jika dikosongkan, AI akan menyelaraskannya secara cerdas.
                 </p>
               </div>
               <div>

@@ -24,6 +24,8 @@ export interface IPricingConfig extends Document {
   pointPackages: IPointPackage[];
   paymentMethods: IPaymentMethod[];
   sessionCosts: ISessionCost[];
+  midtransSandbox?: boolean;
+  midtransEnabled?: boolean;
 }
 
 const SessionCostSchema: Schema<ISessionCost> = new Schema({
@@ -46,6 +48,8 @@ const PricingConfigSchema: Schema<IPricingConfig> = new Schema({
   paymentMethods: [PaymentMethodSchema],
   sessionCosts: [SessionCostSchema],
   bundleCost: { type: Number, default: 50 },
+  midtransSandbox: { type: Boolean, default: true },
+  midtransEnabled: { type: Boolean, default: false },
 }, { timestamps: true });
 
 
