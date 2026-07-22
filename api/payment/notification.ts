@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import dbConnect from '../_lib/db.js';
 import Transaction from '../_lib/models/Transaction.js';
 import User from '../_lib/models/User.js';
+import PricingConfig from '../_lib/models/PricingConfig.js';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -36,9 +37,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // 1. Verify Midtrans Signature Key
         // signature_key = SHA512(order_id + status_code + gross_amount + ServerKey)
-        const serverKey = process.env.MIDTRANS_SERVER_KEY;
+        const config = await PricingConfig.findOne().exec();
+        const isSandbox = config ? (config.midtransSandbox ?? true) : true;
+        const isProduction = !isSandbox;
+        const serverKey = isProduction
+          ? (process.env.MIDTRANS_PRODUCTION_SERVER_KEY || process.env.MIDTRANS_SERVER_KEY)
+          : (process.env.MIDTRANS_SANDBOX_SERVER_KEY || process.env.MIDTRANS_SERVER_KEY);
+
         if (!serverKey) {
-          console.error('MIDTRANS_SERVER_KEY is not defined!');
+          console.error('Server Key (Sandbox/Production) is not defined!');
           res.status(500).json({ message: 'Konfigurasi server key tidak ditemukan' });
           return resolve();
         }
@@ -76,11 +83,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (isSettled) {
           // If transaction is already marked as settlement, do not credit points again
           if (previousStatus !== 'settlement') {
-            const user = await User.findById(transaction.userId);
+            const user = await User.findById(transaction.userId).select('+password');
             if (user) {
               const currentPoints = user.points || 0;
               user.points = currentPoints + transaction.points;
-              await user.save();
+              await user.save({ validateBeforeSave: false });
               console.log(`Successfully credited ${transaction.points} points to ${user.email}. New total: ${user.points}`);
             } else {
               console.error(`User for transaction ${transaction._id} not found.`);

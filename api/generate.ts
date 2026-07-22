@@ -63,7 +63,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
 
         // Deduct points before starting the generation process
         user.points -= dynamicCost;
-        await user.save();
+        await user.save({ validateBeforeSave: false });
         
         try {
             const apiKeys = getAllGeminiApiKeys();
@@ -148,7 +148,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             if (!res.headersSent) {
                  // Refund points
                 user.points += dynamicCost;
-                await user.save();
+                await user.save({ validateBeforeSave: false });
               
                 let userMessage = 'Gagal berkomunikasi dengan AI. Poin Anda telah dikembalikan.';
                 if (aiError.message) {

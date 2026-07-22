@@ -45,7 +45,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     
     // Deduct points before making the API call
     user.points -= SUGGESTION_COST;
-    await user.save();
+    await user.save({ validateBeforeSave: false });
 
     try {
         const apiKeys = getAllGeminiApiKeys();
@@ -167,7 +167,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
     } catch (aiError: any) {
         // AI call failed, so we refund the points.
         user.points += SUGGESTION_COST;
-        await user.save();
+        await user.save({ validateBeforeSave: false });
         
         console.error('Gemini Suggestion API Error:', aiError);
         let userMessage = `Gagal mendapatkan saran dari AI. ${SUGGESTION_COST} poin Anda telah dikembalikan.`;

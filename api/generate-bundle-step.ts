@@ -43,7 +43,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             }
 
             user.points -= bundleCost;
-            await user.save();
+            await user.save({ validateBeforeSave: false });
 
             const session = new BundleSession({ userId: user._id });
             await session.save();
@@ -126,7 +126,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                 // Refund points
                 const pricingConfig = await PricingConfig.findOne().exec();
                 user.points += (pricingConfig?.bundleCost || 50);
-                await user.save();
+                await user.save({ validateBeforeSave: false });
                 res.status(424).json({ message: 'Gagal komunikasi AI. Poin dikembalikan.', error: aiError.message });
             } else if (!res.headersSent) {
                 res.status(424).json({ message: 'Gagal komunikasi AI.', error: aiError.message });
