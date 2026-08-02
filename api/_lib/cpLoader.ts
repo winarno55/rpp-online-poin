@@ -56,24 +56,8 @@ export function getCpContentForSubject(mataPelajaran?: string): CpAsset | null {
 /**
  * Menyusun payload `contents` untuk Gemini API
  */
-export function buildGeminiContents(promptText: string, mataPelajaran?: string) {
-  const cpAsset = getCpContentForSubject(mataPelajaran);
-
-  if (cpAsset) {
-    console.log(`[CP Loader] Menggunakan PDF aset: ${cpAsset.filename} (${cpAsset.versionInfo})`);
-    const instructions = `\n\n[DOKUMEN CP TERDAMPIR]: Silakan gunakan isi dari dokumen PDF Capaian Pembelajaran (${cpAsset.versionInfo}) yang dilampirkan sebagai rujukan utama dan paling akurat dalam merumuskan Elemen, Capaian Pembelajaran (CP), Tujuan Pembelajaran (TP), dan Alur Tujuan Pembelajaran (ATP).`;
-    
-    return [
-      {
-        inlineData: {
-          mimeType: cpAsset.mimeType,
-          data: cpAsset.data
-        }
-      },
-      promptText + instructions
-    ];
-  }
-
-  // Jika PDF belum ada, gunakan prompt biasa
+export function buildGeminiContents(promptText: string, _mataPelajaran?: string) {
+  // Teks CP spesifik sudah ada di dalam prompt dari formulir input.
+  // Tidak melampirkan file PDF utuh (1691 halaman) untuk menghindari batas 1000 halaman Gemini API & error kuota.
   return promptText;
 }
