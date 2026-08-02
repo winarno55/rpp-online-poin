@@ -85,6 +85,13 @@ const LandingPage: React.FC = () => {
             {/* Hero Section */}
             <section className="grid grid-cols-1 md:grid-cols-2 items-center gap-8 md:gap-12">
                 <div className="text-center md:text-left">
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold mb-4 shadow-sm">
+                        <span className="flex h-2 w-2 relative">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        📢 Update CP Resmi: BSKAP No. 046/2025 & CP No. 020/2026 (PAI) Ditambahkan
+                    </div>
                     <h1 className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-emerald-500 leading-tight">
                         Evolusi Perencanaan Mengajar. Ditenagai oleh AI Deep Learning.
                     </h1>

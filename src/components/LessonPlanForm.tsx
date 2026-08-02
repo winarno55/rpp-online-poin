@@ -412,9 +412,9 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
                         type="button" 
                         onClick={handleLoadOfficialCp} 
                         className="text-xs flex items-center gap-1 text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-md font-bold transition-colors"
-                        aria-label="Ambil CP Resmi BSKAP 046/2025"
+                        aria-label="Ambil CP Resmi BSKAP 046 & CP 020 PAI"
                     >
-                        📚 Ambil CP Resmi BSKAP 046/2025 (Gratis)
+                        📚 Ambil CP Resmi BSKAP 046 & CP 020 PAI (Gratis)
                     </button>
                 </div>
 
@@ -435,10 +435,10 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
                   onChange={handleChange} 
                   rows={4} 
                   className={inputClass} 
-                  placeholder="Tuliskan capaian pembelajaran atau klik tombol di atas untuk memuat Capaian Pembelajaran resmi BSKAP No. 046/H/KR/2025 secara otomatis..." 
+                  placeholder="Tuliskan capaian pembelajaran atau klik tombol di atas untuk memuat Capaian Pembelajaran resmi BSKAP No. 046/2025 & CP No. 020 PAI..." 
                 />
                 <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                  <span>✨</span> Mengacu pada Keputusan Kepala BSKAP No. 046/H/KR/2025 terbaru. Jika dikosongkan, AI akan menyelaraskannya secara cerdas.
+                  <span>✨</span> Mengacu pada Keputusan BSKAP No. 046/2025 & CP No. 020 (Pendidikan Agama Islam). Jika dikosongkan, AI akan menyelaraskannya secara cerdas.
                 </p>
               </div>
               <div>

@@ -327,6 +327,74 @@ export const CP_DATABASE_046: CpData[] = [
         cp: "Peserta didik mampu menulis esai, teks persuasif, puisi, cerpen, dan laporan hasil pengamatan dengan struktur yang kokoh, penalaran logis, dan tata bahasa baku yang baik."
       }
     ]
+  },
+
+  // ================= PENDIDIKAN AGAMA ISLAM (PAI - CP NO. 020) =================
+  {
+    subjectName: "PAI",
+    fase: "Fase A",
+    elements: [
+      { name: "Al-Qur'an dan Hadis", cp: "Peserta didik mampu mengenal huruf hijaiyah dan harakatnya, membaca surah-surah pendek Al-Qur'an (seperti Al-Fatihah, Al-Ikhlas) serta memahami pesan pokoknya secara sederhana." },
+      { name: "Akidah", cp: "Peserta didik mengenal rukun iman, nama-nama Allah SWT (Asmaulhusna) yang agung, serta meyakini keberadaan Allah SWT sebagai Pencipta alam semesta." },
+      { name: "Akhlak", cp: "Peserta didik terbiasa mempraktikkan ungkapan santun, perilaku hormat dan patuh kepada orang tua, guru, serta menyayangi sesama teman dan lingkungan." },
+      { name: "Fikih", cp: "Peserta didik mampu mengenal rukun Islam, tata cara bersuci (wudu), serta mempraktikkan gerakan dan bacaan shalat fardhu secara sederhana." },
+      { name: "Sejarah Peradaban Islam", cp: "Peserta didik mengenal kisah teladan Nabi Muhammad SAW dan para nabi lainnya secara sederhana dalam kehidupan sehari-hari." }
+    ]
+  },
+  {
+    subjectName: "PAI",
+    fase: "Fase B",
+    elements: [
+      { name: "Al-Qur'an dan Hadis", cp: "Peserta didik mampu membaca, menghafal, dan memahami pesan pokok surah-surah pendek Al-Qur'an (Al-Ma'un, At-Tin, dll.) serta hadis tentang kebersihan dan persaudaraan." },
+      { name: "Akidah", cp: "Peserta didik memahami Asmaulhusna, sifat-sifat Allah SWT, serta beriman kepada malaikat-malaikat Allah dan kitab-kitab Allah." },
+      { name: "Akhlak", cp: "Peserta didik mempraktikkan sikap jujur, amanah, hormat, patuh, kasih sayang kepada sesama, serta menghargai perbedaan sebagai sunnatullah." },
+      { name: "Fikih", cp: "Peserta didik memahami ketentuan dan tata cara bersuci, shalat fardhu, shalat jamaah, serta puasa Ramadan." },
+      { name: "Sejarah Peradaban Islam", cp: "Peserta didik memahami kisah silsilah, masa kanak-kanak, dan kenabian Nabi Muhammad SAW serta kepribadian beliau." }
+    ]
+  },
+  {
+    subjectName: "PAI",
+    fase: "Fase C",
+    elements: [
+      { name: "Al-Qur'an dan Hadis", cp: "Peserta didik mampu membaca Al-Qur'an dengan tajwid yang baik, menghafal surah-surah pilihan, serta memahami pesan pokok surah dan hadis tentang persaudaraan dan toleransi." },
+      { name: "Akidah", cp: "Peserta didik memahami Asmaulhusna, beriman kepada hari akhir dan qada/qadar serta dampaknya pada sikap mawas diri dan optimis." },
+      { name: "Akhlak", cp: "Peserta didik menerapkan adab berinteraksi dengan sesama, toleransi, empati, kebersihan lingkungan, dan menghindari perilaku tercela." },
+      { name: "Fikih", cp: "Peserta didik memahami ketentuan zakat, infak, sedekah, serta hadiah, dan mempraktikkannya dalam kehidupan bermasyarakat." },
+      { name: "Sejarah Peradaban Islam", cp: "Peserta didik memahami kisah perjuangan Nabi Muhammad SAW dalam membangun kota Madinah dan peristiwa Khulafaur Rasyidin." }
+    ]
+  },
+  {
+    subjectName: "PAI",
+    fase: "Fase D",
+    elements: [
+      { name: "Al-Qur'an dan Hadis", cp: "Peserta didik mampu membaca Al-Qur'an sesuai hukum tajwid, memahami ayat Al-Qur'an dan hadis tentang toleransi, pemeliharaan alam, dan semangat menuntut ilmu." },
+      { name: "Akidah", cp: "Peserta didik menganalisis hakikat beriman kepada Allah, malaikat, kitab, rasul, hari akhir, dan qada-qadar serta dampaknya pada perilaku sehari-hari." },
+      { name: "Akhlak", cp: "Peserta didik membiasakan akhlak terpuji (ikhtiar, tawakal, toleransi, pemaaf) dan menjauhi akhlak tercela (perjudian, pertengkaran, miras)." },
+      { name: "Fikih", cp: "Peserta didik menganalisis ketentuan ibadah shalat sunnah, sujud sahwi/tilawah/syukur, penyembelihan hewan, serta makanan/minuman halal dan haram." },
+      { name: "Sejarah Peradaban Islam", cp: "Peserta didik menganalisis sejarah peradaban Islam pada masa Khulafaur Rasyidin, Daulah Umayyah, dan Daulah Abbasiyah." }
+    ]
+  },
+  {
+    subjectName: "PAI",
+    fase: "Fase E",
+    elements: [
+      { name: "Al-Qur'an dan Hadis", cp: "Peserta didik menganalisis ayat Al-Qur'an dan hadis tentang perintah berkompetisi dalam kebaikan, etos kerja, dan pemeliharaan toleransi antatumat beragama." },
+      { name: "Akidah", cp: "Peserta didik menganalisis cabang-cabang iman (Syu'abul Iman), hakikat tauhid, serta peran iman dalam membentuk kepribadian mulia." },
+      { name: "Akhlak", cp: "Peserta didik membiasakan akhlak berhias diri dengan kebaikan, menghindari sifat riya, sum'ah, hasad, dan pemborosan." },
+      { name: "Fikih", cp: "Peserta didik menganalisis pronsip-prinsip transaksi keuangan syariah (asuransi syariah, perbankan syariah, dan koperasi syariah)." },
+      { name: "Sejarah Peradaban Islam", cp: "Peserta didik menganalisis peran tokoh ulama Islam Indonesia (Wali Sanga dan ulama nusantara) dalam menyebarkan ajaran Islam secara damai." }
+    ]
+  },
+  {
+    subjectName: "PAI",
+    fase: "Fase F",
+    elements: [
+      { name: "Al-Qur'an dan Hadis", cp: "Peserta didik menganalisis ayat Al-Qur'an dan hadis tentang berpikir kritis, bersikap demokratis, pemeliharaan lingkungan hidup, serta larangan pergaulan bebas." },
+      { name: "Akidah", cp: "Peserta didik menganalisis peran iman dalam menghadapi tantangan modernisasi, secularisme, dan pentingnya menjaga ketauhidan." },
+      { name: "Akhlak", cp: "Peserta didik membiasakan etika berorganisasi, kepemimpinan Islam, menjaga kehormatan diri, dan membentengi diri dari pemikiran ekstrem." },
+      { name: "Fikih", cp: "Peserta didik menganalisis ketentuan hukum keluarga dalam Islam (pernikahan, mawaris/waris) serta isu-isu kontemporer fikih." },
+      { name: "Sejarah Peradaban Islam", cp: "Peserta didik menganalisis faktor kemajuan dan kemunduran peradaban Islam di dunia serta kontribusi ilmuwan Muslim bagi peradaban global." }
+    ]
   }
 ];
 
@@ -367,6 +435,12 @@ export function findOfficialCp(subject: string, kelas: string): CpData | null {
     targetSubject = "IPAS";
   } else if (cleanSubject.includes("bahasa indonesia") || cleanSubject === "indonesia") {
     targetSubject = "Bahasa Indonesia";
+  } else if (
+    cleanSubject.includes("pai") ||
+    cleanSubject.includes("agama islam") ||
+    cleanSubject.includes("pendidikan agama")
+  ) {
+    targetSubject = "PAI";
   } else {
     return null;
   }
@@ -378,7 +452,10 @@ export function findOfficialCp(subject: string, kelas: string): CpData | null {
 }
 
 export function formatCpForTextarea(cpData: CpData): string {
-  let formatted = `Sesuai BSKAP No. 046/H/KR/2025 (Fase: ${cpData.fase}):\n\n`;
+  const docRef = cpData.subjectName === "PAI" 
+    ? "Sesuai Keputusan No. 020/2026 (Pendidikan Agama Islam)" 
+    : "Sesuai BSKAP No. 046/H/KR/2025";
+  let formatted = `${docRef} (Fase: ${cpData.fase}):\n\n`;
   cpData.elements.forEach((el, index) => {
     formatted += `${index + 1}. Elemen ${el.name}:\n   CP: ${el.cp}\n\n`;
   });
