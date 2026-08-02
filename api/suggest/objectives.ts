@@ -4,6 +4,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { protect } from '../_lib/auth.js';
 import User, { IUser } from '../_lib/models/User.js';
 import { getAllGeminiApiKeys } from '../_lib/geminiKeyManager.js';
+import { buildGeminiContents } from '../_lib/cpLoader.js';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -68,6 +69,8 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             Setiap tujuan pembelajaran harus dirumuskan sebagai kalimat lengkap yang dimulai dengan "Peserta didik dapat..." atau "Melalui kegiatan..., peserta didik mampu...". Buatlah 3 variasi yang berbeda, mungkin dengan fokus pada ranah kognitif, afektif, atau psikomotor yang berbeda. Jangan berikan nomor atau bullet point, hanya hasilkan JSON.
         `;
 
+        const contentsPayload = buildGeminiContents(prompt, mataPelajaran as string);
+
         // LOGIKA FALLBACK BERTINGKAT
         modelLoop: for (const modelName of MODELS_TO_TRY) {
             for (let i = 0; i < apiKeys.length; i++) {
@@ -81,7 +84,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                         try {
                             response = await ai.models.generateContent({
                                 model: modelName,
-                                contents: prompt,
+                                contents: contentsPayload as any,
                                 config: {
                                     responseMimeType: "application/json",
                                     responseSchema: {
@@ -103,7 +106,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                             console.warn(`[${modelName}] Key ${i + 1} failed with Google Search for Suggestion: ${searchError.message}. Retrying without search...`);
                             response = await ai.models.generateContent({
                                 model: modelName,
-                                contents: prompt,
+                                contents: contentsPayload as any,
                                 config: {
                                     responseMimeType: "application/json",
                                     responseSchema: {
@@ -124,7 +127,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                     } else {
                         response = await ai.models.generateContent({
                             model: modelName,
-                            contents: prompt,
+                            contents: contentsPayload as any,
                             config: {
                                 responseMimeType: "application/json",
                                 responseSchema: {

@@ -8,6 +8,7 @@ import PricingConfig from './_lib/models/PricingConfig.js';
 import { generateLessonPlanPrompt } from '../src/services/geminiService.js';
 import { LessonPlanInput } from '../src/types.js';
 import { getAllGeminiApiKeys } from './_lib/geminiKeyManager.js';
+import { buildGeminiContents } from './_lib/cpLoader.js';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -72,6 +73,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             let successModel = '';
 
             const prompt = generateLessonPlanPrompt(lessonPlanData);
+            const contentsPayload = buildGeminiContents(prompt, lessonPlanData.mataPelajaran);
 
             // LOGIKA FALLBACK BERTINGKAT
             // Loop Luar: Iterasi Model sesuai urutan Waterfall
@@ -89,7 +91,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                             try {
                                 stream = await ai.models.generateContentStream({
                                     model: modelName,
-                                    contents: prompt,
+                                    contents: contentsPayload as any,
                                     config: {
                                         tools: [{ googleSearch: {} }]
                                     }
@@ -98,13 +100,13 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                                 console.warn(`[${modelName}] Key ${i + 1} failed with Google Search: ${searchError.message}. Retrying without search...`);
                                 stream = await ai.models.generateContentStream({
                                     model: modelName,
-                                    contents: prompt
+                                    contents: contentsPayload as any
                                 });
                             }
                         } else {
                             stream = await ai.models.generateContentStream({
                                 model: modelName,
-                                contents: prompt
+                                contents: contentsPayload as any
                             });
                         }
                         
