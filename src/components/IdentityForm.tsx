@@ -71,7 +71,7 @@ export const IdentityForm: React.FC<Props> = ({ formData, handleChange, onSubmit
           <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
             <span>CP Umum (Capaian Pembelajaran)</span>
             <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold border border-emerald-200">
-              Mengacu ke BSKAP No. 046/H/KR/2025 Terbaru
+              Mengacu ke BSKAP No. 046/H/KR/2025 &amp; CP No. 020 Terbaru
             </span>
           </label>
           <textarea 
@@ -80,7 +80,7 @@ export const IdentityForm: React.FC<Props> = ({ formData, handleChange, onSubmit
             onChange={handleChange} 
             className={inputClass} 
             rows={3} 
-            placeholder="Tuliskan Capaian Pembelajaran (CP) Umum atau biarkan kosong agar AI melaraskannya secara otomatis berdasarkan standar BSKAP No. 046/H/KR/2025 terbaru..."
+            placeholder="Tuliskan Capaian Pembelajaran (CP) Umum atau biarkan kosong agar AI melaraskannya secara otomatis berdasarkan standar BSKAP No. 046/H/KR/2025 & CP No. 020 terbaru..."
           />
         </div>
       </div>

@@ -3,192 +3,102 @@ import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 // ==========================================
-// 1. INTERACTIVE 3D NEURAL NETWORK CANVAS
+// 1. HERO APP PREVIEW CARD (MOCKUP INTERAKTIF)
 // ==========================================
-const NeuralNetwork3D: React.FC = () => {
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const containerRef = useRef<HTMLDivElement | null>(null);
-
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        let animationFrameId: number;
-        let width = (canvas.width = containerRef.current?.clientWidth || 500);
-        let height = (canvas.height = containerRef.current?.clientHeight || 500);
-
-        const handleResize = () => {
-            if (!containerRef.current || !canvas) return;
-            width = canvas.width = containerRef.current.clientWidth;
-            height = canvas.height = containerRef.current.clientHeight;
-        };
-
-        window.addEventListener('resize', handleResize);
-
-        // Dynamic 3D Points
-        const numPoints = 45;
-        const points: Array<{ x: number; y: number; z: number; vx: number; vy: number; vz: number; color: string }> = [];
-        const colors = ['#38bdf8', '#10b981', '#6366f1', '#06b6d4'];
-
-        for (let i = 0; i < numPoints; i++) {
-            points.push({
-                x: (Math.random() - 0.5) * 320,
-                y: (Math.random() - 0.5) * 320,
-                z: (Math.random() - 0.5) * 320,
-                vx: (Math.random() - 0.5) * 0.6,
-                vy: (Math.random() - 0.5) * 0.6,
-                vz: (Math.random() - 0.5) * 0.6,
-                color: colors[Math.floor(Math.random() * colors.length)],
-            });
-        }
-
-        let targetRotX = 0;
-        let targetRotY = 0;
-        let currentRotX = 0;
-        let currentRotY = 0;
-
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!containerRef.current) return;
-            const rect = containerRef.current.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
-            targetRotY = (x / rect.width) * 0.8;
-            targetRotX = -(y / rect.height) * 0.8;
-        };
-
-        const container = containerRef.current;
-        if (container) {
-            container.addEventListener('mousemove', handleMouseMove);
-        }
-
-        let angle = 0;
-
-        const render = () => {
-            ctx.clearRect(0, 0, width, height);
-
-            currentRotX += (targetRotX - currentRotX) * 0.05;
-            currentRotY += (targetRotY - currentRotY) * 0.05;
-            angle += 0.005;
-
-            const fov = 350;
-            const centerX = width / 2;
-            const centerY = height / 2;
-
-            const rotY = angle + currentRotY;
-            const rotX = currentRotX;
-
-            const projectedPoints: Array<{ x: number; y: number; z: number; scale: number; color: string }> = [];
-
-            for (let p of points) {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.z += p.vz;
-
-                if (Math.abs(p.x) > 180) p.vx *= -1;
-                if (Math.abs(p.y) > 180) p.vy *= -1;
-                if (Math.abs(p.z) > 180) p.vz *= -1;
-
-                let x1 = p.x * Math.cos(rotY) - p.z * Math.sin(rotY);
-                let z1 = p.z * Math.cos(rotY) + p.x * Math.sin(rotY);
-
-                let y2 = p.y * Math.cos(rotX) - z1 * Math.sin(rotX);
-                let z2 = z1 * Math.cos(rotX) + p.y * Math.sin(rotX);
-
-                const scale = fov / (fov + z2 + 250);
-                const projX = centerX + x1 * scale;
-                const projY = centerY + y2 * scale;
-
-                projectedPoints.push({ x: projX, y: projY, z: z2, scale, color: p.color });
-            }
-
-            // Lines
-            ctx.lineWidth = 1;
-            for (let i = 0; i < projectedPoints.length; i++) {
-                for (let j = i + 1; j < projectedPoints.length; j++) {
-                    const p1 = projectedPoints[i];
-                    const p2 = projectedPoints[j];
-                    const dx = p1.x - p2.x;
-                    const dy = p1.y - p2.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < 110) {
-                        const alpha = (1 - dist / 110) * Math.min(p1.scale, p2.scale) * 0.7;
-                        ctx.beginPath();
-                        ctx.moveTo(p1.x, p1.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-                        grad.addColorStop(0, p1.color);
-                        grad.addColorStop(1, p2.color);
-                        ctx.strokeStyle = grad;
-                        ctx.globalAlpha = alpha;
-                        ctx.stroke();
-                        ctx.globalAlpha = 1;
-                    }
-                }
-            }
-
-            // Core Glow
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 55 * Math.sin(angle * 2) + 60, 0, Math.PI * 2);
-            const coreGrad = ctx.createRadialGradient(centerX, centerY, 5, centerX, centerY, 90);
-            coreGrad.addColorStop(0, 'rgba(56, 189, 248, 0.4)');
-            coreGrad.addColorStop(0.5, 'rgba(16, 185, 129, 0.15)');
-            coreGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            ctx.fillStyle = coreGrad;
-            ctx.fill();
-            ctx.restore();
-
-            // Nodes
-            projectedPoints.sort((a, b) => b.z - a.z);
-
-            for (let p of projectedPoints) {
-                const radius = Math.max(2, 5 * p.scale);
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.shadowBlur = 12 * p.scale;
-                ctx.shadowColor = p.color;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
-
-            animationFrameId = requestAnimationFrame(render);
-        };
-
-        render();
-
-        return () => {
-            window.removeEventListener('resize', handleResize);
-            if (container) {
-                container.removeEventListener('mousemove', handleMouseMove);
-            }
-            cancelAnimationFrame(animationFrameId);
-        };
-    }, []);
-
+const HeroAppPreviewCard: React.FC = () => {
     return (
-        <div ref={containerRef} className="relative w-full h-[400px] md:h-[480px] flex items-center justify-center">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-sky-500/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
+        <div className="relative w-full max-w-lg mx-auto">
+            {/* Ambient Background Glow */}
+            <div className="absolute -top-6 -left-6 w-72 h-72 bg-sky-400/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-6 -right-6 w-72 h-72 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none" />
 
-            <canvas ref={canvasRef} className="relative z-10 w-full h-full cursor-grab active:cursor-grabbing" />
+            {/* Main Dashboard Preview Card */}
+            <div className="relative bg-slate-900 text-white rounded-2xl shadow-2xl border border-slate-800 overflow-hidden transform hover:scale-[1.01] transition-transform duration-300">
+                {/* Mock Window Header */}
+                <div className="bg-slate-950/80 px-4 py-3 border-b border-slate-800/80 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                        <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                        <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+                        <span className="text-xs font-mono text-slate-400 ml-2 truncate max-w-[180px] sm:max-w-none">
+                            modulajarcerdas.my.id/app
+                        </span>
+                    </div>
+                    <span className="px-2.5 py-0.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        AI Ready
+                    </span>
+                </div>
 
-            <div className="absolute top-6 left-2 z-20 bg-slate-900/80 backdrop-blur-md border border-slate-700/60 px-3.5 py-2 rounded-xl text-xs font-semibold text-sky-300 shadow-2xl flex items-center gap-2 transform -rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300">
-                <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
-                <span>🧠 Model Neural AI v2.0</span>
+                {/* Mock UI Content */}
+                <div className="p-5 space-y-4">
+                    {/* Subject Selector Preview */}
+                    <div className="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/60 space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                            <span className="text-slate-400 font-medium">Mata Pelajaran &amp; Fase</span>
+                            <span className="px-2 py-0.5 bg-sky-500/20 text-sky-300 font-semibold rounded text-[10px] border border-sky-500/30">
+                                Standard BSKAP 046 &amp; CP 020
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm font-bold text-slate-100">
+                            <span className="p-1.5 bg-sky-500/20 text-sky-400 rounded-lg text-xs">📘</span>
+                            <span>Matematika / PAI — Fase D (SMP)</span>
+                        </div>
+                    </div>
+
+                    {/* CP Auto Detected */}
+                    <div className="bg-slate-800/40 rounded-xl p-3.5 border border-slate-700/40 space-y-1.5">
+                        <div className="flex items-center justify-between text-xs text-slate-400">
+                            <span className="font-semibold text-emerald-400 flex items-center gap-1">
+                                <span>✨</span> CP Resmi Terdeteksi Otomatis
+                            </span>
+                            <span className="text-[10px] text-slate-500">CP BSKAP 046 &amp; CP 020</span>
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed italic line-clamp-2">
+                            "Peserta didik mampu mengoperasikan secara efisien bilangan bulat, pecahan, menyajikan dan menganalisis data..."
+                        </p>
+                    </div>
+
+                    {/* Output Bundle Documents Grid */}
+                    <div className="space-y-2 pt-1">
+                        <div className="text-xs text-slate-400 font-medium flex items-center justify-between">
+                            <span>Paket Lengkap Dokumen (7 in 1)</span>
+                            <span className="text-emerald-400 font-bold text-[11px]">Siap Unduh DOCX/PDF</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/60 flex items-center gap-2 text-slate-200 font-medium">
+                                <span className="text-sky-400">📝</span> Modul Ajar RPP
+                            </div>
+                            <div className="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/60 flex items-center gap-2 text-slate-200 font-medium">
+                                <span className="text-emerald-400">📊</span> Analisis CP &amp; TP
+                            </div>
+                            <div className="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/60 flex items-center gap-2 text-slate-200 font-medium">
+                                <span className="text-indigo-400">🗓️</span> Prota &amp; Promes
+                            </div>
+                            <div className="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/60 flex items-center gap-2 text-slate-200 font-medium">
+                                <span className="text-amber-400">🎯</span> Alur ATP &amp; KKTP
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Mock Action Button */}
+                    <div className="pt-1">
+                        <div className="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white font-bold text-xs py-3 px-4 rounded-xl text-center shadow-lg flex items-center justify-center gap-2">
+                            <span>✨ Generate Dokumen Lengkap Otomatis</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div className="absolute bottom-10 left-4 z-20 bg-slate-900/80 backdrop-blur-md border border-emerald-500/30 px-3.5 py-2 rounded-xl text-xs font-semibold text-emerald-300 shadow-2xl flex items-center gap-2 transform rotate-2 hover:rotate-0 hover:scale-105 transition-all duration-300">
-                <span className="text-base">📜</span>
-                <span>CP No. 046 &amp; 020 (PAI)</span>
+            {/* Floating Highlights */}
+            <div className="absolute -top-4 -right-2 sm:-right-4 bg-slate-900/95 text-white backdrop-blur-md border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-2xl flex items-center gap-2 transform rotate-2 hover:rotate-0 transition-transform">
+                <span className="text-emerald-400">✅</span>
+                <span>BSKAP 046 &amp; CP 020 (PAI)</span>
             </div>
 
-            <div className="absolute top-12 right-2 z-20 bg-slate-900/80 backdrop-blur-md border border-indigo-500/30 px-3.5 py-2 rounded-xl text-xs font-semibold text-indigo-300 shadow-2xl flex items-center gap-2 transform rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300">
-                <span className="text-base">⚡</span>
-                <span>10x Lebih Cepat &amp; Presisi</span>
+            <div className="absolute -bottom-4 -left-2 sm:-left-4 bg-slate-900/95 text-white backdrop-blur-md border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-2xl flex items-center gap-2 transform -rotate-2 hover:rotate-0 transition-transform">
+                <span className="text-sky-400">⚡</span>
+                <span>100% Selaras Standar Terbaru</span>
             </div>
         </div>
     );
@@ -348,7 +258,7 @@ const LandingPage: React.FC = () => {
                 </div>
 
                 <div className="lg:col-span-5 relative flex items-center justify-center">
-                    <NeuralNetwork3D />
+                    <HeroAppPreviewCard />
                 </div>
             </section>
 
