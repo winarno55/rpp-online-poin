@@ -44,6 +44,9 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         : (process.env.MIDTRANS_SANDBOX_CLIENT_KEY || process.env.MIDTRANS_CLIENT_KEY || '');
       const enabled = config ? (config.midtransEnabled ?? false) : false;
 
+      // Append complaintUrl
+      configObj.complaintUrl = config ? (config.complaintUrl || '') : '';
+
       // Append Midtrans public configuration
       configObj.midtrans = {
         clientKey,

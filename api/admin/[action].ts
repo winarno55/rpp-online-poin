@@ -46,7 +46,7 @@ async function handleUpdatePoints(req: AuthRequest, res: VercelResponse) {
 }
 
 async function handleUpdatePricing(req: AuthRequest, res: VercelResponse) {
-    const { pointPackages, paymentMethods, sessionCosts, bundleCost, midtransSandbox, midtransEnabled } = req.body;
+    const { pointPackages, paymentMethods, sessionCosts, bundleCost, midtransSandbox, midtransEnabled, complaintUrl } = req.body;
     if (!Array.isArray(pointPackages) || !Array.isArray(paymentMethods) || !Array.isArray(sessionCosts)) {
         return res.status(400).json({ message: 'Invalid data format.' });
     }
@@ -60,7 +60,8 @@ async function handleUpdatePricing(req: AuthRequest, res: VercelResponse) {
                 sessionCosts: sessionCosts,
                 bundleCost: bundleCost,
                 midtransSandbox: midtransSandbox !== undefined ? Boolean(midtransSandbox) : true,
-                midtransEnabled: midtransEnabled !== undefined ? Boolean(midtransEnabled) : false
+                midtransEnabled: midtransEnabled !== undefined ? Boolean(midtransEnabled) : false,
+                complaintUrl: complaintUrl !== undefined ? String(complaintUrl).trim() : ''
             }
         },
         { new: true, upsert: true, runValidators: true }

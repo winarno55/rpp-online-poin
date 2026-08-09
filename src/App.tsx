@@ -4,6 +4,7 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { ComplaintButton } from './components/ComplaintWidget';
 
 // Halaman Publik (Lazy Loaded)
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -97,6 +98,7 @@ const App: React.FC = () => {
         </Suspense>
       </main>
       {!isAppRoute && <Footer />}
+      <ComplaintButton variant="floating" />
     </div>
   );
 };

@@ -34,6 +34,7 @@ interface PricingConfig {
     bundleCost: number;
     midtransSandbox?: boolean;
     midtransEnabled?: boolean;
+    complaintUrl?: string;
 }
 
 const AdminPage: React.FC = () => {
@@ -59,7 +60,8 @@ const AdminPage: React.FC = () => {
         sessionCosts: [], 
         bundleCost: 50,
         midtransSandbox: true,
-        midtransEnabled: false
+        midtransEnabled: false,
+        complaintUrl: ''
     });
     const [isSavingConfig, setIsSavingConfig] = useState(false);
     const [configMessage, setConfigMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -327,9 +329,9 @@ const AdminPage: React.FC = () => {
                     <p className="text-xs text-slate-400 mt-2">Klik ikon pensil di kolom Poin untuk mengoreksi (overwrite) jumlah poin jika salah input.</p>
                 </div>
 
-                <div className="overflow-x-auto">
-                     <table className="w-full text-left text-slate-300">
-                        <thead className="bg-slate-900/50 text-xs text-sky-300 uppercase">
+                <div className="overflow-x-auto max-h-[380px] overflow-y-auto border border-slate-700/60 rounded-xl shadow-inner custom-scrollbar">
+                     <table className="w-full text-left text-slate-300 relative">
+                        <thead className="bg-slate-900 sticky top-0 z-10 text-xs text-sky-300 uppercase shadow-md">
                             <tr>
                                 <th className="p-3">Email</th>
                                 <th className="p-3 text-center">Poin (Total)</th>
@@ -396,8 +398,39 @@ const AdminPage: React.FC = () => {
 
             {/* Pricing Config Section */}
             <div className="bg-slate-800 shadow-2xl rounded-xl p-6 sm:p-8 w-full max-w-4xl mx-auto">
-                 <h2 className="text-3xl font-bold text-white mb-6">Pengaturan Harga & Pembayaran</h2>
+                 <h2 className="text-3xl font-bold text-white mb-6">Pengaturan Aplikasi &amp; Harga</h2>
                  <div className="space-y-8">
+                    {/* Link Aduan / Saran */}
+                    <div className="p-4 bg-slate-700/40 rounded-xl border border-sky-500/30">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xl">📩</span>
+                            <h3 className="text-xl font-semibold text-sky-300">Link Aduan &amp; Saran Pengguna</h3>
+                        </div>
+                        <p className="text-xs text-slate-300 mb-3">
+                            Tentukan URL form/layanan aduan (misal: Google Form, Form Layanan, atau link WhatsApp CS) yang akan dibuka saat pengguna menekan tombol "Aduan / Saran".
+                        </p>
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                            <input 
+                                type="url" 
+                                placeholder="https://forms.gle/... atau https://wa.me/628..." 
+                                value={pricingConfig.complaintUrl || ''} 
+                                onChange={(e) => setPricingConfig({...pricingConfig, complaintUrl: e.target.value})} 
+                                className={`${inputClass} flex-grow font-mono text-sm`} 
+                            />
+                            {pricingConfig.complaintUrl && (
+                                <a 
+                                    href={pricingConfig.complaintUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-sky-300 border border-slate-600 rounded-md text-xs font-medium text-center shrink-0 flex items-center justify-center gap-1"
+                                >
+                                    <span>Tes Link</span>
+                                    <span>↗</span>
+                                </a>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Bundle Cost */}
                     <div className="mb-8">
                         <h3 className="text-xl font-semibold text-emerald-300 mb-4">Biaya Bundle Dokumen 1-6 (Poin)</h3>

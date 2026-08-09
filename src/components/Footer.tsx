@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ComplaintButton } from './ComplaintWidget';
 
 export const Footer: React.FC = () => {
     return (
@@ -10,11 +11,12 @@ export const Footer: React.FC = () => {
                         <p className="font-semibold text-white">Modul Ajar Cerdas</p>
                         <p className="text-sm text-slate-400">&copy; {new Date().getFullYear()} Hak Cipta Dilindungi.</p>
                     </div>
-                    <div className="flex gap-6 text-sm">
+                    <div className="flex flex-wrap items-center gap-6 text-sm">
                         <Link to="/" className="hover:text-white transition-colors">Beranda</Link>
                         <Link to="/about" className="hover:text-white transition-colors">Tentang Kami</Link>
                         <Link to="/privacy" className="hover:text-white transition-colors">Kebijakan Privasi</Link>
                         <Link to="/pricing" className="hover:text-white transition-colors">Harga</Link>
+                        <ComplaintButton className="text-rose-400 hover:text-rose-300 transition-colors" />
                     </div>
                 </div>
             </div>

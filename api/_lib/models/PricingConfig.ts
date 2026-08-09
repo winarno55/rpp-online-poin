@@ -26,6 +26,7 @@ export interface IPricingConfig extends Document {
   sessionCosts: ISessionCost[];
   midtransSandbox?: boolean;
   midtransEnabled?: boolean;
+  complaintUrl?: string;
 }
 
 const SessionCostSchema: Schema<ISessionCost> = new Schema({
@@ -50,6 +51,7 @@ const PricingConfigSchema: Schema<IPricingConfig> = new Schema({
   bundleCost: { type: Number, default: 50 },
   midtransSandbox: { type: Boolean, default: true },
   midtransEnabled: { type: Boolean, default: false },
+  complaintUrl: { type: String, default: '' },
 }, { timestamps: true });
 
 
