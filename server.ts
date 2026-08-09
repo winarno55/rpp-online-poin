@@ -1,13 +1,68 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
-import express from 'express';
-import app from './api/index.js';
+
+// API Handlers
+import healthHandler from './api/health.js';
+import generateHandler from './api/generate.js';
+import generateBundleStepHandler from './api/generate-bundle-step.js';
+import suggestObjectivesHandler from './api/suggest/objectives.js';
+import adminActionHandler from './api/admin/[action].js';
+import authActionHandler from './api/auth/[action].js';
+import referralActionHandler from './api/referral/[action].js';
+import pricingConfigHandler from './api/pricing/config.js';
+import templateHandler from './api/template.js';
+import documentsHandler from './api/documents.js';
+import paymentActionHandler from './api/payment/[action].js';
 
 async function startServer() {
+  const app = express();
   const PORT = 3000;
+
+  app.use(express.json());
+
+  // Helper to wrap Vercel handler
+  const wrap = (handler: any) => async (req: any, res: any) => {
+    try {
+      await handler(req, res);
+    } catch (err) {
+      console.error(err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    }
+  };
+
+  // API Routes
+  app.all('/api/health', wrap(healthHandler));
+  app.all('/api/generate', wrap(generateHandler));
+  app.all('/api/generate-bundle-step', wrap(generateBundleStepHandler));
+  app.all('/api/suggest/objectives', wrap(suggestObjectivesHandler));
+  
+  // Dynamic routes
+  app.all('/api/admin/:action', (req, res) => {
+    req.query.action = req.params.action;
+    return wrap(adminActionHandler)(req, res);
+  });
+  app.all('/api/auth/:action', (req, res) => {
+    req.query.action = req.params.action;
+    return wrap(authActionHandler)(req, res);
+  });
+  app.all('/api/referral/:action', (req, res) => {
+    req.query.action = req.params.action;
+    return wrap(referralActionHandler)(req, res);
+  });
+  
+  app.all('/api/pricing/config', wrap(pricingConfigHandler));
+  app.all('/api/template', wrap(templateHandler));
+  app.all('/api/documents', wrap(documentsHandler));
+  app.all('/api/payment/:action', (req, res) => {
+    req.query.action = req.params.action;
+    return wrap(paymentActionHandler)(req, res);
+  });
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
@@ -30,3 +85,4 @@ async function startServer() {
 }
 
 startServer();
+
