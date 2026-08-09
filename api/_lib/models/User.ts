@@ -17,6 +17,8 @@ export interface IUser extends Document {
   referredBy?: mongoose.Types.ObjectId;
   affiliateBalance?: number; // Saldo Rupiah hasil komisi yang dapat ditarik (WD)
   totalEarnedAffiliate?: number; // Total komisi akumulasi yang pernah didapat
+  createdAt?: Date;
+  updatedAt?: Date;
   comparePassword(password: string): Promise<boolean>;
   getResetPasswordToken(): string;
 }
