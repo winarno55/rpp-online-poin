@@ -16,8 +16,7 @@ import referralActionHandler from './api/referral/[action].js';
 import pricingConfigHandler from './api/pricing/config.js';
 import templateHandler from './api/template.js';
 import documentsHandler from './api/documents.js';
-import paymentCreateHandler from './api/payment/create.js';
-import paymentNotificationHandler from './api/payment/notification.js';
+import paymentActionHandler from './api/payment/[action].js';
 
 async function startServer() {
   const app = express();
@@ -60,8 +59,10 @@ async function startServer() {
   app.all('/api/pricing/config', wrap(pricingConfigHandler));
   app.all('/api/template', wrap(templateHandler));
   app.all('/api/documents', wrap(documentsHandler));
-  app.all('/api/payment/create', wrap(paymentCreateHandler));
-  app.all('/api/payment/notification', wrap(paymentNotificationHandler));
+  app.all('/api/payment/:action', (req, res) => {
+    req.query.action = req.params.action;
+    return wrap(paymentActionHandler)(req, res);
+  });
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
