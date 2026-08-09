@@ -1,6 +1,22 @@
 {
   "rewrites": [
     {
+      "source": "/api/admin/:action",
+      "destination": "/api/admin/[action]"
+    },
+    {
+      "source": "/api/auth/:action",
+      "destination": "/api/auth/[action]"
+    },
+    {
+      "source": "/api/payment/:action",
+      "destination": "/api/payment/[action]"
+    },
+    {
+      "source": "/api/referral/:action",
+      "destination": "/api/referral/[action]"
+    },
+    {
       "source": "/((?!api/.*).*)",
       "destination": "/index.html"
     }
