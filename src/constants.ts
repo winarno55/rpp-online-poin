@@ -9,6 +9,8 @@ export const JUMLAH_PERTEMUAN_OPTIONS = [
 ] as const;
 
 export const KELAS_OPTIONS = [
+    "PAUD (Fase Fondasi)",
+    "TK (Taman Kanak-Kanak / Fase Fondasi)",
     "Kelas I",
     "Kelas II",
     "Kelas III",
@@ -23,7 +25,10 @@ export const KELAS_OPTIONS = [
     "Kelas XII"
 ] as const;
 
+export const KELAS_FASE_OPTIONS = KELAS_OPTIONS;
+
 export const getFaseForKelas = (kelas: string): string => {
+    if (kelas.toLowerCase().includes("paud") || kelas.toLowerCase().includes("tk") || kelas.toLowerCase().includes("fondasi")) return "Fase Fondasi";
     if (["Kelas I", "Kelas II"].includes(kelas)) return "Fase A";
     if (["Kelas III", "Kelas IV"].includes(kelas)) return "Fase B";
     if (["Kelas V", "Kelas VI"].includes(kelas)) return "Fase C";
@@ -53,6 +58,7 @@ export const PRAKTIK_PEDAGOGIS_OPTIONS = [
     "Pembelajaran Kontekstual (Contextual Teaching and Learning)",
     "Pembelajaran Kooperatif (Cooperative Learning)",
     "Pembelajaran Berdiferensiasi (Differentiated Learning)",
+    "Pendekatan / Metode Montessori (Montessori Method)",
     PRAKTIK_PEDAGOGIS_LAINNYA
 ] as const;
 
