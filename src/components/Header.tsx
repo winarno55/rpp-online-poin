@@ -48,6 +48,9 @@ export const Header: React.FC = () => {
                 <Link to="/app/history" className={`text-sm font-medium ${navLinkClass} transition-colors hidden sm:block`}>
                   Riwayat
                 </Link>
+                <Link to="/app/affiliate" className="text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1">
+                  <span>💰 Afiliasi</span>
+                </Link>
                 <div className="text-sm text-slate-300 hidden md:block">
                   <span className="font-medium text-sky-400">{authData.user?.email}</span>
                   {' | '}

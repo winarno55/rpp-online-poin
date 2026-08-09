@@ -35,6 +35,22 @@ interface PricingConfig {
     midtransSandbox?: boolean;
     midtransEnabled?: boolean;
     complaintUrl?: string;
+    referralCommissionPercent?: number;
+    minWithdrawalAmount?: number;
+    referralEnabled?: boolean;
+}
+
+interface AdminWithdrawalItem {
+    _id: string;
+    userId: string;
+    userEmail: string;
+    amount: number;
+    bankName: string;
+    accountNumber: string;
+    accountHolder: string;
+    status: 'PENDING' | 'PAID' | 'REJECTED';
+    adminNote?: string;
+    createdAt: string;
 }
 
 const AdminPage: React.FC = () => {
@@ -61,10 +77,20 @@ const AdminPage: React.FC = () => {
         bundleCost: 50,
         midtransSandbox: true,
         midtransEnabled: false,
-        complaintUrl: ''
+        complaintUrl: '',
+        referralCommissionPercent: 15,
+        minWithdrawalAmount: 50000,
+        referralEnabled: true
     });
     const [isSavingConfig, setIsSavingConfig] = useState(false);
     const [configMessage, setConfigMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+    // State untuk Withdrawals
+    const [withdrawals, setWithdrawals] = useState<AdminWithdrawalItem[]>([]);
+    const [updatingWithdrawalId, setUpdatingWithdrawalId] = useState<string | null>(null);
+    const [withdrawalMsg, setWithdrawalMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [rejectNote, setRejectNote] = useState<{ [key: string]: string }>({});
+
     const maxSessions = 5;
 
     const fetchAllData = useCallback(async () => {
@@ -79,6 +105,15 @@ const AdminPage: React.FC = () => {
             const usersData = await usersResponse.json();
             if (!usersResponse.ok) throw new Error(usersData.message || 'Gagal memuat pengguna.');
             setUsers(usersData);
+
+            // Fetch withdrawals
+            const wdResponse = await fetch('/api/admin/withdrawals', {
+                headers: { 'Authorization': `Bearer ${authData.token}` },
+            });
+            if (wdResponse.ok) {
+                const wdData = await wdResponse.json();
+                setWithdrawals(wdData);
+            }
 
             // Fetch pricing config
             const configResponse = await fetch('/api/pricing/config'); // This is a public endpoint
@@ -247,6 +282,35 @@ const AdminPage: React.FC = () => {
         }
     }
 
+    const handleUpdateWithdrawalStatus = async (withdrawalId: string, status: 'PAID' | 'REJECTED') => {
+        if (!authData.token) return;
+        setUpdatingWithdrawalId(withdrawalId);
+        setWithdrawalMsg(null);
+        try {
+            const res = await fetch('/api/admin/update-withdrawal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authData.token}`
+                },
+                body: JSON.stringify({
+                    withdrawalId,
+                    status,
+                    adminNote: rejectNote[withdrawalId] || ''
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Gagal memperbarui status penarikan.');
+            setWithdrawalMsg({ type: 'success', text: data.message || `Status berhasil diubah menjadi ${status}` });
+            await fetchAllData();
+        } catch (err: any) {
+            setWithdrawalMsg({ type: 'error', text: err.message || 'Gagal memperbarui status.' });
+        } finally {
+            setUpdatingWithdrawalId(null);
+            setTimeout(() => setWithdrawalMsg(null), 4000);
+        }
+    };
+
 
     if (loading) return <div className="flex justify-center items-center h-64"><LoadingSpinner /></div>;
     if (error) return <div className="text-center text-red-400 bg-red-900/50 p-4 rounded-lg">{error}</div>;
@@ -396,10 +460,179 @@ const AdminPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* Withdrawal Management Section */}
+            <div className="bg-slate-800 shadow-2xl rounded-xl p-6 sm:p-8 w-full max-w-4xl mx-auto border border-emerald-500/20">
+                <div className="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                            <span>💸 Manajemen Penarikan Dana Komisi (WD)</span>
+                        </h2>
+                        <p className="text-xs text-slate-400 mt-1">
+                            Kelola pengajuan penarikan dana dari para afiliator/pengguna.
+                        </p>
+                    </div>
+                    <span className="bg-emerald-500/20 text-emerald-300 text-xs px-3 py-1 rounded-full border border-emerald-500/30 font-semibold">
+                        {withdrawals.filter(w => w.status === 'PENDING').length} Pending
+                    </span>
+                </div>
+
+                {withdrawalMsg && (
+                    <div className={`p-3 rounded-lg mb-4 text-xs font-medium ${withdrawalMsg.type === 'success' ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300' : 'bg-rose-500/20 border border-rose-500/40 text-rose-300'}`}>
+                        {withdrawalMsg.text}
+                    </div>
+                )}
+
+                <div className="overflow-x-auto max-h-[420px] overflow-y-auto border border-slate-700/60 rounded-xl shadow-inner custom-scrollbar">
+                    <table className="w-full text-left text-slate-300 relative text-xs">
+                        <thead className="bg-slate-900 sticky top-0 z-10 text-sky-300 uppercase shadow-md">
+                            <tr>
+                                <th className="p-3">User &amp; Tanggal</th>
+                                <th className="p-3">Nominal WD</th>
+                                <th className="p-3">Tujuan Transfer</th>
+                                <th className="p-3">Status &amp; Aksi Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-700/60">
+                            {withdrawals.length > 0 ? withdrawals.map(w => (
+                                <tr key={w._id} className="hover:bg-slate-700/40 transition-colors">
+                                    <td className="p-3">
+                                        <div className="font-semibold text-white">{w.userEmail}</div>
+                                        <div className="text-[11px] text-slate-400">
+                                            {new Date(w.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                    </td>
+                                    <td className="p-3 font-extrabold text-emerald-400 text-sm whitespace-nowrap">
+                                        Rp {w.amount.toLocaleString('id-ID')}
+                                    </td>
+                                    <td className="p-3">
+                                        <div className="font-bold text-sky-300">{w.bankName} - {w.accountNumber}</div>
+                                        <div className="text-[11px] text-slate-300">a.n {w.accountHolder}</div>
+                                    </td>
+                                    <td className="p-3">
+                                        {w.status === 'PENDING' ? (
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => handleUpdateWithdrawalStatus(w._id, 'PAID')}
+                                                        disabled={updatingWithdrawalId === w._id}
+                                                        className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-2.5 py-1 rounded shadow text-xs disabled:opacity-50"
+                                                    >
+                                                        {updatingWithdrawalId === w._id ? 'Proses...' : '✓ Tandai Lunas'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdateWithdrawalStatus(w._id, 'REJECTED')}
+                                                        disabled={updatingWithdrawalId === w._id}
+                                                        className="bg-rose-600 hover:bg-rose-700 text-white font-semibold px-2.5 py-1 rounded shadow text-xs disabled:opacity-50"
+                                                    >
+                                                        ✕ Tolak WD
+                                                    </button>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Alasan tolak (opsional)..."
+                                                    value={rejectNote[w._id] || ''}
+                                                    onChange={(e) => setRejectNote({ ...rejectNote, [w._id]: e.target.value })}
+                                                    className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-slate-200 placeholder-slate-500"
+                                                />
+                                            </div>
+                                        ) : w.status === 'PAID' ? (
+                                            <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-full font-bold text-[11px]">
+                                                ✓ Lunas / Ditransfer
+                                            </span>
+                                        ) : (
+                                            <div>
+                                                <span className="bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2.5 py-1 rounded-full font-bold text-[11px]">
+                                                    ✕ Ditolak (Refund)
+                                                </span>
+                                                {w.adminNote && (
+                                                    <p className="text-[11px] text-slate-400 mt-1 italic">{w.adminNote}</p>
+                                                )}
+                                            </div>
+                                        )}
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan={4} className="text-center p-6 text-slate-400 italic">
+                                        Belum ada pengajuan penarikan dana dari pengguna.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             {/* Pricing Config Section */}
             <div className="bg-slate-800 shadow-2xl rounded-xl p-6 sm:p-8 w-full max-w-4xl mx-auto">
                  <h2 className="text-3xl font-bold text-white mb-6">Pengaturan Aplikasi &amp; Harga</h2>
                  <div className="space-y-8">
+                    {/* Program Afiliasi & Referral Config */}
+                    <div className="p-4 bg-slate-700/40 rounded-xl border border-emerald-500/30">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xl">🤝</span>
+                            <h3 className="text-xl font-semibold text-emerald-300">Pengaturan Program Afiliasi &amp; Referral</h3>
+                        </div>
+                        <p className="text-xs text-slate-300 mb-4">
+                            Atur persentase komisi tunai dan batas minimal penarikan (WD) dana untuk para pengguna yang mengundang rekan lain.
+                        </p>
+                        
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between border-b border-slate-700/50 pb-3">
+                                <div>
+                                    <p className="font-semibold text-white text-sm">Status Program Afiliasi</p>
+                                    <p className="text-xs text-slate-400">Aktifkan untuk memberikan komisi saat pengguna yang diundang melakukan pembelian.</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setPricingConfig({ ...pricingConfig, referralEnabled: pricingConfig.referralEnabled === undefined ? true : !pricingConfig.referralEnabled })}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                                        (pricingConfig.referralEnabled !== false) ? 'bg-emerald-500' : 'bg-slate-600'
+                                    }`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                            (pricingConfig.referralEnabled !== false) ? 'translate-x-6' : 'translate-x-1'
+                                        }`}
+                                    />
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                                        Persentase Komisi (%)
+                                    </label>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="100"
+                                            value={pricingConfig.referralCommissionPercent ?? 15}
+                                            onChange={(e) => setPricingConfig({ ...pricingConfig, referralCommissionPercent: Number(e.target.value) })}
+                                            className={`${inputClass} w-full font-bold text-center text-emerald-400`}
+                                        />
+                                        <span className="text-sm font-bold text-slate-300">%</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                                        Minimal Penarikan Dana / WD (Rp)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="10000"
+                                        step="5000"
+                                        value={pricingConfig.minWithdrawalAmount ?? 50000}
+                                        onChange={(e) => setPricingConfig({ ...pricingConfig, minWithdrawalAmount: Number(e.target.value) })}
+                                        className={`${inputClass} w-full font-bold text-center text-emerald-400`}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Link Aduan / Saran */}
                     <div className="p-4 bg-slate-700/40 rounded-xl border border-sky-500/30">
                         <div className="flex items-center gap-2 mb-2">

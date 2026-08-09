@@ -12,6 +12,7 @@ import generateBundleStepHandler from './api/generate-bundle-step.js';
 import suggestObjectivesHandler from './api/suggest/objectives.js';
 import adminActionHandler from './api/admin/[action].js';
 import authActionHandler from './api/auth/[action].js';
+import referralActionHandler from './api/referral/[action].js';
 import pricingConfigHandler from './api/pricing/config.js';
 import templateHandler from './api/template.js';
 import documentsHandler from './api/documents.js';
@@ -50,6 +51,10 @@ async function startServer() {
   app.all('/api/auth/:action', (req, res) => {
     req.query.action = req.params.action;
     return wrap(authActionHandler)(req, res);
+  });
+  app.all('/api/referral/:action', (req, res) => {
+    req.query.action = req.params.action;
+    return wrap(referralActionHandler)(req, res);
   });
   
   app.all('/api/pricing/config', wrap(pricingConfigHandler));

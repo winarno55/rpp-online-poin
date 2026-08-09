@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 
 const RegisterPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const initialRef = searchParams.get('ref') || searchParams.get('referral') || '';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [referralCode, setReferralCode] = useState(initialRef);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (initialRef) {
+      setReferralCode(initialRef);
+    }
+  }, [initialRef]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +28,7 @@ const RegisterPage: React.FC = () => {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, referralCode }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -39,10 +49,15 @@ const RegisterPage: React.FC = () => {
   return (
     <div className="flex justify-center items-center py-12">
       <div className="w-full max-w-md bg-white shadow-2xl rounded-xl p-8 border border-slate-200">
-        <h2 className="text-3xl font-bold text-center text-slate-800 mb-6">Register Gratis</h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && <p className="text-red-600 bg-red-100 p-3 rounded-lg text-center border border-red-200">{error}</p>}
-          {success && <p className="text-green-600 bg-green-100 p-3 rounded-lg text-center border border-green-200">{success}</p>}
+        <h2 className="text-3xl font-bold text-center text-slate-800 mb-2">Register Gratis</h2>
+        {initialRef && (
+          <p className="text-center text-xs text-emerald-600 font-medium mb-6 bg-emerald-50 py-1.5 px-3 rounded-lg border border-emerald-200">
+            🎁 Mendaftar dengan Undangan Referral ({initialRef})
+          </p>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {error && <p className="text-red-600 bg-red-100 p-3 rounded-lg text-center border border-red-200 text-sm">{error}</p>}
+          {success && <p className="text-green-600 bg-green-100 p-3 rounded-lg text-center border border-green-200 text-sm">{success}</p>}
           <div>
             <label htmlFor="email" className={labelClass}>Email</label>
             <input 
@@ -60,11 +75,22 @@ const RegisterPage: React.FC = () => {
             <label htmlFor="password" className={labelClass}>Password</label>
             <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className={inputClass} />
           </div>
+          <div>
+            <label htmlFor="referralCode" className={labelClass}>Kode Referral (Opsional)</label>
+            <input 
+              type="text" 
+              id="referralCode" 
+              value={referralCode} 
+              onChange={(e) => setReferralCode(e.target.value.toUpperCase())} 
+              placeholder="Contoh: MAC12345"
+              className={inputClass} 
+            />
+          </div>
           <button type="submit" disabled={isLoading || !!success} className="w-full flex items-center justify-center bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed text-lg">
             {isLoading ? 'Loading...' : 'Register'}
           </button>
         </form>
-         <p className="text-center text-slate-500 mt-6">
+         <p className="text-center text-slate-500 mt-6 text-sm">
           Sudah punya akun? <Link to="/login" className="font-medium text-sky-600 hover:underline">Login di sini</Link>
         </p>
       </div>

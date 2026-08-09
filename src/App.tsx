@@ -23,6 +23,7 @@ const HomePage = lazy(() => import('./pages/HomePage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const HistoryDetailPage = lazy(() => import('./pages/HistoryDetailPage'));
+const AffiliatePage = lazy(() => import('./pages/AffiliatePage'));
 
 
 const App: React.FC = () => {
@@ -88,11 +89,20 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+            <Route 
+              path="/app/affiliate"
+              element={
+                <ProtectedRoute>
+                  <AffiliatePage />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Pengalihan untuk bookmark lama */}
             <Route path="/admin" element={<Navigate to="/app/admin" replace />} />
             <Route path="/history" element={<Navigate to="/app/history" replace />} />
             <Route path="/history/:id" element={<Navigate to="/app/history/:id" replace />} />
+            <Route path="/affiliate" element={<Navigate to="/app/affiliate" replace />} />
 
           </Routes>
         </Suspense>

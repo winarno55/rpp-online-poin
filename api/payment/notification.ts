@@ -4,6 +4,7 @@ import dbConnect from '../_lib/db.js';
 import Transaction from '../_lib/models/Transaction.js';
 import User from '../_lib/models/User.js';
 import PricingConfig from '../_lib/models/PricingConfig.js';
+import ReferralEarning from '../_lib/models/ReferralEarning.js';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -89,6 +90,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               user.points = currentPoints + transaction.points;
               await user.save({ validateBeforeSave: false });
               console.log(`Successfully credited ${transaction.points} points to ${user.email}. New total: ${user.points}`);
+
+              // --- Process Affiliate Commission ---
+              if (user.referredBy && config && config.referralEnabled !== false) {
+                const commissionPercent = config.referralCommissionPercent ?? 15;
+                const commissionAmount = Math.round((transaction.price * commissionPercent) / 100);
+                
+                if (commissionAmount > 0) {
+                  const referrer = await User.findById(user.referredBy);
+                  if (referrer) {
+                    referrer.affiliateBalance = (referrer.affiliateBalance || 0) + commissionAmount;
+                    referrer.totalEarnedAffiliate = (referrer.totalEarnedAffiliate || 0) + commissionAmount;
+                    await referrer.save({ validateBeforeSave: false });
+
+                    await ReferralEarning.create({
+                      referrerId: referrer._id,
+                      refereeId: user._id,
+                      refereeEmail: user.email,
+                      orderId: transaction.orderId,
+                      transactionAmount: transaction.price,
+                      commissionPercent,
+                      commissionAmount,
+                    });
+                    console.log(`Affiliate commission credited to ${referrer.email}: Rp ${commissionAmount}`);
+                  }
+                }
+              }
             } else {
               console.error(`User for transaction ${transaction._id} not found.`);
             }

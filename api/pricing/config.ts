@@ -44,8 +44,11 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         : (process.env.MIDTRANS_SANDBOX_CLIENT_KEY || process.env.MIDTRANS_CLIENT_KEY || '');
       const enabled = config ? (config.midtransEnabled ?? false) : false;
 
-      // Append complaintUrl
+      // Append complaintUrl & referral settings
       configObj.complaintUrl = config ? (config.complaintUrl || '') : '';
+      configObj.referralCommissionPercent = config ? (config.referralCommissionPercent ?? 15) : 15;
+      configObj.minWithdrawalAmount = config ? (config.minWithdrawalAmount ?? 50000) : 50000;
+      configObj.referralEnabled = config ? (config.referralEnabled ?? true) : true;
 
       // Append Midtrans public configuration
       configObj.midtrans = {

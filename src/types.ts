@@ -54,6 +54,33 @@ export interface User {
   email: string;
   points: number;
   role: 'user' | 'admin';
+  referralCode?: string;
+  affiliateBalance?: number;
+  totalEarnedAffiliate?: number;
+}
+
+export interface ReferralEarningItem {
+  _id: string;
+  refereeEmail: string;
+  orderId: string;
+  transactionAmount: number;
+  commissionPercent: number;
+  commissionAmount: number;
+  createdAt: string;
+}
+
+export interface WithdrawalItem {
+  _id: string;
+  userId: string;
+  userEmail: string;
+  amount: number;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  status: 'PENDING' | 'PAID' | 'REJECTED';
+  adminNote?: string;
+  processedAt?: string;
+  createdAt: string;
 }
 
 export interface AuthContextType {

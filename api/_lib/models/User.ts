@@ -13,6 +13,10 @@ export interface IUser extends Document {
   role: 'user' | 'admin';
   resetPasswordToken?: string;
   resetPasswordExpire?: Date;
+  referralCode?: string;
+  referredBy?: mongoose.Types.ObjectId;
+  affiliateBalance?: number; // Saldo Rupiah hasil komisi yang dapat ditarik (WD)
+  totalEarnedAffiliate?: number; // Total komisi akumulasi yang pernah didapat
   comparePassword(password: string): Promise<boolean>;
   getResetPasswordToken(): string;
 }
@@ -44,6 +48,23 @@ const UserSchema: Schema<IUser> = new Schema({
   },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
+  referralCode: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  referredBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  affiliateBalance: {
+    type: Number,
+    default: 0,
+  },
+  totalEarnedAffiliate: {
+    type: Number,
+    default: 0,
+  },
 }, { timestamps: true });
 
 // Hash password before saving

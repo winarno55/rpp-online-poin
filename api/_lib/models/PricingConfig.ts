@@ -27,6 +27,9 @@ export interface IPricingConfig extends Document {
   midtransSandbox?: boolean;
   midtransEnabled?: boolean;
   complaintUrl?: string;
+  referralCommissionPercent?: number; // Default e.g. 15%
+  minWithdrawalAmount?: number; // Default e.g. Rp 50.000
+  referralEnabled?: boolean; // Status program afiliasi
 }
 
 const SessionCostSchema: Schema<ISessionCost> = new Schema({
@@ -52,6 +55,9 @@ const PricingConfigSchema: Schema<IPricingConfig> = new Schema({
   midtransSandbox: { type: Boolean, default: true },
   midtransEnabled: { type: Boolean, default: false },
   complaintUrl: { type: String, default: '' },
+  referralCommissionPercent: { type: Number, default: 15 },
+  minWithdrawalAmount: { type: Number, default: 50000 },
+  referralEnabled: { type: Boolean, default: true },
 }, { timestamps: true });
 
 
