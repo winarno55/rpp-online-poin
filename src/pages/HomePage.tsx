@@ -328,8 +328,8 @@ const HomePage: React.FC = () => {
                                 </span>
                                 PEMBARUAN: CP Resmi BSKAP No. 046/2025 & CP No. 020 (Pendidikan Agama Islam / PAI) Telah Ditambahkan!
                             </div>
-                            <h2 className="text-3xl font-bold text-slate-800 mb-4">Mulai Buat Perangkat Ajar</h2>
-                            <p className="text-slate-600">Pilih mode pembuatan dokumen sesuai dengan kebutuhan dan sisa poin Anda.</p>
+                            <h2 className="text-3xl font-bold text-white mb-4">Mulai Buat Perangkat Ajar</h2>
+                            <p className="text-slate-300">Pilih mode pembuatan dokumen sesuai dengan kebutuhan dan sisa poin Anda.</p>
                         </div>
                         <div className="grid md:grid-cols-2 gap-8">
                             {/* Card Modul Ajar Saja */}
@@ -367,7 +367,7 @@ const HomePage: React.FC = () => {
                     {/* Saved Documents Section */}
                     {authData?.token && savedDocuments.length > 0 && (
                         <div className="max-w-4xl w-full mt-12 mb-12">
-                            <h3 className="text-2xl font-bold text-slate-800 mb-6">Dokumen Tersimpan</h3>
+                            <h3 className="text-2xl font-bold text-white mb-6">Dokumen Tersimpan</h3>
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {savedDocuments.map(doc => (
                                     <div key={doc._id} className="relative bg-white rounded-xl shadow-md border border-slate-200 p-6 hover:shadow-lg transition-all cursor-pointer flex flex-col" onClick={() => loadDocument(doc)}>
