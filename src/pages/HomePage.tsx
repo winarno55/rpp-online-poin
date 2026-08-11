@@ -1,5 +1,6 @@
 import { fetchWithRetry } from "../utils/fetchWithRetry";
 import React, { useState, useEffect, useRef } from 'react';
+import KineticGrid from '../components/ui/kinetic-grid';
 import { LessonPlanInput, initDB, addRppToHistory } from '../types';
 import { IdentityForm } from '../components/IdentityForm';
 import { LessonPlanForm } from '../components/LessonPlanForm';
@@ -314,7 +315,8 @@ const HomePage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col md:flex-row gap-6 min-h-screen">
+        <KineticGrid globalColor="default">
+            <div className="flex flex-col md:flex-row gap-6 min-h-screen">
             {appMode === 'select' && (
                 <div className="flex-1 flex flex-col items-center justify-center py-12">
                     <div className="max-w-4xl w-full">
@@ -540,6 +542,7 @@ const HomePage: React.FC = () => {
             </>
             )}
         </div>
+        </KineticGrid>
     );
 };
 

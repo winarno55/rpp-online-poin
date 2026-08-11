@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import KineticGrid from '../components/ui/kinetic-grid';
 
 // ==========================================
 // 1. HERO APP PREVIEW CARD (MOCKUP INTERAKTIF)
@@ -198,7 +199,8 @@ const LandingPage: React.FC = () => {
     }
 
     return (
-        <div className="space-y-24 sm:space-y-32 py-6">
+        <KineticGrid globalColor="light">
+            <div className="space-y-24 sm:space-y-32 py-6">
             {/* HERO SECTION WITH 3D NEURAL CANVAS */}
             <section className="grid grid-cols-1 lg:grid-cols-12 items-center gap-8 lg:gap-12 pt-4">
                 <div className="lg:col-span-7 text-center lg:text-left space-y-6">
@@ -396,6 +398,7 @@ const LandingPage: React.FC = () => {
                 </div>
             </section>
         </div>
+        </KineticGrid>
     );
 };
 
