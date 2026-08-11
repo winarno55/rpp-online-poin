@@ -15,6 +15,7 @@ interface LessonPlanFormProps {
   initialData?: LessonPlanInput | null;
   token: string | null;
   updatePoints: (newPoints: number) => void;
+  onSaveProfile?: (data: LessonPlanInput) => void;
 }
 
 const emptyForm: LessonPlanInput = {
@@ -53,7 +54,7 @@ const emptyForm: LessonPlanInput = {
     kemitraanPembelajaran: '',
 };
 
-export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, sessionCosts, initialData, token, updatePoints }) => {
+export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoading, points, sessionCosts, initialData, token, updatePoints, onSaveProfile }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<LessonPlanInput>(emptyForm);
   
@@ -321,7 +322,18 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
           {step === 1 && (
             <fieldset className={fieldSetClass}>
               <div className="bg-slate-100 p-4 rounded-lg mb-6 border border-slate-200">
-                  <h3 className="font-bold text-slate-700 mb-3 text-sm">Identitas Sekolah & Guru</h3>
+                  <div className="flex justify-between items-center mb-3">
+                      <h3 className="font-bold text-slate-700 text-sm">Identitas Sekolah & Guru</h3>
+                      {onSaveProfile && (
+                        <button
+                          type="button"
+                          onClick={() => onSaveProfile(formData)}
+                          className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold px-2.5 py-1.5 rounded-md border border-blue-200 flex items-center gap-1 transition-all"
+                        >
+                          💾 Simpan Default
+                        </button>
+                      )}
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="md:col-span-2">
                         <label htmlFor="satuanPendidikan" className={labelClass}>Nama Sekolah</label>

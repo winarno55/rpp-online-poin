@@ -197,6 +197,7 @@ ATURAN WAJIB (STRICT INSTRUCTIONS):
 9. Pertimbangkan tahap perkembangan psikologis dan kognitif anak pada jenjang/fase tersebut sesuai standar proses di Indonesia.
 `;
     const identityData = `
+Satuan Pendidikan: ${input.satuanPendidikan || ''}
 Mata Pelajaran: ${input.mataPelajaran}
 Singkatan Mapel: ${input.singkatan}
 Kelas/Fase: ${kelasFaseCombined}

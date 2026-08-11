@@ -8,9 +8,10 @@ interface Props {
   onSubmit: () => void;
   isLoading: boolean;
   bundleCost: number;
+  onSaveProfile?: () => void;
 }
 
-export const IdentityForm: React.FC<Props> = ({ formData, handleChange, onSubmit, isLoading, bundleCost }) => {
+export const IdentityForm: React.FC<Props> = ({ formData, handleChange, onSubmit, isLoading, bundleCost, onSaveProfile }) => {
   const inputClass = "w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all";
   
   return (
@@ -85,7 +86,17 @@ export const IdentityForm: React.FC<Props> = ({ formData, handleChange, onSubmit
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center border-t border-slate-100 pt-6 mt-6">
+        {onSaveProfile ? (
+          <button 
+            type="button"
+            onClick={onSaveProfile}
+            className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-lg transition-colors flex items-center gap-2 border border-slate-200"
+          >
+            💾 Simpan Profil Default
+          </button>
+        ) : <div />}
+
         <button 
           onClick={onSubmit} 
           disabled={isLoading}

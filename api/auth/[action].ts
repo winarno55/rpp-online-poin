@@ -74,14 +74,40 @@ async function handleLogin(req: VercelRequest, res: VercelResponse) {
 async function handleRegister(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
 
-    const { email, password } = req.body;
+    const { email, password, referralCode } = req.body;
     if (!email || !password) return res.status(400).json({ message: 'Please provide email and password' });
 
     await dbConnect();
     const userExists = await User.findOne({ email: new RegExp(`^${email.toLowerCase()}$`, 'i') }).exec();
     if (userExists) return res.status(400).json({ message: 'User with this email already exists' });
 
-    await User.create({ email: email.toLowerCase(), password });
+    // Find referrer if referralCode is provided
+    let referrerUser = null;
+    if (referralCode && typeof referralCode === 'string') {
+        const cleanCode = referralCode.trim().toUpperCase();
+        if (cleanCode) {
+            referrerUser = await User.findOne({ referralCode: cleanCode }).exec();
+        }
+    }
+
+    // Auto-generate unique referral code for the new user
+    const emailPrefix = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 5);
+    const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+    let newReferralCode = `${emailPrefix}${randomStr}` || `REF${Math.floor(100000 + Math.random() * 900000)}`;
+    
+    let existingUserWithCode = await User.findOne({ referralCode: newReferralCode }).exec();
+    while (existingUserWithCode) {
+        newReferralCode = `REF${Math.floor(100000 + Math.random() * 900000)}`;
+        existingUserWithCode = await User.findOne({ referralCode: newReferralCode }).exec();
+    }
+
+    await User.create({
+        email: email.toLowerCase(),
+        password,
+        referralCode: newReferralCode,
+        referredBy: referrerUser ? referrerUser._id : undefined,
+    });
+
     res.status(201).json({ success: true, message: 'User created successfully' });
 }
 

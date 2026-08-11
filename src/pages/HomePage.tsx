@@ -61,6 +61,50 @@ const HomePage: React.FC = () => {
         }
     }, [authData?.token]);
 
+    useEffect(() => {
+        if (authData?.user?.email) {
+            const email = authData.user.email;
+            try {
+                const saved = localStorage.getItem(`modul_ajar_profile_${email}`);
+                if (saved) {
+                    const savedProfile = JSON.parse(saved);
+                    setFormData(prev => ({
+                        ...prev,
+                        provinsiKota: savedProfile.provinsiKota ?? prev.provinsiKota,
+                        dinasPendidikan: savedProfile.dinasPendidikan ?? prev.dinasPendidikan,
+                        satuanPendidikan: savedProfile.satuanPendidikan ?? prev.satuanPendidikan,
+                        alamatSekolah: savedProfile.alamatSekolah ?? prev.alamatSekolah,
+                        namaGuru: savedProfile.namaGuru ?? prev.namaGuru,
+                        nipGuru: savedProfile.nipGuru ?? prev.nipGuru,
+                        namaKepalaSekolah: savedProfile.namaKepalaSekolah ?? prev.namaKepalaSekolah,
+                        nipKepalaSekolah: savedProfile.nipKepalaSekolah ?? prev.nipKepalaSekolah,
+                        kotaTanggalTtd: savedProfile.kotaTanggalTtd ?? prev.kotaTanggalTtd,
+                    }));
+                }
+            } catch (e) {
+                console.error("Failed to load saved profile", e);
+            }
+        }
+    }, [authData?.user?.email]);
+
+    const handleSaveProfile = (customData?: LessonPlanInput) => {
+        const email = authData?.user?.email || 'guest';
+        const sourceData = customData || formData;
+        const profileData = {
+            provinsiKota: sourceData.provinsiKota,
+            dinasPendidikan: sourceData.dinasPendidikan,
+            satuanPendidikan: sourceData.satuanPendidikan,
+            alamatSekolah: sourceData.alamatSekolah,
+            namaGuru: sourceData.namaGuru,
+            nipGuru: sourceData.nipGuru,
+            namaKepalaSekolah: sourceData.namaKepalaSekolah,
+            nipKepalaSekolah: sourceData.nipKepalaSekolah,
+            kotaTanggalTtd: sourceData.kotaTanggalTtd,
+        };
+        localStorage.setItem(`modul_ajar_profile_${email}`, JSON.stringify(profileData));
+        alert('💾 Profil Sekolah & Guru berhasil disimpan sebagai default!');
+    };
+
     const handleChange = (e: any) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -171,7 +215,30 @@ const HomePage: React.FC = () => {
         }
     };
     const handleCreateNew = (mode: 'bundle' | 'modul_ajar') => {
-        setFormData(emptyForm);
+        let baseForm = { ...emptyForm };
+        if (authData?.user?.email) {
+            try {
+                const saved = localStorage.getItem(`modul_ajar_profile_${authData.user.email}`);
+                if (saved) {
+                    const savedProfile = JSON.parse(saved);
+                    baseForm = {
+                        ...baseForm,
+                        provinsiKota: savedProfile.provinsiKota ?? baseForm.provinsiKota,
+                        dinasPendidikan: savedProfile.dinasPendidikan ?? baseForm.dinasPendidikan,
+                        satuanPendidikan: savedProfile.satuanPendidikan ?? baseForm.satuanPendidikan,
+                        alamatSekolah: savedProfile.alamatSekolah ?? baseForm.alamatSekolah,
+                        namaGuru: savedProfile.namaGuru ?? baseForm.namaGuru,
+                        nipGuru: savedProfile.nipGuru ?? baseForm.nipGuru,
+                        namaKepalaSekolah: savedProfile.namaKepalaSekolah ?? baseForm.namaKepalaSekolah,
+                        nipKepalaSekolah: savedProfile.nipKepalaSekolah ?? baseForm.nipKepalaSekolah,
+                        kotaTanggalTtd: savedProfile.kotaTanggalTtd ?? baseForm.kotaTanggalTtd,
+                    };
+                }
+            } catch (e) {
+                console.error("Failed to load profile for new form", e);
+            }
+        }
+        setFormData(baseForm);
         setDocs({});
         setModulHtml(null);
         setActiveDocumentId(null);
@@ -464,6 +531,7 @@ const HomePage: React.FC = () => {
                         onSubmit={handleGenerateBundle} 
                         isLoading={isLoadingStep > 0} 
                         bundleCost={pricingConfig?.bundleCost || 50} 
+                        onSaveProfile={() => handleSaveProfile()}
                     />
                 )}
 
@@ -514,6 +582,7 @@ const HomePage: React.FC = () => {
                                 token={authData.token}
                                 initialData={formData}
                                 updatePoints={() => {}}
+                                onSaveProfile={handleSaveProfile}
                             />
                         </div>
 

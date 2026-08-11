@@ -14,7 +14,7 @@ export const generateLessonPlanPrompt = (input: LessonPlanInput): string => {
   const { 
     mataPelajaran, singkatan, kelasFase, tahunPelajaran, alokasiWaktu, jpPerMinggu, durasiPertemuan,
     materi, jumlahPertemuan, tujuanPembelajaran, capaianPembelajaran, praktikPedagogis,
-    dimensiProfilLulusan
+    dimensiProfilLulusan, satuanPendidikan
   } = input;
 
   const fase = getFase(kelasFase);
@@ -70,7 +70,7 @@ ATURAN WAJIB (STRICT INSTRUCTIONS):
 
 STRUKTUR MODUL YANG DIHARAPKAN:
 A. INFORMASI UMUM
-- Identitas Sekolah (Satuan Pendidikan, Guru, Fase/Kelas, Semester, Alokasi Waktu)
+- Identitas Sekolah (Satuan Pendidikan: ${satuanPendidikan || ''}, Guru: ${input.namaGuru}, Fase/Kelas, Semester, Alokasi Waktu)
 - Kompetensi Awal
 - Capaian Pembelajaran: ${capaianPembelajaran || 'Diselaraskan otomatis dengan BSKAP 046/2025'}
 - Dimensi Profil Lulusan (Sebutkan: ${dimensiProfilLulusan.join(', ')})
@@ -96,6 +96,7 @@ C. LAMPIRAN
 
 DATA INPUT:
 Mata Pelajaran: ${mataPelajaran} (${singkatan})
+Satuan Pendidikan: ${satuanPendidikan || ''}
 Fase/Kelas: ${kelasFaseCombined}
 Tahun Pelajaran: ${tahunPelajaran}
 Materi: ${materi}
