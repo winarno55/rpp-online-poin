@@ -93,6 +93,77 @@ const AdminPage: React.FC = () => {
 
     const maxSessions = 5;
 
+    // State untuk Broadcast Email
+    const [broadcastTarget, setBroadcastTarget] = useState<'all' | 'active'>('active');
+    const [broadcastSubject, setBroadcastSubject] = useState('📢 Rekomendasikan Modul Ajar Cerdas, Dapatkan Komisi Tunai 15%! 💸');
+    const [broadcastMessage, setBroadcastMessage] = useState(`<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; background-color: #ffffff;">
+    <h2 style="color: #0ea5e9; margin-top: 0;">Hai Bapak/Ibu Guru Hebat,</h2>
+    <p>Kami punya kabar gembira untuk Anda! Kini <strong>Modul Ajar Cerdas</strong> telah meluncurkan <strong>Program Afiliasi & Referral Resmi</strong>.</p>
+    
+    <div style="background-color: #f0fdf4; border-left: 4px solid #22c55e; padding: 16px; margin: 20px 0; border-radius: 4px;">
+        <h3 style="color: #166534; margin: 0 0 8px 0; font-size: 16px;">🎁 Dapatkan Komisi Tunai 15%</h3>
+        <p style="margin: 0; color: #1e293b; font-size: 14px;">Setiap kali rekan guru yang Anda undang melakukan pembelian poin di Modul Ajar Cerdas, Anda akan otomatis mendapatkan komisi tunai sebesar <strong>15%</strong>!</p>
+    </div>
+
+    <p>Komisi yang Anda kumpulkan dapat ditarik (Withdraw) kapan saja langsung ke Rekening Bank atau E-Wallet pilihan Anda (DANA, OVO, ShopeePay, dll) dengan batas minimal penarikan Rp 50.000 saja!</p>
+
+    <h3 style="color: #0ea5e9; font-size: 16px; margin-top: 24px;">Bagaimana Cara Memulainya?</h3>
+    <ol style="padding-left: 20px; color: #475569; font-size: 14px;">
+        <li style="margin-bottom: 8px;">Masuk ke akun Anda di <strong>Modul Ajar Cerdas</strong>.</li>
+        <li style="margin-bottom: 8px;">Buka menu <strong>💰 Afiliasi</strong> di bar navigasi atas.</li>
+        <li style="margin-bottom: 8px;">Salin <strong>Link Referral Anda</strong> atau <strong>Kode Referral Anda</strong>.</li>
+        <li>Bagikan ke grup WhatsApp guru, rekan sejawat, atau sosial media Anda!</li>
+    </ol>
+
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="https://modulajarcerdas.my.id/app/affiliate" style="background-color: #0ea5e9; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Ambil Link Referral Saya</a>
+    </div>
+
+    <p style="font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 30px;">
+        Mari saling membantu sesama guru untuk menyiapkan perangkat ajar terbaik dengan lebih mudah dan cepat, sekaligus menikmati penghasilan tambahan bersama Modul Ajar Cerdas!
+    </p>
+    <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">Salam hangat,</p>
+    <p style="font-size: 13px; color: #475569; font-weight: bold; margin: 4px 0 0 0;">Tim Modul Ajar Cerdas</p>
+</div>`);
+    const [isSendingBroadcast, setIsSendingBroadcast] = useState(false);
+    const [broadcastResult, setBroadcastResult] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [showBroadcastPreview, setShowBroadcastPreview] = useState(false);
+
+    const handleSendBroadcast = async () => {
+        if (!authData.token) return;
+        const confirmSend = window.confirm(
+            `Apakah Anda yakin ingin mengirim email massal ini ke semua ${
+                broadcastTarget === 'active' ? 'Anggota Aktif (Poin > 200)' : 'Anggota Terdaftar'
+            }? Tindakan ini tidak dapat dibatalkan.`
+        );
+        if (!confirmSend) return;
+
+        setIsSendingBroadcast(true);
+        setBroadcastResult(null);
+
+        try {
+            const res = await fetch('/api/admin/broadcast-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authData.token}`
+                },
+                body: JSON.stringify({
+                    target: broadcastTarget,
+                    subject: broadcastSubject,
+                    message: broadcastMessage
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Gagal mengirim broadcast email.');
+            setBroadcastResult({ type: 'success', text: data.message || 'Email massal berhasil dikirim ke seluruh anggota kriteria!' });
+        } catch (err: any) {
+            setBroadcastResult({ type: 'error', text: err.message || 'Gagal mengirim broadcast.' });
+        } finally {
+            setIsSendingBroadcast(false);
+        }
+    };
+
     const fetchAllData = useCallback(async () => {
         if (!authData.token) return;
         setLoading(true);
@@ -457,6 +528,128 @@ const AdminPage: React.FC = () => {
                             )}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            {/* Broadcast Email Section */}
+            <div className="bg-slate-800 shadow-2xl rounded-xl p-6 sm:p-8 w-full max-w-4xl mx-auto border border-sky-500/20">
+                <div className="mb-6">
+                    <h2 className="text-3xl font-bold text-white flex items-center gap-2">
+                        <span>📢 Kirim Pengumuman Email Massal (Broadcast)</span>
+                    </h2>
+                    <p className="text-xs text-slate-300 mt-1">
+                        Kirim pesan email promosi, kabar terbaru, atau ajakan program afiliasi ke anggota aktif atau seluruh pengguna Anda sekaligus secara otomatis.
+                    </p>
+                </div>
+
+                {broadcastResult && (
+                    <div className={`p-4 rounded-lg mb-6 text-sm font-semibold ${broadcastResult.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-300' : 'bg-rose-500/10 border border-rose-500/30 text-rose-300'}`}>
+                        {broadcastResult.text}
+                    </div>
+                )}
+
+                <div className="space-y-6">
+                    {/* Target Selection */}
+                    <div>
+                        <span className="block text-sm font-medium text-slate-300 mb-2">Target Penerima</span>
+                        <div className="flex gap-4">
+                            <button
+                                type="button"
+                                onClick={() => setBroadcastTarget('active')}
+                                className={`flex-1 py-3 px-4 rounded-lg font-bold border transition-all text-sm flex flex-col items-center gap-1 ${
+                                    broadcastTarget === 'active'
+                                        ? 'bg-sky-500/20 border-sky-500 text-white shadow-lg'
+                                        : 'bg-slate-700/50 border-slate-600 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+                                }`}
+                            >
+                                <span className="text-base">🔥 Hanya Anggota Aktif</span>
+                                <span className="text-[11px] font-normal text-slate-400">Poin &gt; 200 (Total {users.filter(u => u.points > 200).length} Guru)</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setBroadcastTarget('all')}
+                                className={`flex-1 py-3 px-4 rounded-lg font-bold border transition-all text-sm flex flex-col items-center gap-1 ${
+                                    broadcastTarget === 'all'
+                                        ? 'bg-sky-500/20 border-sky-500 text-white shadow-lg'
+                                        : 'bg-slate-700/50 border-slate-600 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+                                }`}
+                            >
+                                <span className="text-base">👥 Semua Pengguna Terdaftar</span>
+                                <span className="text-[11px] font-normal text-slate-400">Total {users.length} Guru</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Subject Input */}
+                    <div>
+                        <label htmlFor="broadcast-subject" className="block text-sm font-medium text-slate-300 mb-2">Subjek Email</label>
+                        <input
+                            type="text"
+                            id="broadcast-subject"
+                            value={broadcastSubject}
+                            onChange={(e) => setBroadcastSubject(e.target.value)}
+                            className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 transition-colors placeholder-slate-400 text-slate-100 font-medium"
+                            placeholder="Tulis subjek email..."
+                        />
+                    </div>
+
+                    {/* Email Body Textarea */}
+                    <div>
+                        <div className="flex justify-between items-center mb-2">
+                            <label htmlFor="broadcast-message" className="block text-sm font-medium text-slate-300">Isi Email (HTML Diizinkan)</label>
+                            <button
+                                type="button"
+                                onClick={() => setShowBroadcastPreview(!showBroadcastPreview)}
+                                className="text-xs bg-slate-700 hover:bg-slate-600 text-sky-400 border border-slate-600 px-3 py-1 rounded transition-all font-semibold flex items-center gap-1"
+                            >
+                                {showBroadcastPreview ? 'Tutup Live Preview' : '👀 Tampilkan Live Preview'}
+                            </button>
+                        </div>
+                        <textarea
+                            id="broadcast-message"
+                            rows={12}
+                            value={broadcastMessage}
+                            onChange={(e) => setBroadcastMessage(e.target.value)}
+                            className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-sky-500 transition-colors placeholder-slate-400 text-slate-100 font-mono text-xs leading-relaxed"
+                            placeholder="Tulis pesan email (HTML diizinkan)..."
+                        />
+                    </div>
+
+                    {/* Live HTML Preview Box */}
+                    {showBroadcastPreview && (
+                        <div className="border border-slate-600 rounded-lg overflow-hidden bg-white p-4">
+                            <div className="text-slate-500 text-[11px] font-bold border-b border-slate-200 pb-2 mb-3 uppercase tracking-wider flex justify-between items-center">
+                                <span>Pratinjau Email Penerima:</span>
+                                <span className="bg-slate-200 text-slate-700 px-2 py-0.5 rounded text-[10px]">HTML Rendered</span>
+                            </div>
+                            <div 
+                                className="preview-html-container overflow-y-auto max-h-[350px]"
+                                dangerouslySetInnerHTML={{ __html: broadcastMessage }}
+                            />
+                        </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <div className="pt-2">
+                        <button
+                            type="button"
+                            onClick={handleSendBroadcast}
+                            disabled={isSendingBroadcast}
+                            className="w-full flex items-center justify-center bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-600 hover:to-indigo-600 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg transition-all disabled:opacity-50 text-base"
+                        >
+                            {isSendingBroadcast ? (
+                                <span className="flex items-center gap-2">
+                                    <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
+                                    <span>Sedang Mengirim Email Broadcast...</span>
+                                </span>
+                            ) : (
+                                <span>🚀 Kirim Broadcast Email Sekarang</span>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </div>
 

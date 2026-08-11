@@ -12,7 +12,7 @@ const corsHandler = cors();
 
 // --- HELPER FUNCTIONS ---
 
-async function sendEmail(options: { email: string; subject: string; message: string; }) {
+export async function sendEmail(options: { email: string; subject: string; message: string; }) {
     if (!process.env.SMTP_HOST || !process.env.SMTP_PORT || !process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.SMTP_FROM_EMAIL || !process.env.SMTP_FROM_NAME) {
         console.error("SMTP env vars missing.");
         throw new Error("Server is not configured to send emails.");

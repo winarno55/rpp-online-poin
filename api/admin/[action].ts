@@ -4,6 +4,8 @@ import { protect, admin } from '../_lib/auth.js';
 import dbConnect from '../_lib/db.js';
 import User, { IUser } from '../_lib/models/User.js';
 import PricingConfig from '../_lib/models/PricingConfig.js';
+import Withdrawal from '../_lib/models/Withdrawal.js';
+import { sendEmail } from '../auth/[action].js';
 import cors from 'cors';
 
 const corsHandler = cors();
@@ -46,7 +48,7 @@ async function handleUpdatePoints(req: AuthRequest, res: VercelResponse) {
 }
 
 async function handleUpdatePricing(req: AuthRequest, res: VercelResponse) {
-    const { pointPackages, paymentMethods, sessionCosts, bundleCost, midtransSandbox, midtransEnabled, complaintUrl } = req.body;
+    const { pointPackages, paymentMethods, sessionCosts, bundleCost, midtransSandbox, midtransEnabled, complaintUrl, referralCommissionPercent, minWithdrawalAmount, referralEnabled } = req.body;
     if (!Array.isArray(pointPackages) || !Array.isArray(paymentMethods) || !Array.isArray(sessionCosts)) {
         return res.status(400).json({ message: 'Invalid data format.' });
     }
@@ -61,12 +63,97 @@ async function handleUpdatePricing(req: AuthRequest, res: VercelResponse) {
                 bundleCost: bundleCost,
                 midtransSandbox: midtransSandbox !== undefined ? Boolean(midtransSandbox) : true,
                 midtransEnabled: midtransEnabled !== undefined ? Boolean(midtransEnabled) : false,
-                complaintUrl: complaintUrl !== undefined ? String(complaintUrl).trim() : ''
+                complaintUrl: complaintUrl !== undefined ? String(complaintUrl).trim() : '',
+                referralCommissionPercent: referralCommissionPercent !== undefined ? Number(referralCommissionPercent) : 15,
+                minWithdrawalAmount: minWithdrawalAmount !== undefined ? Number(minWithdrawalAmount) : 50000,
+                referralEnabled: referralEnabled !== undefined ? Boolean(referralEnabled) : true
             }
         },
         { new: true, upsert: true, runValidators: true }
     );
     res.status(200).json(updatedConfig);
+}
+
+async function handleGetWithdrawals(req: AuthRequest, res: VercelResponse) {
+    const withdrawals = await Withdrawal.find().sort({ createdAt: -1 }).exec();
+    res.status(200).json(withdrawals);
+}
+
+async function handleUpdateWithdrawal(req: AuthRequest, res: VercelResponse) {
+    const { withdrawalId, status, adminNote } = req.body;
+    if (!withdrawalId || !status || !['PAID', 'REJECTED'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid withdrawal update data.' });
+    }
+
+    const withdrawal = await Withdrawal.findById(withdrawalId).exec();
+    if (!withdrawal) {
+        return res.status(404).json({ message: 'Withdrawal record not found.' });
+    }
+
+    if (withdrawal.status !== 'PENDING') {
+        return res.status(400).json({ message: 'Withdrawal is already processed.' });
+    }
+
+    withdrawal.status = status;
+    withdrawal.adminNote = adminNote;
+    withdrawal.processedAt = new Date();
+    await withdrawal.save();
+
+    // If REJECTED, refund back to user's affiliate balance
+    if (status === 'REJECTED') {
+        const user = await User.findById(withdrawal.userId).exec();
+        if (user) {
+            user.affiliateBalance = (user.affiliateBalance || 0) + withdrawal.amount;
+            await user.save();
+        }
+    }
+
+    res.status(200).json({ message: `Status penarikan berhasil diperbarui menjadi ${status}.`, withdrawal });
+}
+
+async function handleBroadcastEmail(req: AuthRequest, res: VercelResponse) {
+    const { target, subject, message } = req.body;
+    if (!subject || !message) {
+        return res.status(400).json({ message: 'Subjek dan isi pesan email harus diisi.' });
+    }
+
+    // Determine target users
+    let query: any = { role: { $ne: 'admin' } };
+    if (target === 'active') {
+        // active users have points > 200 (as defined in the admin stats)
+        query.points = { $gt: 200 };
+    }
+
+    const users = await User.find(query).select('email').exec();
+    if (users.length === 0) {
+        return res.status(404).json({ message: 'Tidak ada pengguna yang memenuhi kriteria.' });
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+
+    // Process in parallel batches of 15 emails to stay highly responsive and avoid Vercel timeouts
+    const batchSize = 15;
+    for (let i = 0; i < users.length; i += batchSize) {
+        const batch = users.slice(i, i + batchSize);
+        await Promise.allSettled(batch.map(user => 
+            sendEmail({
+                email: user.email,
+                subject: subject,
+                message: message
+            }).then(() => {
+                successCount++;
+            }).catch(err => {
+                console.error(`Failed to send broadcast email to ${user.email}:`, err);
+                failCount++;
+            })
+        ));
+    }
+
+    res.status(200).json({
+        success: true,
+        message: `Pengiriman email selesai. Berhasil: ${successCount}, Gagal: ${failCount}.`
+    });
 }
 
 // --- MAIN DISPATCHER ---
@@ -82,6 +169,9 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             case 'add-points': return await handleAddPoints(req, res);
             case 'update-points': return await handleUpdatePoints(req, res);
             case 'pricing': return await handleUpdatePricing(req, res);
+            case 'withdrawals': return await handleGetWithdrawals(req, res);
+            case 'update-withdrawal': return await handleUpdateWithdrawal(req, res);
+            case 'broadcast-email': return await handleBroadcastEmail(req, res);
             default: return res.status(404).json({ message: 'Invalid admin endpoint' });
         }
     } catch (error: any) {
