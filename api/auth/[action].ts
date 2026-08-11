@@ -45,9 +45,12 @@ async function handleLogin(req: VercelRequest, res: VercelResponse) {
 
     const { email, password } = req.body;
 
-    // Hardcoded Admin
-    if (email && email.toLowerCase() === 'admin' && password === 'besamld55') {
-        const adminUser = { id: 'admin_user_id', email: 'admin', points: 99999, role: 'admin' as const };
+    // Configurable Admin via Environment Variables
+    const adminEmailEnv = process.env.ADMIN_EMAIL || 'admin';
+    const adminPasswordEnv = process.env.ADMIN_PASSWORD || 'besamld55';
+
+    if (email && email.toLowerCase() === adminEmailEnv.toLowerCase() && password === adminPasswordEnv) {
+        const adminUser = { id: 'admin_user_id', email: adminEmailEnv.toLowerCase(), points: 99999, role: 'admin' as const };
         const token = jwt.sign({ id: adminUser.id, role: 'admin' }, JWT_SECRET, { expiresIn: '1d' });
         return res.status(200).json({ token, user: adminUser });
     }

@@ -35,7 +35,7 @@ export const protect = async (req: AuthRequest, res: VercelResponse, next: NextF
         if (decoded.id === 'admin_user_id' && decoded.role === 'admin') {
             req.user = {
                 _id: 'admin_user_id',
-                email: 'admin',
+                email: process.env.ADMIN_EMAIL || 'admin',
                 role: 'admin',
             } as any;
             return next();
