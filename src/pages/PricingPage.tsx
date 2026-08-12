@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { TiltCard } from '../components/ui/be-ui-tilt-card';
 
 interface PointPackage {
     points: number;
@@ -226,23 +227,23 @@ const PricingPage: React.FC = () => {
                 <h2 className="text-3xl font-bold text-slate-800 text-center mb-8">Pilih Paket Poin</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {(config.pointPackages || []).map((pkg, index) => (
-                        <div key={index} className="border border-slate-200 rounded-xl p-6 text-center flex flex-col items-center justify-between shadow-lg transform hover:scale-105 transition-all duration-300 bg-slate-50 relative overflow-hidden">
+                        <TiltCard key={index} className="border border-slate-200 rounded-2xl p-6 text-center flex flex-col items-center justify-between shadow-xl bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
                             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-500 to-emerald-500"></div>
                             
                             <div className="my-4">
-                                <p className="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-emerald-500">{pkg.points}</p>
-                                <p className="text-lg text-slate-500 font-semibold mt-1">Poin</p>
+                                <p className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-emerald-600 drop-shadow-sm">{pkg.points}</p>
+                                <p className="text-lg text-slate-500 font-bold uppercase tracking-wider mt-1">Poin</p>
                             </div>
 
                             <div className="w-full border-t border-slate-100 pt-4 my-4">
-                                <p className="text-2xl font-bold text-slate-800">{formatCurrency(pkg.price)}</p>
+                                <p className="text-2xl font-black text-slate-800">{formatCurrency(pkg.price)}</p>
                             </div>
 
                             {showAutomaticPayment ? (
                                 <button
                                     onClick={() => handleBuyInstant(pkg, index)}
                                     disabled={payingIndex !== null}
-                                    className="w-full bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-500 hover:to-emerald-500 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors flex items-center justify-center space-x-2 text-sm disabled:opacity-50"
+                                    className="w-full bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-500 hover:to-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center space-x-2 text-sm disabled:opacity-50 active:scale-95"
                                 >
                                     {payingIndex === index ? (
                                         <>
@@ -254,11 +255,11 @@ const PricingPage: React.FC = () => {
                                     )}
                                 </button>
                             ) : (
-                                <div className="text-xs text-slate-500 italic mt-2 bg-slate-100 p-2 rounded w-full">
+                                <div className="text-xs text-slate-500 italic mt-2 bg-slate-100 p-2.5 rounded-lg w-full">
                                     Gunakan transfer manual di bawah ini
                                 </div>
                             )}
-                        </div>
+                        </TiltCard>
                     ))}
                 </div>
             </div>

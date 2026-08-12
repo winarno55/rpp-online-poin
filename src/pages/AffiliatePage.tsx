@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { ReferralEarningItem, WithdrawalItem } from '../types';
+import { TiltCard } from '../components/ui/be-ui-tilt-card';
 
 export const AffiliatePage: React.FC = () => {
   const { authData } = useAuth();
@@ -213,12 +214,12 @@ export const AffiliatePage: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-slate-800/80 border border-emerald-500/40 rounded-2xl p-6 shadow-lg relative overflow-hidden">
+        <TiltCard className="bg-slate-800/90 border border-emerald-500/40 p-6 shadow-xl relative overflow-hidden backdrop-blur-sm">
           <div className="flex justify-between items-start mb-2">
             <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Saldo Siap Ditarik (WD)</span>
-            <span className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold">Uang Nyata</span>
+            <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-bold">Uang Nyata</span>
           </div>
-          <div className="text-3xl font-black text-emerald-400 tracking-tight mb-4">
+          <div className="text-3xl font-black text-emerald-400 tracking-tight mb-4 drop-shadow-[0_2px_8px_rgba(52,211,153,0.3)]">
             {formatCurrency(affiliateBalance)}
           </div>
           <button
@@ -233,23 +234,23 @@ export const AffiliatePage: React.FC = () => {
               ? `Min. WD ${formatCurrency(config.minWithdrawalAmount)}`
               : 'Tarik Dana Ke Rekening (WD)'}
           </button>
-        </div>
+        </TiltCard>
 
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-lg">
+        <TiltCard className="bg-slate-800/90 border border-slate-700/80 p-6 shadow-xl backdrop-blur-sm">
           <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block mb-2">Total Komisi Akumulasi</span>
-          <div className="text-3xl font-extrabold text-amber-400 tracking-tight mb-2">
+          <div className="text-3xl font-extrabold text-amber-400 tracking-tight mb-2 drop-shadow-[0_2px_8px_rgba(251,191,36,0.3)]">
             {formatCurrency(totalEarnedAffiliate)}
           </div>
           <p className="text-xs text-slate-400">Total komisi {config.referralCommissionPercent}% dari seluruh transaksi pengguna yang diajak.</p>
-        </div>
+        </TiltCard>
 
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-lg">
+        <TiltCard className="bg-slate-800/90 border border-slate-700/80 p-6 shadow-xl backdrop-blur-sm">
           <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block mb-2">Pengguna Terdaftar via Anda</span>
-          <div className="text-3xl font-extrabold text-sky-400 tracking-tight mb-2">
+          <div className="text-3xl font-extrabold text-sky-400 tracking-tight mb-2 drop-shadow-[0_2px_8px_rgba(56,189,248,0.3)]">
             {referredUsersCount} <span className="text-sm font-normal text-slate-300">Orang</span>
           </div>
           <p className="text-xs text-slate-400">Guru/Pengguna yang mendaftar menggunakan link atau kode referral Anda.</p>
-        </div>
+        </TiltCard>
       </div>
 
       {/* Modal Withdrawal Form */}
