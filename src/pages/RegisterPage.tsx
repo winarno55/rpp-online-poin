@@ -76,15 +76,30 @@ const RegisterPage: React.FC = () => {
             <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className={inputClass} />
           </div>
           <div>
-            <label htmlFor="referralCode" className={labelClass}>Kode Referral (Opsional)</label>
-            <input 
-              type="text" 
-              id="referralCode" 
-              value={referralCode} 
-              onChange={(e) => setReferralCode(e.target.value.toUpperCase())} 
-              placeholder="Contoh: MAC12345"
-              className={inputClass} 
-            />
+            <label htmlFor="referralCode" className={labelClass}>
+              Kode Referral {initialRef ? '(Terkunci)' : '(Opsional)'}
+            </label>
+            <div className="relative">
+              <input 
+                type="text" 
+                id="referralCode" 
+                value={referralCode} 
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())} 
+                placeholder="Contoh: MAC12345"
+                readOnly={!!initialRef}
+                className={`${inputClass} ${initialRef ? 'bg-slate-200/80 text-slate-700 cursor-not-allowed font-mono font-semibold pr-24' : ''}`} 
+              />
+              {initialRef && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-emerald-700 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded">
+                  🔒 Terkunci
+                </span>
+              )}
+            </div>
+            {initialRef && (
+              <p className="text-[11px] text-slate-500 mt-1">
+                Kode referral terisi otomatis dari link undangan yang Anda buka dan tidak dapat diubah.
+              </p>
+            )}
           </div>
           <button type="submit" disabled={isLoading || !!success} className="w-full flex items-center justify-center bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed text-lg">
             {isLoading ? 'Loading...' : 'Register'}
