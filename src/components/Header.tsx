@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { ComplaintButton } from './ComplaintWidget';
-import { Bot, Sparkles } from 'lucide-react';
+import { Bot, Sparkles, BookOpen } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const { authData, logout, isAuthenticated, isAdmin } = useAuth();
@@ -68,7 +68,7 @@ export const Header: React.FC = () => {
                 <Link to="/app/affiliate" className="text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1">
                   <span>💰 Afiliasi</span>
                 </Link>
-                <div className="text-sm text-slate-300 hidden md:block">
+                <div className="text-sm text-slate-300 hidden xl:block">
                   <span className="font-medium text-sky-400">{authData.user?.email}</span>
                   {' | '}
                   <span>Poin: <span className="font-bold text-emerald-400">{authData.user?.points}</span></span>
@@ -78,6 +78,17 @@ export const Header: React.FC = () => {
                     Isi Ulang
                   </Link>
                 )}
+                {/* Tombol Buku Panduan */}
+                <a 
+                  href="https://drive.google.com/file/d/1aicB6aN5JvWo-5Su5rZJXCSzeNR-Cb4s/view?usp=sharing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 py-1.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all"
+                  title="Buku Panduan Penggunaan"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span className="hidden md:block">Panduan</span>
+                </a>
                 {/* Tombol Aduan atau Saran */}
                 <ComplaintButton 
                   text="Aduan / Saran" 
@@ -102,6 +113,17 @@ export const Header: React.FC = () => {
                  <Link to="/pricing" className={`text-sm font-medium ${navLinkClass} transition-colors hidden sm:block`}>
                   Harga
                 </Link>
+                {/* Tombol Buku Panduan Publik */}
+                <a 
+                  href="https://drive.google.com/file/d/1aicB6aN5JvWo-5Su5rZJXCSzeNR-Cb4s/view?usp=sharing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 py-1.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all"
+                  title="Buku Panduan Penggunaan"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span className="hidden md:block">Panduan</span>
+                </a>
                 {/* Tombol Aduan atau Saran */}
                 <ComplaintButton 
                   text="Aduan / Saran" 
