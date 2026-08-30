@@ -266,13 +266,27 @@ const HomePage: React.FC = () => {
                 }
                 
                 bundleId = response.headers.get('X-Bundle-Id') || bundleId;
-                const text = await response.text();
-                const html = markdownToHtml(text);
                 
-                setDocs(prev => ({ ...prev, [step]: html }));
-                previousDocs[`doc${step}`] = text;
+                const reader = response.body?.getReader();
+                const decoder = new TextDecoder();
+                let accumulatedText = '';
                 
-                if (step === 3) parseATP(html);
+                if (reader) {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        const chunk = decoder.decode(value, { stream: true });
+                        accumulatedText += chunk;
+                        setDocs(prev => ({ ...prev, [step]: markdownToHtml(accumulatedText) }));
+                    }
+                } else {
+                    accumulatedText = await response.text();
+                    setDocs(prev => ({ ...prev, [step]: markdownToHtml(accumulatedText) }));
+                }
+                
+                previousDocs[`doc${step}`] = accumulatedText;
+                
+                if (step === 3) parseATP(markdownToHtml(accumulatedText));
 
             } catch (err: any) {
                 setError(err.message);
