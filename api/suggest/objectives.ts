@@ -11,6 +11,9 @@ const corsHandler = cors();
 
 // DAFTAR MODEL PRIORITAS (Strategi "WATERFALL")
 const MODELS_TO_TRY = [
+    'gemini-3.8-flash',          // Latest Gen 3.8 Flash
+    'gemini-3.7-flash',          // Latest Gen 3.7 Flash
+    'gemini-3.6-flash',          // Latest Gen 3.6 Flash
     'gemini-3.5-flash',          // Latest Gen 3.5 Flash
     'gemini-3.1-pro-preview',    // 1. Gen 3.1 Pro
     'gemini-3-flash-preview',    // 2. Gen 3 Flash
