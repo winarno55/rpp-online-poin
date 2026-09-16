@@ -223,7 +223,17 @@ export const LessonPlanForm: React.FC<LessonPlanFormProps> = ({ onSubmit, isLoad
                 materi: formData.materi
             })
         });
-        const data = await response.json();
+        
+        let data = {};
+        try {
+            const errText = await response.text();
+            try {
+                data = JSON.parse(errText);
+            } catch(e) {
+                data = { message: "Server Error: " + errText.substring(0, 100) };
+            }
+        } catch(e) {}
+    
         if (!response.ok) {
             throw new Error(data.message || 'Gagal mengambil saran.');
         }

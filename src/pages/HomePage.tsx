@@ -261,7 +261,17 @@ const HomePage: React.FC = () => {
                 }, 3);
                 
                 if (!response.ok) {
-                    const err = await response.json();
+                    
+                    let err = {};
+                    try {
+                        const errText = await response.text();
+                        try {
+                            err = JSON.parse(errText);
+                        } catch(e) {
+                            err = { message: "Server Error: " + errText.substring(0, 100) };
+                        }
+                    } catch(e) {}
+    
                     throw new Error(err.message || `Gagal generate dokumen ${step}`);
                 }
                 
@@ -322,7 +332,17 @@ const HomePage: React.FC = () => {
             }, 5);
 
             if (!response.ok) {
-                const errorResult = await response.json();
+                
+                let errorResult = {};
+                try {
+                    const errText = await response.text();
+                    try {
+                        errorResult = JSON.parse(errText);
+                    } catch(e) {
+                        errorResult = { message: "Server Error: " + errText.substring(0, 100) };
+                    }
+                } catch(e) {}
+    
                 throw new Error(errorResult.message || 'Gagal dari server AI.');
             }
 

@@ -19060,7 +19060,16 @@ var init_LessonPlanForm = __esm({
               materi: formData.materi
             })
           });
-          const data = await response.json();
+          let data = {};
+          try {
+            const errText = await response.text();
+            try {
+              data = JSON.parse(errText);
+            } catch (e) {
+              data = { message: "Server Error: " + errText.substring(0, 100) };
+            }
+          } catch (e) {
+          }
           if (!response.ok) {
             throw new Error(data.message || "Gagal mengambil saran.");
           }
@@ -28164,7 +28173,16 @@ var init_HomePage = __esm({
               body: JSON.stringify({ step, inputData: formData, previousDocs, bundleId })
             }, 3);
             if (!response.ok) {
-              const err = await response.json();
+              let err = {};
+              try {
+                const errText = await response.text();
+                try {
+                  err = JSON.parse(errText);
+                } catch (e) {
+                  err = { message: "Server Error: " + errText.substring(0, 100) };
+                }
+              } catch (e) {
+              }
               throw new Error(err.message || `Gagal generate dokumen ${step}`);
             }
             bundleId = response.headers.get("X-Bundle-Id") || bundleId;
@@ -28212,7 +28230,16 @@ var init_HomePage = __esm({
             body: JSON.stringify(data)
           }, 5);
           if (!response.ok) {
-            const errorResult = await response.json();
+            let errorResult = {};
+            try {
+              const errText = await response.text();
+              try {
+                errorResult = JSON.parse(errText);
+              } catch (e) {
+                errorResult = { message: "Server Error: " + errText.substring(0, 100) };
+              }
+            } catch (e) {
+            }
             throw new Error(errorResult.message || "Gagal dari server AI.");
           }
           const reader = response.body?.getReader();
