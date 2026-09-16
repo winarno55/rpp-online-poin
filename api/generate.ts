@@ -72,9 +72,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             return res.status(403).json({ message: `Poin Anda tidak cukup untuk membuat modul ajar ${numSessions} sesi (butuh ${dynamicCost} poin).` });
         }
 
-        // Deduct points before starting the generation process
-        user.points -= dynamicCost;
-        await user.save({ validateBeforeSave: false });
+        // Validasi poin sukses. Deduct poin dipindah ke akhir agar aman jika terpotong.
         
         try {
             const apiKeys = getAllGeminiApiKeys();
@@ -187,22 +185,25 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                 }
             }
             
+            // POTONG POIN HANYA JIKA SELESAI (SUKSES)
+            user.points -= dynamicCost;
+            await user.save({ validateBeforeSave: false });
+            
+            res.write('\n\n[INFO SISTEM: Pembuatan selesai. ' + dynamicCost + ' poin telah digunakan.]');
             res.end();
 
         } catch (aiError: any) {
             console.error('All Gemini Models & Keys Failed:', aiError);
             
             if (!res.headersSent) {
-                 // Refund points
-                user.points += dynamicCost;
-                await user.save({ validateBeforeSave: false });
+                 // Poin belum dipotong, jadi tidak perlu refund.
               
-                let userMessage = 'Gagal berkomunikasi dengan AI. Poin Anda telah dikembalikan.';
+                let userMessage = 'Gagal berkomunikasi dengan AI. Poin Anda belum dipotong.';
                 if (aiError.message) {
                     if (aiError.message.toLowerCase().includes('safety')) {
-                        userMessage = 'Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah materi atau tujuan pembelajaran Anda. Poin Anda telah dikembalikan.';
+                        userMessage = 'Permintaan Anda diblokir oleh filter keamanan AI. Coba ubah materi atau tujuan pembelajaran Anda. Poin Anda belum dipotong.';
                     } else if (aiError.message.includes('429') || aiError.message.toLowerCase().includes('quota')) {
-                         userMessage = 'Server sedang sangat sibuk (Semua kuota API habis). Silakan coba beberapa saat lagi. Poin Anda telah dikembalikan.';
+                         userMessage = 'Server sedang sangat sibuk (Semua kuota API habis). Silakan coba beberapa saat lagi. Poin Anda belum dipotong.';
                     }
                 }
                 res.status(424).json({ message: userMessage, error: aiError.message });

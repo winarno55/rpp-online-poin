@@ -43,18 +43,18 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
         const { step, inputData, previousDocs, bundleId } = req.body;
 
         let activeBundleId = bundleId;
+        let bundleCost = 0;
 
         // Step 1: Charge points and create session
         if (step === 1) {
             const pricingConfig = await PricingConfig.findOne().exec();
-            const bundleCost = pricingConfig?.bundleCost || 50;
+            bundleCost = pricingConfig?.bundleCost || 50;
 
             if (user.points < bundleCost) {
                 return res.status(403).json({ message: `Poin Anda tidak cukup untuk Bundle (butuh ${bundleCost} poin).` });
             }
 
-            user.points -= bundleCost;
-            await user.save({ validateBeforeSave: false });
+            // Validasi poin sukses. Deduct dipindah ke akhir step 1.
 
             const session = new BundleSession({ userId: user._id });
             await session.save();
@@ -169,15 +169,18 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
             for await (const chunk of responseStream) {
                 if (chunk.text) res.write(chunk.text);
             }
+            
+            if (step === 1) {
+                user.points -= bundleCost;
+                await user.save({ validateBeforeSave: false });
+            }
+            
             res.end();
         } catch (aiError: any) {
             console.error('Gemini Error:', aiError);
             if (step === 1 && !res.headersSent) {
-                // Refund points
-                const pricingConfig = await PricingConfig.findOne().exec();
-                user.points += (pricingConfig?.bundleCost || 50);
-                await user.save({ validateBeforeSave: false });
-                res.status(424).json({ message: 'Gagal komunikasi AI. Poin dikembalikan.', error: aiError.message });
+                // Poin belum dipotong, tidak perlu refund.
+                res.status(424).json({ message: 'Gagal komunikasi AI. Poin belum dipotong.', error: aiError.message });
             } else if (!res.headersSent) {
                 res.status(424).json({ message: 'Gagal komunikasi AI.', error: aiError.message });
             } else {
