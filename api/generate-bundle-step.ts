@@ -13,14 +13,14 @@ import cors from 'cors';
 const corsHandler = cors();
 
 const MODELS_TO_TRY = [
-    'gemini-3.8-flash',
-    'gemini-3.7-flash',
-    'gemini-3.6-flash',
-    'gemini-3.5-flash',
-    'gemini-3.1-pro-preview',
-    'gemini-3-flash-preview',
-    'gemini-2.5-pro-preview',
-    'gemini-2.0-pro-exp-02-05'
+    'gemini-3.8-flash',          // Latest Gen 3.8 Flash
+    'gemini-3.7-flash',          // Latest Gen 3.7 Flash
+    'gemini-3.6-flash',          // Latest Gen 3.6 Flash
+    'gemini-3.5-flash',          // Latest Gen 3.5 Flash
+    'gemini-3.1-pro-preview',    // 1. Gen 3.1 Pro (Kualitas Tertinggi)
+    'gemini-3-flash-preview',    // 2. Gen 3 Flash (Kecepatan Tertinggi)
+    'gemini-2.5-pro-preview',    // 3. Gen 2.5 Pro (Penalaran Kuat)
+    'gemini-2.0-pro-exp-02-05'   // 4. Gen 2.0 Pro (Kualitas Stabil)
 ];
 
 type AuthRequest = VercelRequest & { user?: IUser; };
