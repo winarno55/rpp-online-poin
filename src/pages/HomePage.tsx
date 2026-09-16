@@ -288,6 +288,12 @@ const HomePage: React.FC = () => {
                 
                 if (step === 3) parseATP(markdownToHtml(accumulatedText));
 
+                if (step < 6) {
+                    // Jeda 2-3 detik (2000ms - 3000ms) untuk mencegah Rate Limit / Bot Detection
+                    const delay = Math.floor(Math.random() * (3000 - 2000 + 1) + 2000);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+
             } catch (err: any) {
                 setError(err.message);
                 setIsLoadingStep(0);

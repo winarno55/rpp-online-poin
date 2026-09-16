@@ -86,20 +86,45 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                                     model: modelName,
                                     contents: contentsPayload as any,
                                     config: {
-                                        tools: [{ googleSearch: {} }]
+                                        tools: [{ googleSearch: {} }],
+                                        maxOutputTokens: 8192,
+                                        safetySettings: [
+                                            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                                            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                                            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                                            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" }
+                                        ]
                                     }
                                 });
                             } catch (searchError: any) {
                                 console.warn(`[${modelName}] Key ${i + 1} failed with Google Search: ${searchError.message}. Retrying without search...`);
                                 stream = await ai.models.generateContentStream({
                                     model: modelName,
-                                    contents: contentsPayload as any
+                                    contents: contentsPayload as any,
+                                    config: {
+                                        maxOutputTokens: 8192,
+                                        safetySettings: [
+                                            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                                            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                                            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                                            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" }
+                                        ]
+                                    }
                                 });
                             }
                         } else {
                             stream = await ai.models.generateContentStream({
                                 model: modelName,
-                                contents: contentsPayload as any
+                                contents: contentsPayload as any,
+                                config: {
+                                    maxOutputTokens: 8192,
+                                    safetySettings: [
+                                        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                                        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                                        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                                        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" }
+                                    ]
+                                }
                             });
                         }
 
