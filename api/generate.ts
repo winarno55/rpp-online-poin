@@ -1,6 +1,7 @@
+export const maxDuration = 60;
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from '@google/genai';
 import { protect } from './_lib/auth.js';
 import dbConnect from './_lib/db.js';
 import User, { IUser } from './_lib/models/User.js';
@@ -99,10 +100,10 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                                         tools: [{ googleSearch: {} }],
                                         maxOutputTokens: 8192,
                                         safetySettings: [
-                                            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                                            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-                                            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                                            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" }
+                                            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+                                            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+                                            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+                                            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE }
                                         ]
                                     }
                                 });
@@ -114,10 +115,10 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                                     config: {
                                         maxOutputTokens: 8192,
                                         safetySettings: [
-                                            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                                            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-                                            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                                            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" }
+                                            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+                                            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+                                            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+                                            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE }
                                         ]
                                     }
                                 });
@@ -129,10 +130,10 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                                 config: {
                                     maxOutputTokens: 8192,
                                     safetySettings: [
-                                        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                                        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-                                        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                                        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" }
+                                        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+                                        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+                                        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+                                        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE }
                                     ]
                                 }
                             });
@@ -190,6 +191,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                 }
                 res.status(424).json({ message: userMessage, error: aiError.message });
             } else {
+                res.write('\n\n[INFO SISTEM: Maaf, teks terpotong. Alasan: ' + (aiError.message || 'Waktu eksekusi habis/Server terputus') + ']');
                 res.end();
             }
         }

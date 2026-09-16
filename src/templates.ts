@@ -9,7 +9,7 @@ export const templates: LessonPlanTemplate[] = [
       mataPelajaran: "Ilmu Pengetahuan Alam (IPA)",
       kelasFase: KELAS_FASE_OPTIONS[6], // Kelas VII / Fase D
       materi: "Uji Kandungan Zat Makanan (Karbohidrat, Protein, Lemak)",
-      jumlahPertemuan: "2 Kali Pertemuan",
+      jumlahPertemuan: "2 Kali Pertemuan" as any,
       jamPelajaran: "3",
       pesertaDidik: "Peserta didik reguler dengan kemampuan heterogen.",
       dimensiProfilLulusan: [
@@ -32,7 +32,7 @@ export const templates: LessonPlanTemplate[] = [
       mataPelajaran: "Bahasa Indonesia",
       kelasFase: KELAS_FASE_OPTIONS[9], // Kelas X / Fase E
       materi: "Menganalisis dan Menciptakan Teks Negosiasi",
-      jumlahPertemuan: "3 Kali Pertemuan",
+      jumlahPertemuan: "3 Kali Pertemuan" as any,
       jamPelajaran: "2",
       pesertaDidik: "",
       dimensiProfilLulusan: [
