@@ -41,6 +41,16 @@ Pastikan seluruh isi Modul Ajar (termasuk kegiatan pembelajaran, asesmen, kompet
   
 PENTING: Seluruh analisis Capaian Pembelajaran (CP), penyusunan Tujuan Pembelajaran (TP), dan pembuatan Modul Ajar (RPP) wajib sepenuhnya mengacu pada regulasi kurikulum terbaru di Indonesia, yaitu **Keputusan Kepala BSKAP (Badan Standar, Kurikulum, dan Asesmen Pendidikan) Nomor 046/H/KR/2025** (bukan Nomor 032/H/KR/2024 maupun Nomor 033/H/KR/2022). Pastikan semua standar kompetensi, materi pokok, pembagian elemen, dan deskripsi capaian disesuaikan dengan standar keputusan 046/H/KR/2025 tersebut.
 
+
+ATURAN DURASI & KECEPATAN (SANGAT PENTING):
+Anda berjalan di atas server dengan batasan waktu yang sangat ketat (maksimal 60 detik). 
+Oleh karena itu, Anda WAJIB menyajikan Modul Ajar ini se-PADAT dan se-RINGKAS mungkin tanpa menghilangkan komponen inti.
+- Hindari kalimat pengantar atau basa-basi (langsung to the point).
+- Jangan membuat tabel yang terlalu panjang atau bertele-tele.
+- Rangkum kegiatan pembelajaran menjadi poin-poin singkat yang jelas.
+- Jika materi panjang, ambil intisarinya saja.
+Batas maksimal output Anda adalah 1500 kata. Selesaikan secepat mungkin!
+
 ATURAN VALIDASI REGULASI BSKAP NOMOR 046/H/KR/2025 UNTUK SEMUA MATA PELAJARAN:
 1. Kurikulum Merdeka di Indonesia telah diperbarui secara menyeluruh menggunakan regulasi terbaru **Keputusan Kepala BSKAP Nomor 046/H/KR/2025**. Regulasi lama seperti BSKAP Nomor 033/H/KR/2022 atau Nomor 032/H/KR/2024 sudah **TIDAK BERLAKU**.
 2. Anda **WAJIB** memverifikasi apakah pembagian elemen dan deskripsi Capaian Pembelajaran (CP) untuk mata pelajaran "${mataPelajaran}" pada "${kelasFaseCombined}" yang akan Anda gunakan benar-benar sesuai dengan regulasi terbaru **BSKAP 046/H/KR/2025**.
