@@ -48,11 +48,11 @@ ATURAN VALIDASI REGULASI BSKAP NOMOR 046/H/KR/2025 UNTUK SEMUA MATA PELAJARAN:
    - **PJOK**: Gunakan 4 elemen baru: (1) Terampil Bergerak, (2) Belajar melalui Gerak, (3) Bergaya Hidup Aktif, (4) Memilih Hidup yang Menyehatkan. JANGAN gunakan Keterampilan Gerak, Pengetahuan Gerak, dsb.
    - **Pendidikan Pancasila**: Pastikan elemen-elemen dan capaian pembelajarannya sesuai standar 046/H/KR/2025 (yaitu Pancasila, Undang-Undang Dasar Negara Republik Indonesia Tahun 1945, Bhinneka Tunggal Ika, Negara Kesatuan Republik Indonesia) dengan substansi yang telah diperbarui.
    - **Mata Pelajaran Lain (Matematika, IPAS, Bahasa Indonesia, Pendidikan Agama, Seni Rupa/Musik/Tari/Teater)**: Seluruh rumusan CP dan pembagian elemen wajib diselaraskan dengan BSKAP 046/H/KR/2025.
-4. Karena Anda memiliki kemampuan **Google Search Grounding (Pencarian Google)**, Anda **WAJIB** melakukan pencarian web terlebih dahulu dengan kata kunci seperti: \`"046/H/KR/2025" "${mataPelajaran}" "${kelasFaseCombined}" capaian pembelajaran elemen\`. Gunakan hasil pencarian tersebut untuk memastikan kebenaran data Anda sebelum mulai menulis dokumen. Jangan berasumsi atau menggunakan memori lama Anda jika ada perbedaan dengan regulasi 046/H/KR/2025.
+
   
 ${pjokSpecificRules}
   
-Tugas Anda: Buatlah Modul Ajar (Dokumen 7) yang lengkap, profesional, dan siap pakai. Gunakan pendekatan Deep Learning (Mindful, Meaningful, Joyful).
+Tugas Anda: Buatlah Modul Ajar (Dokumen 7) yang padat, ringkas, profesional, dan siap pakai. Gunakan pendekatan Deep Learning secara efisien. KARENA KETERBATASAN WAKTU SERVER, JANGAN BERTELE-TELE. Tuliskan poin-poin kegiatan pembelajaran secara langsung dan padat.
 
 SANGAT PENTING: Jika pengguna telah menyediakan Capaian Pembelajaran: "${capaianPembelajaran || ''}", Anda WAJIB menggunakan rumusan CP tersebut secara literal dan tepat untuk seluruh rancangan kegiatan belajar, tujuan pembelajaran, dan asesmen dalam Modul Ajar ini. Jangan melenceng atau mengubah substansinya.
 

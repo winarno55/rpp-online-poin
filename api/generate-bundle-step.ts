@@ -78,7 +78,7 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                     const apiKey = apiKeys[i];
                     try {
                         const ai = new GoogleGenAI({ apiKey });
-                        const hasSearch = modelName.startsWith('gemini-3');
+                        const hasSearch = false; // Disabled to save execution time
                         let stream;
 
                         if (hasSearch) {
