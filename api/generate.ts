@@ -139,11 +139,21 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                             });
                         }
                         
-                        responseStream = stream;
-                        successModel = modelName;
                         
-                        // Jika berhasil, keluar dari KEDUA loop (break label)
-                        break modelLoop; 
+                        const iterator = stream[Symbol.asyncIterator]();
+                        const firstResult = await iterator.next();
+                        
+                        responseStream = {
+                            async *[Symbol.asyncIterator]() {
+                                if (!firstResult.done) {
+                                    yield firstResult.value;
+                                }
+                                yield* iterator;
+                            }
+                        };
+                        successModel = modelName;
+                        break modelLoop;
+ 
 
                     } catch (error: any) {
                         lastError = error;

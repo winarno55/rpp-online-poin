@@ -27949,7 +27949,7 @@ var init_HomePage = __esm({
       kalenderPendidikan: "Alokasi efektif semester ganjil adalah 18 minggu efektif sesuai Kalender Pendidikan Dinas Provinsi.",
       rentangNilaiKktp: "0-60: Belum Tuntas, 61-75: Cukup, 76-90: Baik, 91-100: Sangat Baik",
       materi: "",
-      jumlahPertemuan: "1 Pertemuan",
+      jumlahPertemuan: "1 Kali Pertemuan",
       jamPelajaran: "",
       pesertaDidik: "",
       dimensiProfilLulusan: [],

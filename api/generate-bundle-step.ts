@@ -129,8 +129,21 @@ async function apiHandler(req: AuthRequest, res: VercelResponse) {
                             });
                         }
 
-                        responseStream = stream;
+                        
+                        const iterator = stream[Symbol.asyncIterator]();
+                        const firstResult = await iterator.next();
+                        
+                        responseStream = {
+                            async *[Symbol.asyncIterator]() {
+                                if (!firstResult.done) {
+                                    yield firstResult.value;
+                                }
+                                yield* iterator;
+                            }
+                        };
+                        
                         break modelLoop;
+
                     } catch (error: any) {
                         lastError = error;
                         console.warn(`[${modelName}] Key ${i + 1} failed: ${error.message}`);
