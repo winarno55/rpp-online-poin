@@ -14,25 +14,23 @@ import cors from 'cors';
 
 const corsHandler = cors();
 
-// DAFTAR MODEL PRIORITAS (STRATEGI "WATERFALL")
-// Konsep: Coba Pro -> Flash di setiap Generasi (3 -> 2.5 -> 2).
-// Ini menyeimbangkan Kualitas Tertinggi dengan Ketersediaan.
-// Mengacak urutan model Gen 3 agar beban terbagi (Load Balancing di sisi Model Google)
-const GEN3_MODELS = [
-    'gemini-3.8-flash',
-    'gemini-3.7-flash',
-    'gemini-3.6-flash',
-    'gemini-3.5-flash'
-].sort(() => Math.random() - 0.5);
-
-// Model fallback (cadangan) yang selalu ada di urutan bawah
-const FALLBACK_MODELS = [
-    'gemini-3.1-pro-preview',
+// DAFTAR MODEL PRIORITAS (STRATEGI STABILITAS TINGGI)
+// Prioritaskan model produksi berkapasitas besar & stabil (2.5 & 2.0 Flash)
+// untuk mencegah error 503 (High Demand / UNAVAILABLE), dengan fallback ke Gen 3.
+const STABLE_PRODUCTION_MODELS = [
     'gemini-2.5-flash',
     'gemini-2.0-flash'
 ];
 
-const MODELS_TO_TRY = [...GEN3_MODELS, ...FALLBACK_MODELS];
+const GEN3_MODELS = [
+    'gemini-3.8-flash',
+    'gemini-3.7-flash',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash',
+    'gemini-3.1-pro-preview'
+].sort(() => Math.random() - 0.5);
+
+const MODELS_TO_TRY = [...STABLE_PRODUCTION_MODELS, ...GEN3_MODELS];
 
 type AuthRequest = VercelRequest & {
   user?: IUser;
